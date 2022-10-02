@@ -1,0 +1,5 @@
+{
+  "mobileApiEndpoint": "https://mobile.mythrowaway.net/21c4aea8",
+  "apiEndpoint": "https://backend.mythrowaway.net/dev",
+  "apiErrorUrl": "https://backend.mythrowaway.net/dev/500.html"
+}
