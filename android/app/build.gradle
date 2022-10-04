@@ -37,14 +37,14 @@ android {
         disable 'InvalidPackage'
     }
     signingConfigs {
-        debug {
-            def properties = new Properties()
-            properties.load(project.rootProject.file("local.properties").newDataInputStream())
-            storeFile file(properties.getProperty("keystore.file"))
-            storePassword properties.get("keystore.storepwd")
-            keyAlias 'key0'
-            keyPassword properties.get("keystore.keypwd")
-        }
+//        debug {
+//            def properties = new Properties()
+//            properties.load(project.rootProject.file("local.properties").newDataInputStream())
+//            storeFile file(properties.getProperty("keystore.file"))
+//            storePassword properties.get("keystore.storepwd")
+//            keyAlias 'key0'
+//            keyPassword properties.get("keystore.keypwd")
+//        }
         release {
             storeFile file(System.getenv("CM_KEYSTORE_PATH"))
             storePassword System.getenv("CM_KEYSTORE_PASSWORD")
@@ -68,7 +68,7 @@ android {
             signingConfig signingConfigs.release
         }
         debug {
-            signingConfig signingConfigs.debug
+//            signingConfig signingConfigs.debug
         }
     }
 }
