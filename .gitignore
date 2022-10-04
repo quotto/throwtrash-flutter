@@ -16,3 +16,5 @@ projectFilesBackup*/
 .idea/misc.xml
 .idea/deploymentTargetDropDown.xml
 .dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
