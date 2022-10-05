@@ -45,12 +45,12 @@ android {
 //            keyAlias 'key0'
 //            keyPassword properties.get("keystore.keypwd")
 //        }
-        release {
-            storeFile file(System.getenv("CM_KEYSTORE_PATH"))
-            storePassword System.getenv("CM_KEYSTORE_PASSWORD")
-            keyPassword System.getenv("CM_KEY_PASSWORD")
-            keyAlias 'key0'
-        }
+//        release {
+//            storeFile file(System.getenv("CM_KEYSTORE_PATH"))
+//            storePassword System.getenv("CM_KEYSTORE_PASSWORD")
+//            keyPassword System.getenv("CM_KEY_PASSWORD")
+//            keyAlias 'key0'
+//        }
     }
 
     defaultConfig {
@@ -65,7 +65,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+//            signingConfig signingConfigs.release
         }
         debug {
 //            signingConfig signingConfigs.debug
