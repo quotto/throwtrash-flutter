@@ -1,4 +1,4 @@
-package net.my.throwaway
+package net.my.throwtrash
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
