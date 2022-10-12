@@ -18,3 +18,25 @@ projectFilesBackup*/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
+### Xcode ###
+## User settings
+ios/xcuserdata/
+ios/.symlinks
+
+## Xcode 8 and earlier
+ios/*.xcscmblueprint
+ios/*.xccheckout
+
+### Xcode Patch ###
+ios/*.xcodeproj/*
+ios/!*.xcodeproj/project.pbxproj
+ios/!*.xcodeproj/xcshareddata/
+ios/!*.xcworkspace/contents.xcworkspacedata
+ios//*.gcno
+
+### CocoaPods ###
+ios/Pods
+
+### Flutter ###
+ios/Flutter/Flutter.podspec
