@@ -12,8 +12,8 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>hello_world</string>
-<key>CFBundleDisplayName</key>
-<string>Hello World</string>
+    <key>CFBundleDisplayName</key>
+    <string>Throwtrash</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

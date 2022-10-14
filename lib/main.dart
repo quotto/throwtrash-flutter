@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:throwtrash/firebase_options.dart';
 import 'package:throwtrash/repository/activation_api.dart';
 import 'package:throwtrash/repository/activation_api_interface.dart';
 import 'package:throwtrash/repository/trash_repository_interface.dart';
@@ -109,8 +112,10 @@ void executeWorkManager()  {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   await Config().initialize();
 
   _userService = UserService(
@@ -422,24 +427,26 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         padding: const EdgeInsets.all(1.0),
                         child: Icon(Icons.add)),
                     onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<EditModel>(
-                                      create: (context) => EditModel(
-                                        Provider.of<
-                                            TrashDataServiceInterface>(
-                                            context,
-                                            listen: false),
-                                      ),
-                                      child: EditItemMain()))).then((result) {
-                        if (result != null && result) {
-                          calendar.reload();
-                        }
-                      });
-                    }),
+                      throw new Error();
+                      // Navigator.of(context).pop();
+                      // Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //         builder: (context) =>
+                      //             ChangeNotifierProvider<EditModel>(
+                      //                 create: (context) => EditModel(
+                      //                   Provider.of<
+                      //                       TrashDataServiceInterface>(
+                      //                       context,
+                      //                       listen: false),
+                      //                 ),
+                      //                 child: EditItemMain()))).then((result) {
+                      //   if (result != null && result) {
+                      //     calendar.reload();
+                      //   }
+                      // });
+                    }
+                  ),
                 ListTile(
                     title: Text("編集"),
                     leading: Padding(
