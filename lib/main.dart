@@ -427,24 +427,23 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         padding: const EdgeInsets.all(1.0),
                         child: Icon(Icons.add)),
                     onTap: () {
-                      throw new Error();
-                      // Navigator.of(context).pop();
-                      // Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (context) =>
-                      //             ChangeNotifierProvider<EditModel>(
-                      //                 create: (context) => EditModel(
-                      //                   Provider.of<
-                      //                       TrashDataServiceInterface>(
-                      //                       context,
-                      //                       listen: false),
-                      //                 ),
-                      //                 child: EditItemMain()))).then((result) {
-                      //   if (result != null && result) {
-                      //     calendar.reload();
-                      //   }
-                      // });
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  ChangeNotifierProvider<EditModel>(
+                                      create: (context) => EditModel(
+                                        Provider.of<
+                                            TrashDataServiceInterface>(
+                                            context,
+                                            listen: false),
+                                      ),
+                                      child: EditItemMain()))).then((result) {
+                        if (result != null && result) {
+                          calendar.reload();
+                        }
+                      });
                     }
                   ),
                 ListTile(
