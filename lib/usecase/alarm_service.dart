@@ -37,6 +37,7 @@ class AlarmService implements AlarmServiceInterface {
           }
           return true;
         } on Exception catch(e) {
+          print(e);
           _logger.e(e);
         }
       }
@@ -66,9 +67,11 @@ class AlarmService implements AlarmServiceInterface {
   }
 
   Future<void> _cancelAlarm() async {
+    print("Cancel Alarm");
     try {
       await Workmanager().cancelAll();
     } catch(error) {
+      print(error);
       _logger.e(error);
     }
   }
@@ -86,6 +89,7 @@ class AlarmService implements AlarmServiceInterface {
     Duration duration = next.difference(now);
     String taskId = Uuid().v4();
     _logger.d("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
+    print("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
     await Workmanager().registerOneOffTask(
         taskId,
         "今日のゴミ出しアラーム",
