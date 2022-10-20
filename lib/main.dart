@@ -91,8 +91,12 @@ void executeWorkManager()  {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails('your channel id', 'your channel name',
         importance: Importance.max, priority: Priority.high, showWhen: false);
+    const IOSNotificationDetails iosNotificationDetails = IOSNotificationDetails();
     const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
+    NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iosNotificationDetails
+    );
 
     DateTime today = DateTime.now();
 
