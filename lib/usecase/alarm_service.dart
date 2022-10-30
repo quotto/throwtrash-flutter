@@ -91,7 +91,8 @@ class AlarmService implements AlarmServiceInterface {
     _logger.d("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
     print("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
     await Workmanager().registerOneOffTask(
-        taskId,
+        // taskId,
+        "com.codegemz.helloWorld",
         "今日のゴミ出しアラーム",
         initialDelay: duration);
   }
