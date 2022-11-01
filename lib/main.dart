@@ -68,6 +68,7 @@ final _logger = Logger();
 
 @pragma('vm:entry-point')
 void executeWorkManager()  {
+  print("executeWorkManager");
   Workmanager().executeTask((taskName, inputData) async {
     await Config().initialize();
     TrashDataServiceInterface trashDataService = TrashDataService(
