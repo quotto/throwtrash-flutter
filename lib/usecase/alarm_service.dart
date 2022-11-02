@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/alarm.dart';
 import 'package:throwtrash/models/trash_data.dart';
@@ -90,10 +93,15 @@ class AlarmService implements AlarmServiceInterface {
     String taskId = Uuid().v4();
     _logger.d("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
     print("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
-    await Workmanager().registerOneOffTask(
+    if(Platform.isAndroid) {
+      await Workmanager().registerOneOffTask(
         // taskId,
-        "com.codegemz.helloWorld",
-        "今日のゴミ出しアラーム",
-        initialDelay: duration);
+          "com.codegemz.helloWorld",
+          "今日のゴミ出しアラーム",
+          initialDelay: duration);
+    } else {
+      MethodChannel channel = MethodChannel("net.mythrowtrash/alarm");
+      await channel.invokeMethod("reserveNextAlarm",{"duration": duration.inSeconds.toString(),"content": "test"});
+    }
   }
 }
