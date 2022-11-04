@@ -36,11 +36,13 @@ import workmanager
 
         let request = UNNotificationRequest(identifier: "alarm", content: content, trigger: trigger)
 
+        let notificationCenter = UNUserNotificationCenter.current()
+
         notificationCenter.add(request) { (error) in
            if error != nil {
                print(error.debugDescription)
            }
-       }
+        }
     }
     })
 
