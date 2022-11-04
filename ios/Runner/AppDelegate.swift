@@ -21,10 +21,10 @@ import workmanager
         (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
         switch call.method {
         case "reserveNextAlarm":
-        guard let args = call.arguments as? [String: NSNumber] else {return}
+        guard let args = call.arguments as? [String: String] else {return}
 
         let now = Date()
-        var nextDate = now.addingTimeInterval(args["duration"]!.toInt())
+        var nextDate = now.addingTimeInterval(Int(args["duration"]!))
         var dateComponentsDay = Calendar.dateComponents(in: TimeZone.current, from:nextDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponentsDay, repeats: false)
