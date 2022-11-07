@@ -25,7 +25,8 @@ import workmanager
 
         let now = Date()
         var nextDate = now.addingTimeInterval(Double(args["duration"]!)!)
-        var dateComponentsDay = Calendar.dateComponents(in: TimeZone.current, from:nextDate)
+        let cal = Calendar(identifier: .gregorian)
+        var dateComponentsDay = cal.dateComponents(in: TimeZone.current, from:nextDate)
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponentsDay, repeats: false)
 
