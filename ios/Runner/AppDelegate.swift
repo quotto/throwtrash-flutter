@@ -15,6 +15,15 @@ import workmanager
     WorkmanagerPlugin.registerTask(withIdentifier: "com.codegemz.helloWorld")
     GeneratedPluginRegistrant.register(with: self)
 
+    let notificationCenter = UNUserNotificationCenter.current()
+    notificationCenter.requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
+        if granted {
+            print("Allowed")
+        } else {
+            print("Didn't allowed")
+        }
+    }
+
     let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
     let alarmChannel = FlutterMethodChannel(name: "net.mythrowtrash/alarm", binaryMessenger: controller as! FlutterBinaryMessenger)
     alarmChannel.setMethodCallHandler({
@@ -37,13 +46,12 @@ import workmanager
 
             let request = UNNotificationRequest(identifier: "alarm", content: content, trigger: trigger)
 
-            let notificationCenter = UNUserNotificationCenter.current()
-
             notificationCenter.add(request) { (error) in
                if error != nil {
                    print(error.debugDescription)
                }
             }
+            print("unnotification request complete")
             result("alarm set")
         default:
             print("method channel not match")
