@@ -38,8 +38,7 @@ import workmanager
             var dateComponentsDay = cal.dateComponents(in: TimeZone.current, from:nextDate)
 
 //             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponentsDay, repeats: false)
-            guard let interval = call.arguments as? [String: Int] else {return}
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Double(args["duration"]!)!, repeats: false)
 
             let content = UNMutableNotificationContent()
             content.title = "AndroidLikeAlerm"
