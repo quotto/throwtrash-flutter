@@ -37,8 +37,11 @@ import workmanager
             let cal = Calendar(identifier: .gregorian)
             var dateComponentsDay = cal.dateComponents(in: TimeZone.current, from:nextDate)
 
-//             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponentsDay, repeats: false)
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Double(args["duration"]!)!, repeats: false)
+            var date = DateComponents()
+            date.hour = Int(args["hour"]!)!
+            date.minute = Int(args["minute"]!)!
+            let trigger = UNCalendarNotificationTrigger(dateMatching: date, repeats: true)
+            // let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Double(args["duration"]!)!, repeats: false)
 
             let content = UNMutableNotificationContent()
             content.title = "AndroidLikeAlerm"

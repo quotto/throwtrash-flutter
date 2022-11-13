@@ -101,7 +101,7 @@ class AlarmService implements AlarmServiceInterface {
           initialDelay: duration);
     } else {
       MethodChannel channel = MethodChannel("net.mythrowtrash/alarm");
-      var result = await channel.invokeMethod("reserveNextAlarm",{"duration": duration.inSeconds.toString(),"content": "test"});
+      var result = await channel.invokeMethod("reserveNextAlarm",{"duration": duration.inSeconds.toString(),"hour": alarm.hour.toString(), "minute": alarm.minute.toString(),"content": "test"});
       print(result);
     }
   }
