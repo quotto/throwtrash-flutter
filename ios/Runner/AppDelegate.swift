@@ -40,7 +40,7 @@ import workmanager
             var date = DateComponents()
             date.hour = Int(args["hour"]!)!
             date.minute = Int(args["minute"]!)!
-            let trigger = UNCalendarNotificationTrigger(dateMatching: date, repeats: true)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: date, repeats: false)
             // let trigger = UNTimeIntervalNotificationTrigger(timeInterval: Double(args["duration"]!)!, repeats: false)
 
             let content = UNMutableNotificationContent()
@@ -67,18 +67,39 @@ import workmanager
   }
   // フォアグラウンドの場合でも通知を表示する
   override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval:60 , repeats: false)
+    let content = UNMutableNotificationContent()
+    content.title = "AndroidLikeAlerm"
+    content.body = args["content"]!
+    content.sound = UNNotificationSound.default
+
+    let request = UNNotificationRequest(identifier: "alarm", content: content, trigger: trigger)
+
+    let notificationCenter = UNUserNotificationCenter.current()
+    notificationCenter.add(request) { (error) in
+       if error != nil {
+           print(error.debugDescription)
+       }
+    }
     print("got notification@foreground")
- print(notification.request.content.title)
- print(notification.request.content.body)
     completionHandler([.alert, .badge, .sound])
   }
-     // バックグラウンドで通知を受け取った時
-     // 通知バナーをタップした時
+ // バックグラウンドで通知を受け取った時
  override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval:60 , repeats: false)
+    let content = UNMutableNotificationContent()
+    content.title = "AndroidLikeAlerm"
+    content.body = args["content"]!
+    content.sound = UNNotificationSound.default
+
+    let request = UNNotificationRequest(identifier: "alarm", content: content, trigger: trigger)
+
+    let notificationCenter = UNUserNotificationCenter.current()
+    notificationCenter.add(request) { (error) in
+       if error != nil {
+           print(error.debugDescription)
+       }
+    }
     print("got notification@background")
-         // 通知内容（タイトルや本文など）を取得
-         print(response.notification.request.content.title)
-         print(response.notification.request.content.body)
-         completionHandler()
-      }
+    completionHandler()
 }
