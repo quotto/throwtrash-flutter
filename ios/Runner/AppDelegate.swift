@@ -9,9 +9,9 @@ import workmanager
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     // flutter local notification settings
-    if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
-    }
+    // if #available(iOS 10.0, *) {
+    //   UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    // }
     WorkmanagerPlugin.registerTask(withIdentifier: "com.codegemz.helloWorld")
     GeneratedPluginRegistrant.register(with: self)
 
