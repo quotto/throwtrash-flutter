@@ -63,7 +63,7 @@ import workmanager
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
   // フォアグラウンドの場合でも通知を表示する
-  func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+  override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
     print("got notification@foreground")
  print(notification.request.content.title)
  print(notification.request.content.body)
@@ -71,7 +71,7 @@ import workmanager
   }
      // バックグラウンドで通知を受け取った時
      // 通知バナーをタップした時
-     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+ override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
     print("got notification@background")
          // 通知内容（タイトルや本文など）を取得
          print(response.notification.request.content.title)
