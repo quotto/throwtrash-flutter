@@ -3,7 +3,7 @@ import Flutter
 import workmanager
 
 @UIApplicationMain
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate,UNUserNotificationCenterDelegate  {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -62,4 +62,20 @@ import workmanager
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+  // フォアグラウンドの場合でも通知を表示する
+  func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    print("got notification@foreground")
+ print(notification.request.content.title)
+ print(notification.request.content.body)
+    completionHandler([.alert, .badge, .sound])
+  }
+     // バックグラウンドで通知を受け取った時
+     // 通知バナーをタップした時
+     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+    print("got notification@background")
+         // 通知内容（タイトルや本文など）を取得
+         print(response.notification.request.content.title)
+         print(response.notification.request.content.body)
+         completionHandler()
+      }
 }
