@@ -40,3 +40,5 @@ ios/Pods
 
 ### Flutter ###
 ios/Flutter/Flutter.podspec
+
+.fvm/

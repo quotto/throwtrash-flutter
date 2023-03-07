@@ -70,7 +70,7 @@ import workmanager
     let trigger = UNTimeIntervalNotificationTrigger(timeInterval:60 , repeats: false)
     let content = UNMutableNotificationContent()
     content.title = "AndroidLikeAlerm"
-    content.body = args["content"]!
+    content.body = "foreground"
     content.sound = UNNotificationSound.default
 
     let request = UNNotificationRequest(identifier: "alarm", content: content, trigger: trigger)
@@ -89,7 +89,7 @@ import workmanager
     let trigger = UNTimeIntervalNotificationTrigger(timeInterval:60 , repeats: false)
     let content = UNMutableNotificationContent()
     content.title = "AndroidLikeAlerm"
-    content.body = args["content"]!
+    content.body = "background"
     content.sound = UNNotificationSound.default
 
     let request = UNNotificationRequest(identifier: "alarm", content: content, trigger: trigger)
@@ -102,4 +102,5 @@ import workmanager
     }
     print("got notification@background")
     completionHandler()
+  }
 }

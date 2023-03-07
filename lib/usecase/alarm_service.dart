@@ -93,16 +93,17 @@ class AlarmService implements AlarmServiceInterface {
     String taskId = Uuid().v4();
     _logger.d("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
     print("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
-    if(Platform.isAndroid) {
+    await Workmanager().cancelAll();
+    // if(Platform.isAndroid) {
       await Workmanager().registerOneOffTask(
         // taskId,
           "com.codegemz.helloWorld",
           "今日のゴミ出しアラーム",
           initialDelay: duration);
-    } else {
-      MethodChannel channel = MethodChannel("net.mythrowtrash/alarm");
-      var result = await channel.invokeMethod("reserveNextAlarm",{"duration": duration.inSeconds.toString(),"hour": alarm.hour.toString(), "minute": alarm.minute.toString(),"content": "test"});
-      print(result);
-    }
+    // } else {
+    //   MethodChannel channel = MethodChannel("net.mythrowtrash/alarm");
+    //   var result = await channel.invokeMethod("reserveNextAlarm",{"duration": duration.inSeconds.toString(),"hour": alarm.hour.toString(), "minute": alarm.minute.toString(),"content": "test"});
+    //   print(result);
+    // }
   }
 }

@@ -92,7 +92,7 @@ void executeWorkManager()  {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails('your channel id', 'your channel name',
         importance: Importance.max, priority: Priority.high, showWhen: false);
-    const IOSNotificationDetails iosNotificationDetails = IOSNotificationDetails();
+    const DarwinNotificationDetails iosNotificationDetails = DarwinNotificationDetails();
     const NotificationDetails platformChannelSpecifics =
     NotificationDetails(
       android: androidPlatformChannelSpecifics,
@@ -273,8 +273,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
     const AndroidInitializationSettings androidInitializationSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
-    final IOSInitializationSettings iosInitializationSettings =
-    IOSInitializationSettings(
+    final DarwinInitializationSettings iosInitializationSettings =
+    DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
@@ -282,23 +282,24 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             (int id, String? title, String? body, String? payload) async {
           print('onDidReceiveLocalNotifications');
         });
-    const MacOSInitializationSettings macOSInitializationSettings =
-    MacOSInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true);
+    // const MacOSInitializationSettings macOSInitializationSettings =
+    // MacOSInitializationSettings(
+    //     requestAlertPermission: true,
+    //     requestBadgePermission: true,
+    //     requestSoundPermission: true);
     final InitializationSettings initializationSettings =
     InitializationSettings(
         android: androidInitializationSettings,
-        iOS: iosInitializationSettings,
-        macOS: macOSInitializationSettings);
+        iOS: iosInitializationSettings);
+        // macOS: macOSInitializationSettings);
     _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onSelectNotification: (String? payload) async {
-        if (payload != null) {
-          print('Notification was selected: $payload');
-        }
-      },
+      onDidReceiveNotificationResponse:onDidReceiveNotificationResponse
+      // onSelectNotification: (String? payload) async {
+      //   if (payload != null) {
+      //     print('Notification was selected: $payload');
+      //   }
+      // },
     );
 
     CalendarModel calendarModel =
@@ -317,6 +318,13 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       }
     });
     super.initState();
+  }
+
+  void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+    final String? payload = notificationResponse.payload;
+    if (notificationResponse.payload != null) {
+      debugPrint('notification payload: $payload');
+    }
   }
 
   Flexible _flexibleRowWeek(
