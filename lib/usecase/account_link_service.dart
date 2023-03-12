@@ -19,11 +19,11 @@ class AccountLinkService implements AccountLinkServiceInterface {
   Future<bool> enableSkill(String code, String state) async {
     AccountLinkInfo? accountLinkInfo = await _accountLinkRepository.readAccountLinkInfo();
     if(accountLinkInfo != null) {
-      Uri enableSkillUrl = Uri.parse("${this._config.mobileApiEndpoint}/enable_skill?token=${accountLinkInfo.token}&redirect_uri=${accountLinkInfo.redirectUri}&code=$code&state=$state");
-      _logger.d("enable skill url: ${enableSkillUrl.toString()}");
-      if(await canLaunchUrl(enableSkillUrl)) {
-        return launchUrl(enableSkillUrl,);
-      }
+      // Uri enableSkillUrl = Uri.parse("${this._config.mobileApiEndpoint}/enable_skill?token=${accountLinkInfo.token}&redirect_uri=${accountLinkInfo.redirectUri}&code=$code&state=$state");
+      // _logger.d("enable skill url: ${enableSkillUrl.toString()}");
+      // if(await canLaunchUrl(enableSkillUrl)) {
+      //   return launchUrl(enableSkillUrl,);
+      // }
     }
     return false;
   }

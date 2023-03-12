@@ -16,7 +16,7 @@ class AccountLinkRepository implements AccountLinkRepositoryInterface {
       AccountLinkInfo accountLinkInfo = AccountLinkInfo();
       accountLinkInfo.token = token;
       accountLinkInfo.linkUrl = url;
-      accountLinkInfo.redirectUri = redirectUri;
+      // accountLinkInfo.redirectUri = redirectUri;
       return accountLinkInfo;
     }
     return null;
@@ -25,10 +25,11 @@ class AccountLinkRepository implements AccountLinkRepositoryInterface {
   @override
   Future<bool> writeAccountLinkInfo(AccountLinkInfo info) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    bool result = await preferences.setString(ACCOUNT_LINK_TOKEN_KEY, info.token)
-      && await preferences.setString(ACCOUNT_LINK_URL_KEY, info.linkUrl)
-      && await preferences.setString(ACCOUNT_LINK_REDIRECT_URI_KEY, info.redirectUri);
-    return result;
+    // bool result = await preferences.setString(ACCOUNT_LINK_TOKEN_KEY, info.token)
+    //   && await preferences.setString(ACCOUNT_LINK_URL_KEY, info.linkUrl)
+    //   && await preferences.setString(ACCOUNT_LINK_REDIRECT_URI_KEY, info.redirectUri);
+    // return result;
+    return true;
   }
   
 }

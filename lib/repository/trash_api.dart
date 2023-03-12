@@ -22,7 +22,7 @@ class TrashApi implements TrashApiInterface {
 
   @override
   Future<RegisterResponse?> registerUserAndTrashData(List<TrashData> allTrashData) async {
-    _logger.d("Register user and trash data");
+    _logger.d("Register user and trash data@${this._mobileApiEndpoint}/register");
     Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/register");
     http.Response response = await http.post(
         endpointUri,

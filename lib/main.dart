@@ -49,6 +49,7 @@ import 'package:throwtrash/repository/config_interface.dart';
 import 'package:throwtrash/repository/config.dart';
 import 'package:throwtrash/repository/trash_api_interface.dart';
 
+import 'account_link.dart';
 import 'viewModels/calendar_model.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -520,14 +521,31 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         padding: const EdgeInsets.all(1.0),
                         child: Icon(Icons.speaker)),
                     onTap: () async {
-                      ConfigInterface config =  Provider.of<ConfigInterface>(context,listen: false);
-                      AccountLinkRepositoryInterface repo = AccountLinkRepository();
-                      AccountLinkApiInterface api = AccountLinkApi(config.mobileApiEndpoint);
-                      UserRepositoryInterface userRepo = UserRepository();
-                      AccountLinkServiceInterface _accountLinkService = AccountLinkService(config,api,repo,userRepo);
-                      AccountLinkInfo info = await _accountLinkService.startLink();
-                      launchUrl(Uri.parse(info.linkUrl),mode: LaunchMode.externalApplication);
+                      AccountLinkServiceInterface service = Provider.of<AccountLinkServiceInterface>(context,listen: false);
+                      service.startLink().then((accountLinkInfo) {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) =>
+                                Provider<AccountLinkInfo>(
+                                    create: (context) =>
+                                    accountLinkInfo,
+                                    child: AccountLink()
+                                )
+                            )
+                        );
+                      }).catchError((onError){
+                        _logger.e(onError);
+                      });
                     }),
+    // ConfigInterface config =  Provider.of<ConfigInterface>(context,listen: false);
+    // AccountLinkRepositoryInterface repo = AccountLinkRepository();
+    // AccountLinkApiInterface api = AccountLinkApi(config.mobileApiEndpoint);
+                      // UserRepositoryInterface userRepo = UserRepository();
+                      // AccountLinkServiceInterface _accountLinkService = AccountLinkService(config,api,repo,userRepo);
+                      // AccountLinkInfo info = await _accountLinkService.startLink();
+                      // launchUrl(Uri.parse(info.linkUrl),mode: LaunchMode.externalApplication);
+                    // }),
                 ListTile(
                   title: Text("ユーザー情報"),
                   leading: Padding(
