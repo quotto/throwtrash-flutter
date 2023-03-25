@@ -50,17 +50,18 @@ class ActivationModel extends ChangeNotifier {
     }
   }
 
-  Future<ActivationStatus> activateCode(String _inputCode) async{
+  Future<void> activateCode(String _inputCode) async{
     _publishedCode = _inputCode;
     if(_publishedCode.length == 10) {
+      _activationStatus = ActivationStatus.SENDING;
+      notifyListeners();
       _shareService.importSchedule(_publishedCode).then((result){
-        return result ? ActivationStatus.SUCCESS : ActivationStatus.FAILED;
+        _activationStatus = result ? ActivationStatus.SUCCESS : ActivationStatus.FAILED;
       }).onError((error, stackTrace) {
         _logger.e("failed activate cause by: ${error.toString()}");
         _logger.e(stackTrace);
-        return ActivationStatus.FAILED;
-      });
+        _activationStatus = ActivationStatus.FAILED;
+      }).whenComplete(() => notifyListeners());
     }
-    return ActivationStatus.FAILED;
   }
 }

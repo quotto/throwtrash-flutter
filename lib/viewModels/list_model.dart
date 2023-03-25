@@ -52,7 +52,7 @@ class ListModel extends ChangeNotifier {
       });
       _trashList.add(TrashListData(
           id: element.id,
-          name: _trashDataService.getTrashName(type: element.type, trashVal: element.trash_val),
+          name: _trashDataService.getTrashName(type: element.type, trashVal: element.trashVal),
           schedules: schedules
       ));
     });

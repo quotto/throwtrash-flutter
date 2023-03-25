@@ -22,7 +22,10 @@ class UserService extends UserServiceInterface {
 
   @override
   Future<bool> registerUser(String id) async {
-    return await _userRepository.writeUserId(id);
+    if(await _userRepository.writeUserId(id)) {
+      await refreshUser();
+      return true;
+    }
+    return false;
   }
-
 }

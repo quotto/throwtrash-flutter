@@ -47,7 +47,7 @@ void main() {
       TrashData trashData = TrashData.fromJson(jsonDecode(jsonValue));
       expect(trashData.id, '001');
       expect(trashData.type, 'burn');
-      expect(trashData.trash_val, '燃えるゴミ');
+      expect(trashData.trashVal, '燃えるゴミ');
       expect(trashData.schedules[0].type, 'weekday');
       expect(trashData.schedules[0].value, '0');
       expect(trashData.excludes[0].month, 12);
@@ -59,7 +59,7 @@ void main() {
       TrashData trashData = TrashData.fromJson(jsonDecode(jsonValue));
       expect(trashData.id, '001');
       expect(trashData.type, 'burn');
-      expect(trashData.trash_val, '');
+      expect(trashData.trashVal, '');
       expect(trashData.schedules[0].type, 'weekday');
       expect(trashData.schedules[0].value, '0');
       expect(trashData.excludes.length, 0);
@@ -73,7 +73,7 @@ void main() {
       TrashData trashData = TrashData.fromJson(jsonDecode(jsonValue));
       expect(trashData.id, '001');
       expect(trashData.type, 'burn');
-      expect(trashData.trash_val, '');
+      expect(trashData.trashVal, '');
       expect(trashData.schedules[0].type, 'weekday');
       expect(trashData.schedules[0].value, '0');
       expect(trashData.schedules[1].type, 'evweek');

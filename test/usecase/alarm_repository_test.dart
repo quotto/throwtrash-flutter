@@ -18,9 +18,9 @@ void main() {
       Alarm? actual = await _repository.getAlarm();
       expect(actual != null, true);
       expect(actual!.enabled, alarm.enabled);
-      expect(actual!.everydayFlg, alarm.everydayFlg);
-      expect(actual!.hour, alarm.hour);
-      expect(actual!.minute, alarm.minute);
+      expect(actual.everydayFlg, alarm.everydayFlg);
+      expect(actual.hour, alarm.hour);
+      expect(actual.minute, alarm.minute);
     });
     test('登録がある状態の更新', () async {
       Alarm alarm = Alarm(true, false, 7, 8);
@@ -32,9 +32,9 @@ void main() {
       Alarm? actual = await _repository.getAlarm();
       expect(actual != null, true);
       expect(actual!.enabled, alarm2.enabled);
-      expect(actual!.everydayFlg, alarm2.everydayFlg);
-      expect(actual!.hour, alarm2.hour);
-      expect(actual!.minute, alarm2.minute);
+      expect(actual.everydayFlg, alarm2.everydayFlg);
+      expect(actual.hour, alarm2.hour);
+      expect(actual.minute, alarm2.minute);
     });
   });
 }

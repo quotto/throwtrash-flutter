@@ -1,13 +1,10 @@
 import 'package:throwtrash/models/trash_data.dart';
-import 'package:throwtrash/models/trash_schedule.dart';
 
 abstract class TrashDataServiceInterface {
   static Map<String, String> get trashNameMap=> {};
 
   Future<bool> refreshTrashData();
 
-  // TODO: 後で消す
-  set schedule(testData);
   List<TrashData> get allTrashList;
   String getTrashName({String type='', String trashVal=''});
 
@@ -19,6 +16,7 @@ abstract class TrashDataServiceInterface {
   Future<bool> deleteTrashData(String id);
   TrashData? getTrashDataById(String id);
   Future<bool> updateTrashData(TrashData trashData);
+  Future<void> syncTrashData();
 
   /// 5週間分全てのゴミを返す
   /// @param
@@ -26,14 +24,9 @@ abstract class TrashDataServiceInterface {
   /// dataSet カレンダーに表示する日付のリスト
   ///
   /// @return カレンダーのポジションごとのゴミ捨てリスト
-  List<List<String>> getEnableTrashList(
+  List<List<TrashData>> getEnableTrashList(
       {required int year, required int month, required List<int> targetDateList
       });
 
   List<TrashData> getTrashOfToday({required int year, required int month, required int date});
-
-  void importTrashSchedule(List<TrashData> allTrashData, int updateTime);
-
-  void syncFromRemote();
-  void syncToRemote();
 }

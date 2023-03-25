@@ -1,12 +1,15 @@
 //TODO: DIでデータ取得用repositoryが必要
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/trash_api_register_response.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_sync_result.dart';
+import 'package:throwtrash/models/trash_update_result.dart';
 import 'package:throwtrash/repository/trash_api_interface.dart';
 import 'package:throwtrash/repository/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
+
+import '../models/calendar_model.dart';
 
 class TrashDataService implements TrashDataServiceInterface {
   List<TrashData> _schedule = [];
@@ -42,8 +45,7 @@ class TrashDataService implements TrashDataServiceInterface {
     "other": "その他"
   };
 
-  @override
-  static Map<String, String> get TrashNameMap => _trashNameMap;
+  static Map<String, String> get trashNameMap => _trashNameMap;
 
   @override
   List<TrashData> get allTrashList => _schedule;
@@ -56,9 +58,6 @@ class TrashDataService implements TrashDataServiceInterface {
     });
   }
 
-  // TODO: 後で消す
-  set schedule(testData) => _schedule=testData;
-
   @override
   String getTrashName({String type='', String trashVal=''}) {
     if(type == "other") {
@@ -69,8 +68,147 @@ class TrashDataService implements TrashDataServiceInterface {
   }
 
 
-  /// @param month 月（Calendarではなく通常の数え月）
+  /// 登録スケジュールの件数を返す
   @override
+  int getScheduleCount() {
+    return _schedule.length;
+  }
+
+  @override
+  TrashData? getTrashDataById(String id) {
+    for(int index=0; index<_schedule.length; index++) {
+      if(_schedule[index].id == id) {
+        return _schedule[index];
+      }
+    }
+    return null;
+  }
+
+  /// 新しいゴミ出し予定を追加する
+  @override
+  Future<bool> addTrashData(TrashData trashData)  async {
+    return await _trashRepository.insertTrashData(trashData) &&
+        await _changeSyncStatusToSyncing() &&
+        await refreshTrashData();
+  }
+
+  @override
+  Future<bool> updateTrashData(TrashData trashData) async {
+    return await _trashRepository.updateTrashData(trashData) &&
+        await _changeSyncStatusToSyncing() &&
+        await refreshTrashData();
+  }
+
+  @override
+  Future<bool> deleteTrashData(String id) async {
+    return await _trashRepository.deleteTrashData(id) &&
+        await _changeSyncStatusToSyncing() &&
+        await refreshTrashData();
+  }
+
+  Future<bool> _changeSyncStatusToSyncing() async {
+    return _trashRepository.setSyncStatus(SyncStatus.SYNCING);
+  }
+
+  /// 5週間分全てのゴミを返す
+  /// @param
+  /// month 計算対象（現在CalendarViewに設定されている月。1月スタート）
+  /// dataSet カレンダーに表示する日付のリスト
+  ///
+  /// @return カレンダーのポジションごとのゴミ捨てリスト
+  @override
+  List<List<TrashData>> getEnableTrashList(
+      {required int year, required int month, required List<int> targetDateList
+      }) {
+    List<List<TrashData>> resultArray = new List.generate(35,(index)=>[]);
+
+    _schedule.forEach((trash) {
+      List<String> excludeList = trash.excludes.map((excludeDate) {
+        return "${excludeDate.month}-${excludeDate.date}";
+      }).toList();
+      trash.schedules.forEach((schedule) {
+        switch (schedule.type) {
+          case 'weekday':
+            _weekdayOfPosition[int.parse((schedule.value as String))].forEach((
+                pos) {
+              if (!excludeList.contains(
+                  "${_getActualMonth(month: month,
+                      date: targetDateList[pos],
+                      pos: pos)}-${targetDateList[pos]}"
+              )) {
+                resultArray[pos].add(trash);
+              }
+            });
+            break;
+          case 'month':
+            int pos = 0;
+            targetDateList.forEach((date) {
+              if (int.parse(schedule.value) == date) {
+                if (!excludeList.contains(
+                    "${_getActualMonth(month: month,
+                        date: targetDateList[pos],
+                        pos: pos)}-$date")) {
+                  resultArray[pos].add(trash);
+                }
+              }
+              pos++;
+            });
+            break;
+          case 'biweek':
+            List<String> dayOfWeek = schedule.value.split("-");
+            if (dayOfWeek.length == 2) {
+              _weekdayOfPosition[int.parse(dayOfWeek[0])].forEach((pos) {
+                DateTime computeCalendar = _getComputeCalendar(
+                    year: year,
+                    month: month,
+                    date: targetDateList[pos],
+                    pos: pos);
+                if (int.parse(dayOfWeek[1]) == (computeCalendar.day/7).ceil()) {
+                  if (!excludeList.contains(
+                      "${_getActualMonth(month: month,
+                          date: targetDateList[pos],
+                          pos: pos)}-${targetDateList[pos]}")) {
+                    resultArray[pos].add(trash);
+                  }
+                }
+              });
+            }
+            break;
+          case 'evweek':
+            if (schedule.value['start'] != null &&
+                schedule.value['weekday'] != null) {
+              String startDate = schedule.value['start'];
+              int weekday = int.parse(schedule.value['weekday']);
+              _weekdayOfPosition[weekday].forEach((pos) {
+                int interval = schedule.value['interval'] != null ? schedule
+                    .value['interval'] : 2;
+
+                // カレンダーの1週目および5週目は月が変わっている日にちがあるため
+                // カレンダー上のインデックスと日付の関係からカレンダー上の日付の実際の月を求める
+                int actualMonth = _getActualMonth(month: month, date: targetDateList[pos],
+                    pos: pos);
+                // actualMonth≠monthとなった場合、年が前年または翌年の可能性があるため実際の年を求める
+                int actualYear = actualMonth == 12 && month == 1 ? year - 1 :
+                (actualMonth == 1 && month == 12 ? year + 1 : year);
+                // ISO8601形式とするため、月日を0埋めする
+                String strTargetDate = _convertISO8601(year: actualYear, month: month, date: targetDateList[pos]);
+                if (_isEvWeek(
+                    startDate, strTargetDate, interval) &&
+                    !excludeList.contains(
+                        "$actualMonth-${targetDateList[pos]}")
+                ) {
+                  resultArray[pos].add(trash);
+                }
+              });
+            }
+            break;
+        }
+      });
+    });
+    return resultArray;
+  }
+
+  /// @param month 月（Calendarではなく通常の数え月）
   DateTime _getComputeCalendar({required int year, required int month, required int date, required int pos}) {
     int actualMonth = month;
     if(pos < 7 && date > 7) {
@@ -95,177 +233,11 @@ class TrashDataService implements TrashDataServiceInterface {
     return month;
   }
 
-  /// 登録スケジュールの件数を返す
-  @override
-  int getScheduleCount() {
-    return _schedule.length;
-  }
-
-  /// 新しいゴミ出し予定を追加する
-  @override
-  Future<bool> addTrashData(TrashData trashData)  async {
-    bool result = await _trashRepository.insertTrashData(trashData);
-    if(result) {
-      refreshTrashData();
-      int lastUpdateTimeStamp = await _updateAllTrashData();
-      _trashRepository.updateLastUpdateTime(lastUpdateTimeStamp);
-    }
-    return result;
-  }
-
-  @override
-  Future<bool> updateTrashData(TrashData trashData) async {
-    bool result = await _trashRepository.updateTrashData(trashData);
-    if(result) {
-      refreshTrashData();
-      int lastUpdateTimeStamp = await _updateAllTrashData();
-      _trashRepository.updateLastUpdateTime(lastUpdateTimeStamp);
-    }
-    return result;
-  }
-
-  @override
-  Future<bool> deleteTrashData(String id) async {
-    bool result = await _trashRepository.deleteTrashData(id);
-    if(result) {
-      refreshTrashData();
-      int lastUpdateTimeStamp = await _updateAllTrashData();
-      _trashRepository.updateLastUpdateTime(lastUpdateTimeStamp);
-    }
-    return result;
-  }
-
-  Future<int> _updateAllTrashData() async {
-    List<TrashData> allTrashList = await _trashRepository.readAllTrashData();
-    int lastUpdateTimeStamp = 0;
-    if (_userService.user.id.isEmpty) {
-      // ユーザーIDがローカルに保存されていなければAPIに対して新規登録する
-      _logger.d("User is not registered, register trash data");
-      RegisterResponse? registerResponse = await _trashApiInterface.registerUserAndTrashData(allTrashList);
-      if(registerResponse != null) {
-        lastUpdateTimeStamp = registerResponse.timestamp;
-        if(await _userService.registerUser(registerResponse.id)){
-          await _userService.refreshUser();
-        }
-      }
-    } else {
-      // ユーザーIDがローカルに保存されていればAPIに対して更新する
-      _logger.d("User is registered, update trash data");
-      int? resultUpdateTime = await _trashApiInterface.updateTrashData(_userService.user.id,allTrashList);
-      if(resultUpdateTime != null) {
-        lastUpdateTimeStamp = resultUpdateTime;
-      }
-    }
-
-    // APIによる更新がエラー（タイムスタンプが0）の場合はローカルのタイムスタンプを採用する
-    if(lastUpdateTimeStamp == 0) {
-      lastUpdateTimeStamp = DateTime.now().millisecondsSinceEpoch;
-    }
-    return lastUpdateTimeStamp;
-  }
-
-
-  /// 5週間分全てのゴミを返す
-  /// @param
-  /// month 計算対象（現在CalendarViewに設定されている月。1月スタート）
-  /// dataSet カレンダーに表示する日付のリスト
-  ///
-  /// @return カレンダーのポジションごとのゴミ捨てリスト
-  @override
-  List<List<String>> getEnableTrashList(
-      {required int year, required int month, required List<int> targetDateList
-      }) {
-    List<List<String>> resultArray = new List.generate(35,(index)=>[]);
-
-    _schedule.forEach((trash) {
-      String trashName = getTrashName(type: trash.type, trashVal: trash.trash_val);
-      List<String> excludeList = trash.excludes.map((excludeDate) {
-        return "${excludeDate.month}-${excludeDate.date}";
-      }).toList();
-      trash.schedules.forEach((schedule) {
-        switch (schedule.type) {
-          case 'weekday':
-            _weekdayOfPosition[int.parse((schedule.value as String))].forEach((
-                pos) {
-              if (!excludeList.contains(
-                  "${_getActualMonth(month: month,
-                      date: targetDateList[pos],
-                      pos: pos)}-${targetDateList[pos]}"
-              )) {
-                resultArray[pos].add(trashName);
-              }
-            });
-            break;
-          case 'month':
-            int pos = 0;
-            targetDateList.forEach((date) {
-              if (int.parse(schedule.value) == date) {
-                if (!excludeList.contains(
-                    "${_getActualMonth(month: month,
-                        date: targetDateList[pos],
-                        pos: pos)}-$date")) {
-                  resultArray[pos].add(trashName);
-                }
-              }
-              pos++;
-            });
-            break;
-          case 'biweek':
-            List<String> dayOfWeek = schedule.value.split("-");
-            if (dayOfWeek.length == 2) {
-              _weekdayOfPosition[int.parse(dayOfWeek[0])].forEach((pos) {
-                DateTime computeCalendar = _getComputeCalendar(
-                    year: year,
-                    month: month,
-                    date: targetDateList[pos],
-                    pos: pos);
-                if (int.parse(dayOfWeek[1]) == (computeCalendar.day/7).ceil()) {
-                  if (!excludeList.contains(
-                      "${_getActualMonth(month: month,
-                          date: targetDateList[pos],
-                          pos: pos)}-${targetDateList[pos]}")) {
-                    resultArray[pos].add(trashName);
-                  }
-                }
-              });
-            }
-            break;
-          case 'evweek':
-            if (schedule.value['start'] != null &&
-                schedule.value['weekday'] != null) {
-              String startDate = schedule.value['start'];
-              int weekday = int.parse(schedule.value['weekday']);
-              _weekdayOfPosition[weekday].forEach((pos) {
-                int interval = schedule.value['interval'] != null ? schedule
-                    .value['interval'] : 2;
-
-                // カレンダーの1週目および5週目は月が変わっている日にちがあるため
-                // カレンダー上のインデックスと日付の関係からカレンダー上の日付の実際の月を求める
-                int actualMonth = _getActualMonth(month: month, date: targetDateList[pos],
-                    pos: pos);
-                // actualMonth≠monthとなった場合、年が前年または翌年の可能性があるため実際の年を求める
-                int actualYear = actualMonth == 12 && month == 1 ? year - 1 :
-                                  (actualMonth == 1 && month == 12 ? year + 1 : year);
-                // ISO8601形式とするため、月日を0埋めする
-                String strTargetDate = _convertISO8601(year: actualYear, month: month, date: targetDateList[pos]);
-                if (_isEvWeek(
-                    startDate, strTargetDate, interval) &&
-                    !excludeList.contains(
-                        "$actualMonth-${targetDateList[pos]}")
-                ) {
-                  resultArray[pos].add(trashName);
-                }
-              });
-            }
-            break;
-        }
-      });
-    });
-    return resultArray;
-  }
-
   bool _isEvWeek(String startDate, String targetDate, int interval) {
-    DateTime startCal = DateTime.parse(startDate);
+    // Web,Androidアプリでは日付フォーマットをyyyy-m-ddの形式で設定するが、
+    // DartのDateTime.parseではそのフォーマットがエラーとなるため数字に分解して計算する
+    List<String> startDates = startDate.split("-");
+    DateTime startCal = DateTime.utc(int.parse(startDates[0]),int.parse(startDates[1]),int.parse(startDates[2]));
     DateTime targetCal = DateTime.parse(targetDate);
     int targetWeekday = targetCal.weekday == 7 ? 0 : targetCal.weekday;
     targetCal = targetCal.add(Duration(days: -1 * targetWeekday));
@@ -287,36 +259,95 @@ class TrashDataService implements TrashDataServiceInterface {
     return '$year-$strMonth-$strDate';
   }
 
-  @override
-  TrashData? getTrashDataById(String id) {
-    for(int index=0; index<_schedule.length; index++) {
-      if(_schedule[index].id == id) {
-        return _schedule[index];
-      }
+  Future<void> _registerNewUserAndTrashDataList() async {
+    List<TrashData> localTrashList = await _trashRepository.readAllTrashData();
+    RegisterResponse? registerResponse = await _trashApiInterface
+        .registerUserAndTrashData(localTrashList);
+    if (registerResponse == null) {
+      _logger.e('Register error');
+      return;
+    } else {
+      _logger.d(
+          'Register user: ${registerResponse.id}, timestamp: ${registerResponse
+              .timestamp}');
+      await _trashRepository.updateLastUpdateTime(registerResponse.timestamp);
+      await _userService.registerUser(registerResponse.id);
+      _userService.refreshUser();
     }
-    return null;
   }
 
-  @override
-  void importTrashSchedule(List<TrashData> allTrashData, updateTime) async {
-    _trashRepository.truncateAllTrashData();
+  Future<void> _updateLocalTimestamp(int remoteTimestamp) async {
+    await _trashRepository.updateLastUpdateTime(remoteTimestamp);
+  }
 
-    List<Future<bool>> taskList = [];
-    allTrashData.forEach((trashData) {
-      taskList.add(_trashRepository.insertTrashData(trashData));
+  Future<void> _syncRemoteToLocal(List<TrashData> remoteTrashDataList, int remoteTimestamp) async {
+    await _trashRepository.updateLastUpdateTime(remoteTimestamp);
+    await _trashRepository.truncateAllTrashData();
+    List<Future> insertFutures = [];
+    remoteTrashDataList.forEach((trashData) {
+      insertFutures.add(
+          _trashRepository.insertTrashData(trashData));
     });
-    await Future.wait(taskList);
-
-    await _trashRepository.updateLastUpdateTime(updateTime);
+    await Future.wait(insertFutures);
   }
 
-  @override
-  void syncFromRemote() {
-    // TODO: implement syncFromRemote
+  Future<void> _syncTrashData() async {
+    List<TrashData> localSchedule = await _trashRepository.readAllTrashData();
+    if (localSchedule.isEmpty) {
+      _logger.w('Not update local to remote because local schedule is nothing.');
+      return;
+    }
+
+    TrashSyncResult trashSyncResult = await _trashApiInterface
+        .syncTrashData(_userService.user.id);
+    if (trashSyncResult.syncResult == SyncResult.ERROR) {
+      _logger.e('Failed sync, please try later.');
+      return;
+    }
+
+    int localTimestamp = await _trashRepository.getLastUpdateTime();
+    _logger.d('Local Timestamp=$localTimestamp');
+    if(trashSyncResult.timestamp == localTimestamp &&
+      await _trashRepository.getSyncStatus() == SyncStatus.SYNCING) {
+      if(true) {
+        var response = await _trashApiInterface.updateTrashData(
+            _userService.user.id, localSchedule, localTimestamp);
+        switch (response.updateResult) {
+          case UpdateResult.SUCCESS:
+            _logger.d("Update succeed local to remote");
+            await _updateLocalTimestamp(response.timestamp);
+            break;
+          case UpdateResult.NO_MATCH:
+          // 同期確認からアップデートの間に他のユーザーがデータを更新したケース
+            _logger.d(
+                'Local timestamp $localTimestamp is not match remote timestamp ${response
+                    .timestamp},try sync to local from remote');
+            await _syncRemoteToLocal(trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
+            await refreshTrashData();
+            break;
+          default:
+            _logger.e('Failed update to remote from local, please try later.');
+            break;
+        }
+      }
+    } else if(trashSyncResult.timestamp != localTimestamp) {
+      _logger.d(
+          'Local timestamp $localTimestamp is not match remote timestamp ${trashSyncResult.timestamp},try sync to local from remote');
+      await _syncRemoteToLocal(trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
+      await refreshTrashData();
+    } else {
+      _logger.d('Local timestamp equal remote timestamp, not exec update.');
+    }
   }
 
+
   @override
-  void syncToRemote() {
-    // TODO: implement syncToRemote
+  Future<void> syncTrashData() async {
+    if(_userService.user.id.isEmpty) {
+      _logger.d('User is empty, register new user');
+      await _registerNewUserAndTrashDataList();
+    }
+    _logger.d('Sync data');
+    await _syncTrashData();
   }
 }

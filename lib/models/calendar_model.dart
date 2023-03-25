@@ -5,7 +5,7 @@ enum SyncStatus {
 }
 
 extension SyncStatusHelper on SyncStatus {
-  SyncStatus toSyncStatus(int index) {
+  static SyncStatus toSyncStatus(int index) {
     switch(index) {
       case 0:
         return SyncStatus.NOT_YET;

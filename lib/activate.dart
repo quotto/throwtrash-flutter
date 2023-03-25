@@ -12,6 +12,7 @@ class Activate extends StatefulWidget {
 
 class _Activate extends State<Activate> {
   late ActivationModel _activationModel;
+  TextEditingController _controller = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -40,64 +41,36 @@ class _Activate extends State<Activate> {
   @override
   Widget build(BuildContext context) {
     _activationModel = Provider.of<ActivationModel>(context);
-    List<FocusNode> focusList = [];
-    for(int i=0; i<10; i++) {
-      focusList.add(FocusNode());
-    }
-    List<Flexible> CodeInputs = [];
-    for(int i=0; i<10; i++) {
-      CodeInputs.add(
-          Flexible(
-              child: KeyboardListener(
-                  onKeyEvent: ((keyEvent) {
-                    print(keyEvent.logicalKey.keyLabel) ;
-                    if(i > 0 && keyEvent is KeyDownEvent &&
-                        keyEvent.logicalKey.keyLabel == "Backspace" &&
-                        _activationModel.activateCodeChars[i] == "") {
-                      focusList[i-1].requestFocus();
-                    }
-                  }),
-                  focusNode: FocusNode(),
-                  child: TextField(
-                    enabled: _activationModel.status == ActivationStatus.NONE || _activationModel.status == ActivationStatus.FAILED,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      counterText: "",
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.black12,
-                          width: 2
-                        )
-
-                    )
-                    ),
-                    maxLength: 1,
-                    focusNode: focusList[i],
-                    keyboardType: TextInputType.number,
-                    onChanged: (value){
-                      print(value);
-                      _activationModel.setCodeValue(value, i);
-                      if(value.isNotEmpty && i <= 8) {
-                        focusList[i+1].requestFocus();
-                      }
-                    },
-                  )
-              )
-          )
-      );
-    }
     return Scaffold(
         appBar: AppBar(title: Text('スケジュールの取り込み')),
         body: Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: CodeInputs
-                )
-              ],
-            )
+          child:
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.0,32.0,16.0,16.0),
+              child: Column(
+                  children: [
+                    TextField(
+                      enabled: _activationModel.status != ActivationStatus.SENDING,
+                      controller: _controller,
+                      keyboardType: TextInputType.number,
+                      maxLength: 10,
+                      style: TextStyle(fontSize: 32.0,color: Theme.of(context).colorScheme.primary),
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                          labelText: '共有コードを入力',
+                          hintText: '10桁の数字を入力',
+                          border: OutlineInputBorder(),
+                          labelStyle: TextStyle(fontSize: 20.0)
+                      ),
+                      onChanged: (value){
+                        _activationModel.activateCode(value);
+                      },
+                    ),
+                    if(_activationModel.status == ActivationStatus.SENDING)
+                        CircularProgressIndicator()
+                  ]
+              )
+          )
         )
     );
   }

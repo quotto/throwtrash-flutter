@@ -10,11 +10,8 @@ import 'package:throwtrash/usecase/user_service.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:test/test.dart';
 
-class FirebaseFirestoreMock extends Mock implements FirebaseFirestore{}
-
 void main(){
   SharedPreferences.setMockInitialValues({});
-  FirebaseFirestoreMock mock = FirebaseFirestoreMock();
   TrashDataServiceInterface _trashDataService =
     TrashDataService(
         UserService(UserRepository()),
@@ -93,7 +90,7 @@ void main(){
       EditModel model = EditModel(_trashDataService);
       model.changeTrashType('other');
       model.changeTrashName('段ボール');
-      expect(model.trash.trash_val, '段ボール');
+      expect(model.trash.trashVal, '段ボール');
     });
   });
 }

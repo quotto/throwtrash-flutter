@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:logger/logger.dart';
+import 'package:throwtrash/models/calendar_model.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/repository/trash_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class TrashRepository implements TrashRepositoryInterface {
   static const TRASH_DATA_KEY = 'TRASH_DATA';
   static const LAST_UPDATE_TIME_KEY = 'LAST_UPDATE_TIME';
+  static const SYNC_STATUS_KEY = 'SYNC_STATUS_KEY';
   final _logger = Logger();
 
   @override
@@ -20,9 +22,10 @@ class TrashRepository implements TrashRepositoryInterface {
       return rawList.map<TrashData>((element) {
         return TrashData.fromJson(jsonDecode(element));
       }).toList();
+    } else {
+      _logger.w("Trash data is empty");
+      return [];
     }
-    _logger.w("Trash data is empty");
-    return [];
   }
 
   @override
@@ -87,24 +90,42 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<int> getLastUpdateTime() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    int? lastUpdateTimestamp = preferences.getInt(LAST_UPDATE_TIME_KEY);
-    lastUpdateTimestamp = lastUpdateTimestamp == null ? 0 : lastUpdateTimestamp;
-    _logger.d("get lastUpdateTimeStamp: $lastUpdateTimestamp");
-    return lastUpdateTimestamp;
+    int? preferenceValue = preferences.getInt(LAST_UPDATE_TIME_KEY);
+    int lastUpdateTime = preferenceValue == null ? 0 : preferenceValue;
+    _logger.d("get lastUpdateTimeStamp: $lastUpdateTime");
+    return lastUpdateTime;
   }
 
   @override
   Future<bool> updateLastUpdateTime(int updateTimestamp) async {
     _logger.d("Update lastUpdateTime: $updateTimestamp");
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    return preferences.setInt(LAST_UPDATE_TIME_KEY, updateTimestamp);
+    return await preferences.setInt(LAST_UPDATE_TIME_KEY, updateTimestamp);
   }
 
   @override
   Future<bool> truncateAllTrashData() async{
     _logger.d("truncate trash data");
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    return await preferences.remove(TRASH_DATA_KEY) && await preferences.remove(LAST_UPDATE_TIME_KEY);
+    return await preferences.remove(TRASH_DATA_KEY);
+  }
+
+  @override
+  Future<SyncStatus> getSyncStatus() async {
+    _logger.d("get sync status");
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    int? value = preferences.getInt(SYNC_STATUS_KEY);
+    if(value == null) {
+      return SyncStatus.SYNCING;
+    } else {
+      return SyncStatusHelper.toSyncStatus(value);
+    }
+  }
+
+  @override
+  Future<bool> setSyncStatus(SyncStatus syncStatus) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    return preferences.setInt(SYNC_STATUS_KEY, syncStatus.toInt());
   }
 
 }

@@ -1,4 +1,6 @@
 // 202001を想定したカレンダー日付
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -17,7 +19,7 @@ class FirebaseFirestoreMock extends Mock implements FirebaseFirestore{}
 List<int> dataSet = [29,30,31,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,1];
 
 
-void main() {
+void main() async{
   SharedPreferences.setMockInitialValues({});
   TrashDataService instance = TrashDataService(
       UserService(
@@ -27,62 +29,69 @@ void main() {
       TrashApi("")
   );
   group('getEnableTrashListByWeekday', () {
-    test('毎週（weekday）', () {
-      TrashData trash1 = TrashData('', 'burn', '',
+    test('毎週（weekday）', () async{
+      TrashData trash1 = TrashData('1', 'burn', '',
           [TrashSchedule('weekday', '1'), TrashSchedule('weekday', '2')], []);
       TrashData trash2 = TrashData(
-          '', 'bin', '', [TrashSchedule('weekday', '1')], []);
+          '2', 'bin', '', [TrashSchedule('weekday', '1')], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet);
       expect(result[8].length, 2);
-      expect(result[8][0], 'もえるゴミ');
-      expect(result[8][1], 'ビン');
+      expect(result[8][0].type, 'burn');
+      expect(result[8][1].type, 'bin');
       expect(result[9].length, 1);
       expect(result[10].length, 0,);
     });
-    test('毎月〇日（month）', () {
+    test('毎月〇日（month）', () async {
       TrashData trash1 = TrashData(
-          '', 'unburn', '',
+          '1', 'unburn', '',
           [TrashSchedule('month', '3'), TrashSchedule('month', '29')], []
       );
       TrashData trash2 = TrashData(
-          '', 'other', '家電', [TrashSchedule('month', '3')], []);
+          '2', 'other', '家電', [TrashSchedule('month', '3')], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet);
       expect(result[5].length, 2);
-      expect(result[5][0], 'もえないゴミ');
-      expect(result[5][1], '家電');
+      expect(result[5][0].type, 'unburn');
+      expect(result[5][1].type, 'other');
+      expect(result[5][1].trashVal, '家電');
       expect(result[0].length, 1);
       expect(result[31].length, 1);
-      expect(result[0][0], 'もえないゴミ');
+      expect(result[0][0].type, 'unburn');
     });
-    test('第〇△曜日（biweek）', () {
+    test('第〇△曜日（biweek）', () async {
       TrashData trash1 = TrashData(
-          '', 'plastic', '',
+          '1', 'plastic', '',
           [TrashSchedule('biweek', '0-3'), TrashSchedule('biweek', '6-1')], []
       );
       TrashData trash2 = TrashData(
-          '', 'petbottle', '', [TrashSchedule('biweek', '0-3')], []);
+          '2', 'petbottle', '', [TrashSchedule('biweek', '0-3')], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet);
       expect(result[21].length, 2);
-      expect(result[21][0], 'プラスチック');
-      expect(result[21][1], 'ペットボトル');
+      expect(result[21][0].type, 'plastic');
+      expect(result[21][1].type, 'petbottle');
       expect(result[6].length, 1);
       expect(result[34].length, 1);
-      expect(result[34][0], 'プラスチック');
+      expect(result[34][0].type, 'plastic');
     });
-    test('隔週(evweek)でinterval=2', () {
-      TrashData trash1 = TrashData('', 'can', '', [
+    test('隔週(evweek)でinterval=2', () async {
+      TrashData trash1 = TrashData('1', 'can', '', [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 2}),
         TrashSchedule(
@@ -90,36 +99,44 @@ void main() {
       ],
           []
       );
-      TrashData trash2 = TrashData('', 'paper', '', [
+      TrashData trash2 = TrashData('2', 'paper', '', [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 2})
       ], []);
 
       // intervalの無いevweekはinterval=2として処理される
-      TrashData trash3 = TrashData('', 'burn', '', [
+      TrashData trash3 = TrashData('3', 'burn', '', [
         TrashSchedule(
             'evweek', {'weekday': '4', 'start': '2020-01-05'})
       ], []);
 
-      instance.schedule = [trash1, trash2, trash3];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
+          [
+            jsonEncode(trash1.toJson()),
+            jsonEncode(trash2.toJson()),
+            jsonEncode(trash3.toJson())
+          ]
+      );
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet
       );
 
       expect(result[10].length, 2);
-      expect(result[10][0], 'カン');
+      expect(result[10][0].type, 'can');
       expect(result[24].length, 2);
-      expect(result[24][1], '古紙');
+      expect(result[24][1].type, 'paper');
       expect(result[25].length, 1);
-      expect(result[25][0], 'もえるゴミ');
+      expect(result[25][0].type, 'burn');
       expect(result[14].length, 1);
       expect(result[28].length, 1);
       expect(result[0].length, 1);
-      expect(result[0][0], 'カン');
+      expect(result[0][0].type, 'can');
     });
-    test('隔週(evweek)でinterval=3', () {
-      TrashData trash1 = TrashData('', 'resource', '', [
+    test('隔週(evweek)でinterval=3', () async {
+      TrashData trash1 = TrashData('1', 'resource', '', [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3}),
         TrashSchedule(
@@ -127,29 +144,31 @@ void main() {
       ],
           []
       );
-      TrashData trash2 = TrashData('', 'coarse', '', [
+      TrashData trash2 = TrashData('2', 'coarse', '', [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3})
       ], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet
       );
 
       expect(result[10].length, 2);
       expect(result[31].length, 2);
-      expect(result[10][0], '資源ごみ');
-      expect(result[31][1], '粗大ごみ');
+      expect(result[10][0].type, 'resource');
+      expect(result[31][1].type, 'coarse');
       expect(result[0].length, 0);
       expect(result[14].length, 1);
-      expect(result[14][0], '資源ごみ');
+      expect(result[14][0].type, 'resource');
       expect(result[21].length, 0);
       expect(result[28].length, 0);
     });
-    test('隔週(evweek)でinterval=4', () {
-      TrashData trash1 = TrashData('', 'resource', '', [
+    test('隔週(evweek)でinterval=4', () async {
+      TrashData trash1 = TrashData('1', 'resource', '', [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4}),
         TrashSchedule(
@@ -157,97 +176,106 @@ void main() {
       ],
           []
       );
-      TrashData trash2 = TrashData('', 'coarse', '', [
+      TrashData trash2 = TrashData('2', 'coarse', '', [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4})
       ], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet
       );
 
       expect(result[3].length, 2);
       expect(result[31].length, 2);
-      expect(result[3][0], '資源ごみ');
-      expect(result[31][1], '粗大ごみ');
+      expect(result[3][0].type, 'resource');
+      expect(result[31][1].type, 'coarse');
       expect(result[0].length, 1);
-      expect(result[0][0], '資源ごみ');
+      expect(result[0][0].type, 'resource');
       expect(result[14].length, 0);
       expect(result[28].length, 1);
-      expect(result[28][0], '資源ごみ');
+      expect(result[28][0].type, 'resource');
     });
-    test('weekdayに対するExcludeDate設定',(){
-      TrashData trash1 = TrashData('','unburn', '', [
+    test('weekdayに対するExcludeDate設定',() async {
+      TrashData trash1 = TrashData('1','unburn', '', [
         TrashSchedule('weekday','2'),TrashSchedule('weekday', '6')
       ],[ExcludeDate(12, 31),ExcludeDate(1, 7), ExcludeDate(2, 1)]);
 
       //trash3の比較用でExcludeDate以外同じスケジュール
-      TrashData trash2 = TrashData('','plastic', '', [
+      TrashData trash2 = TrashData('2','plastic', '', [
         TrashSchedule('weekday','2'),TrashSchedule('weekday', '6')
       ],[]);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(year: 2020, month: 1, targetDateList: dataSet);
+      List<List<TrashData>> result = instance.getEnableTrashList(year: 2020, month: 1, targetDateList: dataSet);
       expect(result[2].length, 1);
       expect(result[9].length, 1);
       expect(result[34].length ,1);
     });
-    test('monthに対するExcludeDate',(){
-      TrashData trash1 = TrashData('', 'burn', '', [
+    test('monthに対するExcludeDate',() async {
+      TrashData trash1 = TrashData('1', 'burn', '', [
         TrashSchedule('month', '29'),TrashSchedule('month', '1')
       ],[ExcludeDate(12, 29), ExcludeDate(1, 1), ExcludeDate(1, 1), ExcludeDate(2, 1)]);
       TrashData trash2 = TrashData('', 'burn', '', [
         TrashSchedule('month', '29'),TrashSchedule('month', '1')
       ],[]);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(year: 2020, month: 1, targetDateList: dataSet);
+      List<List<TrashData>> result = instance.getEnableTrashList(year: 2020, month: 1, targetDateList: dataSet);
       expect(result[0].length, 1);
       expect(result[3].length, 1);
       expect(result[34].length, 1);
     });
-    test('biweekに対するExcludeDate設定',()
-    {
-      TrashData trash1 = TrashData('id', 'burn', '', [
+    test('biweekに対するExcludeDate設定',() async {
+      TrashData trash1 = TrashData('1', 'burn', '', [
         TrashSchedule('biweek', '1-1'),
         TrashSchedule('biweek', '0-5'),
         TrashSchedule('biweek', '6-1')
       ], [ExcludeDate(12, 29), ExcludeDate(1, 6), ExcludeDate(2, 1)]);
       // ExcludeDate以外はtrash1と同じデータ
-      TrashData trash2 = TrashData('id', 'burn', '', [
+      TrashData trash2 = TrashData('2', 'burn', '', [
         TrashSchedule('biweek', '1-1'),
         TrashSchedule('biweek', '0-5'),
         TrashSchedule('biweek', '6-1')
       ], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet);
       expect(result[8].length, 1);
       expect(result[0].length, 1);
       expect(result[34].length, 1);
     });
-    test('evweekに対する除外設定',(){
-      TrashData trash1 = TrashData('id', 'paper', '', [
+    test('evweekに対する除外設定',() async {
+      TrashData trash1 = TrashData('1', 'paper', '', [
         TrashSchedule('evweek', {'start': '2019-12-29', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2020-01-19', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
       ], [ExcludeDate(12, 29), ExcludeDate(1, 4), ExcludeDate(2, 1)]);
       // ExcludeDate以外はtrash1と同じデータ
-      TrashData trash2 = TrashData('id', 'paper', '', [
+      TrashData trash2 = TrashData('2', 'paper', '', [
         TrashSchedule('evweek', {'start': '2019-12-29', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2020-01-19', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
       ],[]);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      await instance.refreshTrashData();
 
-      List<List<String>> result = instance.getEnableTrashList(
+      List<List<TrashData>> result = instance.getEnableTrashList(
           year: 2020, month: 1, targetDateList: dataSet);
       expect(result[0].length, 1);
       expect(result[6].length, 1);
@@ -255,32 +283,41 @@ void main() {
 
     });
   });
-  group('getTodaysTrash',(){
-    test('weekday/month',()
-    {
-      TrashData trash1 = TrashData('', 'burn', '', [
+  group('getTodaysTrash',() {
+    test('weekday/month',() async {
+      TrashData trash1 = TrashData('1', 'burn', '', [
         TrashSchedule('weekday', '3'), TrashSchedule('month', '5')
       ], []);
-      TrashData trash2 = TrashData('', 'other', '家電', [
+      TrashData trash2 = TrashData('2', 'other', '家電', [
         TrashSchedule('biweek', '3-1')], []);
-      TrashData trash3 = TrashData('', 'bin', '', [
+      TrashData trash3 = TrashData('3', 'bin', '', [
         TrashSchedule(
             'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
         TrashSchedule(
             'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
       ], []);
-      TrashData trash4 = TrashData('', 'paper', '', [
+      TrashData trash4 = TrashData('4', 'paper', '', [
         TrashSchedule(
             'evweek', {'start': '2020-03-08', 'weekday': '0', 'interval': 3})
       ], []);
-      TrashData trash5 = TrashData('', 'petbottle', '', [
+      TrashData trash5 = TrashData('5', 'petbottle', '', [
         TrashSchedule(
             'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
         TrashSchedule(
             'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
       ], []);
 
-      instance.schedule = [trash1, trash2, trash3, trash4, trash5];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
+          [
+            jsonEncode(trash1.toJson()),
+            jsonEncode(trash2.toJson()),
+            jsonEncode(trash3.toJson()),
+            jsonEncode(trash4.toJson()),
+            jsonEncode(trash5.toJson())
+          ]
+      );
+      await instance.refreshTrashData();
 
       List<TrashData> result1 = instance.getTrashOfToday(
           year: 2020, month: 3, date: 4);
@@ -306,18 +343,27 @@ void main() {
       expect(result4.length, 1);
       expect(result4[0].type, 'paper');
     });
-    test('biweek',() {
-      TrashData trash1 = TrashData('', 'burn', '', [
+    test('biweek',() async {
+      TrashData trash1 = TrashData('1', 'burn', '', [
         TrashSchedule('biweek','1-1')
       ], []);
-      TrashData trash2 = TrashData('', 'bottle', '',[
+      TrashData trash2 = TrashData('2', 'bottle', '',[
         TrashSchedule('biweek', '2-2')
       ],[]);
-      TrashData trash3 = TrashData('', 'paper', '', [
+      TrashData trash3 = TrashData('3', 'paper', '', [
         TrashSchedule('biweek', '3-5')
       ], []);
 
-      instance.schedule = [trash1, trash2, trash3];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
+          [
+            jsonEncode(trash1.toJson()),
+            jsonEncode(trash2.toJson()),
+            jsonEncode(trash3.toJson())
+          ]
+      );
+      await instance.refreshTrashData();
+
       List<TrashData> result1 = instance.getTrashOfToday(year: 2020, month: 9, date: 7);
       expect(result1.length, 1);
       expect(result1[0].type, 'burn');
@@ -333,7 +379,7 @@ void main() {
       expect(result4.length, 1);
       expect(result4[0].type, 'paper');
     });
-    test('exclude',() {
+    test('exclude',() async {
       TrashData trash1 = TrashData('id', 'burn', '', [
         TrashSchedule('weekday', '3'),TrashSchedule('month', '5')
       ], [ExcludeDate(3, 4)]);
@@ -342,7 +388,11 @@ void main() {
         TrashSchedule('evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4}),
       ], []);
 
-      instance.schedule = [trash1, trash2];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
+          [jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]
+      );
+      await instance.refreshTrashData();
 
       // 3月4日は除外設定されているためburnは設定されない
       List<TrashData> result = instance.getTrashOfToday(year: 2020, month: 3, date: 4);

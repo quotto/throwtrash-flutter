@@ -1,11 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:throwtrash/exclude_date.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:provider/provider.dart';
 import 'package:throwtrash/viewModels/exclude_date_model.dart';
+
+
+Logger _logger = Logger();
 
 class EditItemMain extends StatefulWidget {
   String _id = "";
@@ -40,12 +44,14 @@ class _EditItemMainState extends State<EditItemMain> {
   );
 
 
-  final Map<String, String> _ScheduleTypes = {
-    'weekday': '毎週',
-    'month': '毎月',
-    'biweek': '第〇△曜日',
-    'evweek': '隔週'
+  final Map<String, Widget> _ScheduleTypeToggles = {
+    "weekday":Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('毎週', textAlign: TextAlign.center)),
+    "month":  Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('毎月同じ日', textAlign: TextAlign.center)),
+    "biweek": Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('特定の週', textAlign: TextAlign.center)),
+    "evweek": Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('隔週', textAlign: TextAlign.center)),
   };
+
+
 
   final List<String> _WeekdayList = [
     '日曜日',
@@ -205,28 +211,21 @@ class _EditItemMainState extends State<EditItemMain> {
                 : Theme.of(context).canvasColor),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  // children: [1,2,3].map((v)=>Text(v.toString())).toList()
-                  children: _ScheduleTypes.keys.map<Row>((key) {
-                    return Row(children: [
-                      Radio(
-                        value: '$key-$scheduleNumber',
-                        groupValue: '${schedule.type}-$scheduleNumber',
-                        onChanged: (String? selectedValue) {
-                          if (selectedValue != null) {
-                            String selectedScheduleType =
-                            selectedValue.split('-')[0];
-                            model.changeScheduleType(
-                                scheduleNumber, selectedScheduleType);
-                          }
-                        },
-                        activeColor: Theme.of(context).primaryColor,
-                      ),
-                      Text(_ScheduleTypes[key]!)
-                    ]);
-                  }).toList()),
+              Container(
+                constraints: BoxConstraints(
+                  minWidth: MediaQuery.of(context).size.width
+                ),
+                padding: EdgeInsets.fromLTRB(0,16,0,0),
+                        child: CupertinoSegmentedControl<String>(
+                      children: _ScheduleTypeToggles,
+                      onValueChanged: ((String newValue){
+                        model.changeScheduleType(scheduleNumber, newValue) ;
+                      }),
+                      groupValue: model.schedules[scheduleNumber].type,
+                )
+              ),
               Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -246,7 +245,7 @@ class _EditItemMainState extends State<EditItemMain> {
                         child: IconButton(
                           icon: Icon(Icons.delete_forever),
                           iconSize: 32,
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           onPressed: () => model.removeSchedule(scheduleNumber),
                         ))
                       )
@@ -274,8 +273,11 @@ class _EditItemMainState extends State<EditItemMain> {
       ));
     }
 
-    return ListView(
-      children: children,
+    return Expanded(
+        flex: 1,
+        child: ListView(
+          children: children
+        )
     );
   }
 
@@ -311,19 +313,19 @@ class _EditItemMainState extends State<EditItemMain> {
                             editModel.changeTrashType(newValue);
                           }
                         },
-                        items: TrashDataService.TrashNameMap.keys
+                        items: TrashDataService.trashNameMap.keys
                             .map<DropdownMenuItem<String>>((key) {
                           return DropdownMenuItem<String>(
                               value: key,
                               child: Text(
-                                  TrashDataService.TrashNameMap.containsKey(key)
-                                      ? TrashDataService.TrashNameMap[key]!
+                                  TrashDataService.trashNameMap.containsKey(key)
+                                      ? TrashDataService.trashNameMap[key]!
                                       : ''));
                         }).toList(),
                         style: TextStyle(
                             fontSize: 24,
                             color:
-                                Theme.of(context).textTheme.bodyText1!.color),
+                                Theme.of(context).textTheme.bodyLarge!.color),
                         underline: Container(
                             height: 2, color: Theme.of(context).primaryColor),
                       ),
@@ -349,7 +351,7 @@ class _EditItemMainState extends State<EditItemMain> {
                                 },
                               )))
                     ]),
-                Expanded(child: _allScheduleList(editModel.schedules)),
+                _allScheduleList(editModel.schedules),
                 Container(
                   padding: EdgeInsets.only(bottom: 32.0),
                   alignment: Alignment.center,

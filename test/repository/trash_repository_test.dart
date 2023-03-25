@@ -23,7 +23,7 @@ void main() {
       expect(resultData.length, 1);
       expect(resultData[0].id, '001');
       expect(resultData[0].type, 'other');
-      expect(resultData[0].trash_val, '生ごみ');
+      expect(resultData[0].trashVal, '生ごみ');
       expect(resultData[0].schedules.length, 1);
       expect(resultData[0].schedules[0].type, 'weekday');
       expect(resultData[0].schedules[0].value, '0');
@@ -79,7 +79,7 @@ void main() {
       expect(result, true);
 
       trashData.type = 'burn';
-      trashData.trash_val = '';
+      trashData.trashVal = '';
 
       bool result2 = await repository.updateTrashData(trashData);
       expect(result2, true);
@@ -87,7 +87,7 @@ void main() {
       List<TrashData> resultData = await repository.readAllTrashData();
       expect(resultData.length, 1);
       expect(resultData[0].type, 'burn');
-      expect(resultData[0].trash_val, '');
+      expect(resultData[0].trashVal, '');
       // 他の項目は変わっていないこと
       expect(resultData[0].id, '001');
       expect(resultData[0].schedules[0].type, 'weekday');
@@ -114,7 +114,7 @@ void main() {
       await repository.insertTrashData(trashData3);
 
       trashData2.type = 'plastic';
-      trashData2.trash_val = '';
+      trashData2.trashVal = '';
 
       bool result = await repository.updateTrashData(trashData2);
       expect(result, true);

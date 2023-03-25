@@ -12,13 +12,13 @@ import 'package:throwtrash/share.dart';
 import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
+import 'package:throwtrash/viewModels/account_link_model.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/alarm.dart';
 import 'package:throwtrash/edit.dart';
 import 'package:throwtrash/list.dart';
-import 'package:throwtrash/models/account_link_info.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/repository/account_link_api.dart';
 import 'package:throwtrash/repository/account_link_api_interface.dart';
@@ -204,7 +204,7 @@ class MyApp extends StatelessWidget {
           // Application theme data, you can set the colors for the application as
           // you want
           theme: ThemeData(
-              primarySwatch: Colors.blue, accentColor: Colors.pinkAccent),
+              colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.pinkAccent)),
           // A widget which will be started on application startup
           home: ChangeNotifierProvider<CalendarModel>(
               create: (context) => CalendarModel(
@@ -227,6 +227,18 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   final Color _saturdayColor = Colors.blue;
   final Color _notThisMonthColor = Colors.grey[300]!;
   final List<String> _weekdayLabel = ['日', '月', '火', '水', '木', '金', '土'];
+  final Map<String, Color> _trashColorMap = {
+  "burn": Colors.red,
+  "unburn": Colors.blue,
+  "plastic": Colors.green,
+  "bin": Colors.orange,
+  "can": Colors.pink,
+  "petbottle": Colors.lightGreen,
+  "paper": Colors.brown,
+  "resource": Colors.teal,
+  "coarse": Colors.deepOrangeAccent,
+  "other": Colors.grey,
+  };
   PageController controller = PageController(initialPage: 0);
   late StreamSubscription _sub;
 
@@ -248,7 +260,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       String? code = link?.queryParameters["code"];
       String? state = link?.queryParameters["state"];
       if(code != null && state != null) {
-        service.enableSkill(code, state);
+        AccountLinkModel accountLinkModel = AccountLinkModel(service);
+        accountLinkModel.prepareAccountLink(code).then((_) {
+          Navigator.push(context,MaterialPageRoute(builder: (context)=>
+            Provider<AccountLinkModel>(create: (context)=>accountLinkModel,child: AccountLink())
+          ));
+        });
       } else {
         _logger.e("receive url is invalid");
       }
@@ -318,7 +335,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         }
       }
     });
-    super.initState();
+    calendarModel.reload();
   }
 
   void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
@@ -329,7 +346,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   Flexible _flexibleRowWeek(
-      int week, List<int> dateList, List<List<String>> trashList) {
+      int week, List<int> dateList, List<List<DisplayTrashData>> trashList) {
     List<Widget> calendarCellColumn = [];
     dateList.asMap().forEach((index, date) {
       calendarCellColumn.add(Expanded(
@@ -350,16 +367,16 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           ? _sundayColor
                           : (index == 6
                           ? _saturdayColor
-                          : Theme.of(context).textTheme.bodyText1!.color)),
+                          : Theme.of(context).textTheme.bodyLarge!.color)),
                 ),
                 Wrap(runSpacing: 6.0, children: [
                   for (int i = 0; i < trashList[index].length; i++)
                     Container(
                         decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: _trashColorMap[trashList[index][i].trashType],
                             borderRadius: BorderRadius.circular(6)),
                         alignment: Alignment.topCenter,
-                        child: Text(trashList[index][i],
+                        child: Text(trashList[index][i].trashName,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 8,
@@ -381,7 +398,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   Column _calendarColumn(
-      List<int> allDateList, List<List<String>> allTrashList) {
+      List<int> allDateList, List<List<DisplayTrashData>> allTrashList) {
     Flexible week1 = _flexibleRowWeek(
         1, allDateList.sublist(0, 7), allTrashList.sublist(0, 7));
     Flexible week2 = _flexibleRowWeek(
@@ -410,7 +427,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                   ? _saturdayColor
                                   : Theme.of(context)
                                   .textTheme
-                                  .bodyText1!
+                                  .bodyLarge!
                                   .color))));
                 }).toList()),
           )),
@@ -453,7 +470,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                             context,
                                             listen: false),
                                       ),
-                                      child: EditItemMain()))).then((result) {
+                                      child: EditItemMain()))
+                      ).then((result) {
                         if (result != null && result) {
                           calendar.reload();
                         }
@@ -476,7 +494,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                       Provider.of<TrashDataServiceInterface>(
                                           context,
                                           listen: false)),
-                                  child: TrashList()))).then((result) {
+                                  child: TrashList()))
+                      ).then((result) {
                         calendar.reload();
                       });
                     }),
@@ -521,31 +540,28 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         padding: const EdgeInsets.all(1.0),
                         child: Icon(Icons.speaker)),
                     onTap: () async {
-                      AccountLinkServiceInterface service = Provider.of<AccountLinkServiceInterface>(context,listen: false);
-                      service.startLink().then((accountLinkInfo) {
-                        Navigator.of(context).pop();
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) =>
-                                Provider<AccountLinkInfo>(
-                                    create: (context) =>
-                                    accountLinkInfo,
-                                    child: AccountLink()
-                                )
-                            )
-                        );
-                      }).catchError((onError){
-                        _logger.e(onError);
+                      AccountLinkModel accountLinkModel = AccountLinkModel(
+                        Provider.of<AccountLinkServiceInterface>(context, listen: false)
+                      );
+                      accountLinkModel.addListener(() {
+                        if(accountLinkModel.accountLinkType == AccountLinkType.iOS) {
+                          launchUrl(Uri.parse(accountLinkModel.accountLinkInfo.linkUrl));
+                        } else {
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) =>
+                                  Provider<AccountLinkModel>(
+                                      create: (context) =>
+                                      accountLinkModel,
+                                      child: AccountLink()
+                                  )
+                              )
+                          );
+                        }
                       });
+                      accountLinkModel.startLink();
                     }),
-    // ConfigInterface config =  Provider.of<ConfigInterface>(context,listen: false);
-    // AccountLinkRepositoryInterface repo = AccountLinkRepository();
-    // AccountLinkApiInterface api = AccountLinkApi(config.mobileApiEndpoint);
-                      // UserRepositoryInterface userRepo = UserRepository();
-                      // AccountLinkServiceInterface _accountLinkService = AccountLinkService(config,api,repo,userRepo);
-                      // AccountLinkInfo info = await _accountLinkService.startLink();
-                      // launchUrl(Uri.parse(info.linkUrl),mode: LaunchMode.externalApplication);
-                    // }),
                 ListTile(
                   title: Text("ユーザー情報"),
                   leading: Padding(
@@ -588,7 +604,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ],
             ),
           ),
-          body: Column(children: [
+          body: RefreshIndicator(
+            onRefresh: () async {calendar.reload();},
+            child: Column(children: [
             Flexible(
                 flex: 5,
                 child: PageView(
@@ -599,7 +617,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         calendar.calendarsTrashList[index]);
                   }).toList(),
                 )),
-          ]));
+          ]
+            )));
     });
   }
 }

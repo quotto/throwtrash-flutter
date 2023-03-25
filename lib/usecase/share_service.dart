@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:throwtrash/models/activate_response.dart';
+import 'package:throwtrash/models/trash_data_response.dart';
 import 'package:throwtrash/models/trash_response.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/repository/activation_api_interface.dart';
@@ -18,12 +22,17 @@ class ShareService implements ShareServiceInterface {
 
   @override
   Future<bool> importSchedule(String activationCode) async {
-    TrashResponse? trashResponse = await this._activationApi.requestAuthorizationActivationCode(activationCode);
-    if(trashResponse != null) {
-      // TODO 全てのスケジュールを差し替えるためTrashDataServiceを呼び出す
+    ActivateResponse? activateResponse = await this._activationApi.requestAuthorizationActivationCode(activationCode, _userService.user.id);
+    if(activateResponse != null) {
+      await _trashRepository.truncateAllTrashData();
+      List<Future> insertList = [];
+      (jsonDecode(activateResponse.description) as List<dynamic>).forEach((element) {
+        insertList.add(_trashRepository.insertTrashData(TrashDataResponse.fromJson(element).toTrashData()));
+      });
+      await Future.wait(insertList);
+      return await _trashRepository.updateLastUpdateTime(activateResponse.timestamp);
     }
-    // TODO あとで消す
-    return true;
+    return false;
   }
 
 }

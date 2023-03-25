@@ -1,17 +1,17 @@
-import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'trash_response.g.dart';
 
-@JsonSerializable(explicitToJson: true)
+@JsonSerializable()
 class TrashResponse {
-  @JsonKey(name: "id")
-  String userId;
+  String id;
   String description;
-  String platform;
   int timestamp;
+  String platform;
+  @JsonKey(name: "shared_id")
+  String? sharedId;
 
-  TrashResponse(this.userId,this.description,this.platform,this.timestamp);
+  TrashResponse(this.id, this.description,this.platform, this.sharedId, this.timestamp);
   factory TrashResponse.fromJson(Map<String,dynamic> json) => _$TrashResponseFromJson(json);
   Map<String,dynamic> toJson() => _$TrashResponseToJson(this);
 }

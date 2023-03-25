@@ -53,7 +53,9 @@ class AlarmService implements AlarmServiceInterface {
     String message = "今日出せるゴミはありません";
     if(allTrashData.isNotEmpty) {
       List<String> trashNameList = allTrashData.map((trashData){
-        String trashName = _trashDataService.getTrashName(type: trashData.type, trashVal: trashData.trash_val);
+        String trashName = _trashDataService.getTrashName(type: trashData.type,
+            trashVal: trashData.trashVal
+        );
         return trashName;
       }).toList();
       message = trashNameList.join("\n");

@@ -6,6 +6,8 @@ import 'package:throwtrash/models/trash_response.dart';
 import 'package:throwtrash/repository/activation_api_interface.dart';
 import 'package:throwtrash/repository/config_interface.dart';
 
+import '../models/activate_response.dart';
+
 class ActivationApi implements ActivationApiInterface{
   final ConfigInterface _config;
   final Logger _logger = Logger();
@@ -29,14 +31,14 @@ class ActivationApi implements ActivationApiInterface{
   }
 
   @override
-  Future<TrashResponse?> requestAuthorizationActivationCode(String code) async{
+  Future<ActivateResponse?> requestAuthorizationActivationCode(String code, String userId) async{
     Uri endpointUri = Uri.parse(
-      this._config.mobileApiEndpoint + "/activate?code=$code"
+      this._config.mobileApiEndpoint + "/activate?code=$code&user_id=$userId"
     );
     http.Response response = await http.get(endpointUri);
     if(response.statusCode == 200) {
-      TrashResponse trashResponse = TrashResponse.fromJson(jsonDecode(response.body));
-      return trashResponse;
+      ActivateResponse activateResponse = ActivateResponse.fromJson(jsonDecode(response.body));
+      return activateResponse;
     }
     _logger.e("Error request authorization code");
     _logger.e(response.body);

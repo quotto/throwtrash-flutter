@@ -1,10 +1,18 @@
-
 import 'package:flutter/widgets.dart';
+import 'package:logger/logger.dart';
 import 'package:throwtrash/usecase/calendar_usecase.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 
+import '../models/trash_data.dart';
+
+class DisplayTrashData {
+    DisplayTrashData(this.trashType,this.trashName);
+    final String trashType;
+    final String trashName;
+}
 class CalendarModel extends ChangeNotifier {
-    List<List<List<String>>> _calendarsTrashList = [];
+    Logger _logger = Logger();
+    List<List<List<DisplayTrashData>>> _calendarsTrashList = [];
     List<List<int>> _calendarsDateList = [];
 
     int _year = 0;
@@ -24,7 +32,7 @@ class CalendarModel extends ChangeNotifier {
 
     int get currentPage => _currentPage;
 
-    List<List<List<String>>> get calendarsTrashList => _calendarsTrashList;
+    List<List<List<DisplayTrashData>>> get calendarsTrashList => _calendarsTrashList;
 
     List<List<int>> get calendarsDateList => _calendarsDateList;
 
@@ -50,15 +58,14 @@ class CalendarModel extends ChangeNotifier {
                 _calendarsDateList.add(tmpCalendarDate);
 
                 _calendarsTrashList.add(
-                    _trashDataService.getEnableTrashList(
-                        year: tmpYear,
-                        month: tmpMonth,
-                        targetDateList: tmpCalendarDate
+                    _getDisplayTrashList(
+                        tmpYear,
+                        tmpMonth,
+                        tmpCalendarDate
                     )
                 );
             }
             notifyListeners();
-            print('CalendarModel initialized');
         });
     }
 
@@ -86,10 +93,10 @@ class CalendarModel extends ChangeNotifier {
             print(tmpCalendarDate);
 
             _calendarsTrashList.add(
-                _trashDataService.getEnableTrashList(
-                    year: nextYear,
-                    month: nextMonth,
-                    targetDateList: tmpCalendarDate
+                _getDisplayTrashList(
+                    nextYear,
+                    nextMonth,
+                    tmpCalendarDate
                 )
             );
 
@@ -135,10 +142,8 @@ class CalendarModel extends ChangeNotifier {
 
             _calendarsDateList.insert(0, tmpCalendarDate);
             _calendarsTrashList.insert(
-                0, _trashDataService.getEnableTrashList(
-                year: beforeYear,
-                month: beforeMonth,
-                targetDateList: tmpCalendarDate
+                0, _getDisplayTrashList(
+                beforeYear, beforeMonth, tmpCalendarDate
             )
             );
             // 現在ページより前に追加されため_currentPageを+1する
@@ -148,20 +153,41 @@ class CalendarModel extends ChangeNotifier {
     }
 
     void reload() {
-        for(int index=0; index<_calendarsDateList.length; index++) {
-            int sub = index - _currentPage;
-            int targetMonth = _month + sub;
-            int targetYear = _year;
-            if(targetMonth > 12) {
-                targetMonth = targetMonth - 12;
-                targetYear++;
-            } else if(targetMonth < 1) {
-                targetMonth = 12 - targetMonth;
-                targetYear--;
+        _trashDataService.syncTrashData().then((_) {
+            for (int index = 0; index < _calendarsDateList.length; index++) {
+                int sub = index - _currentPage;
+                int targetMonth = _month + sub;
+                int targetYear = _year;
+                if (targetMonth > 12) {
+                    targetMonth = targetMonth - 12;
+                    targetYear++;
+                } else if (targetMonth < 1) {
+                    targetMonth = 12 - targetMonth;
+                    targetYear--;
+                }
+                _calendarsTrashList[index] = _getDisplayTrashList(
+                    targetYear, targetMonth, _calendarsDateList[index ]);
             }
-            _calendarsTrashList[index] = _trashDataService.getEnableTrashList(
-                year: targetYear, month: targetMonth, targetDateList: _calendarsDateList[index]);
-        }
-        notifyListeners();
+            _logger.d("reload complete");
+            notifyListeners();
+        });
+    }
+
+    Future<void> syncAndReload() async {
+
+    }
+
+    List<List<DisplayTrashData>> _getDisplayTrashList(int year, int month, List<int> dateList) {
+        return _trashDataService.getEnableTrashList(
+            year: year,
+            month: month,
+            targetDateList: dateList
+        ).map((List<TrashData> weekList) =>
+            weekList.map((TrashData trashData)=>
+                DisplayTrashData(trashData.type, _trashDataService.getTrashName(
+                    type: trashData.type, trashVal: trashData.trashVal
+                ))
+            ).toList()
+        ).toList();
     }
 }

@@ -51,7 +51,7 @@ class EditModel extends ChangeNotifier {
   void changeTrashType(String changedTrashType) {
     _trashData.type = changedTrashType;
     if(changedTrashType != 'other') {
-      _trashData.trash_val = '';
+      _trashData.trashVal = '';
     }
 
     notifyListeners();
@@ -60,7 +60,7 @@ class EditModel extends ChangeNotifier {
   void changeTrashName(String changedTrashName) {
     // この処理ではViewに変更を通知しない…本当か？
     if(_trashData.type == 'other') {
-      _trashData.trash_val = changedTrashName;
+      _trashData.trashVal = changedTrashName;
     }
   }
 

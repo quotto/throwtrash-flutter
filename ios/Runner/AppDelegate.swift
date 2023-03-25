@@ -8,6 +8,10 @@ import workmanager
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // Universal link settings
+//     if let userActivity = userActivity,userActivity.activityType == NSUserActivityTypeBrowsingWeb, let url = userActivity.webpageURL {
+//         CustomURLSchemeHandler.storedUrl = url.absoluteString
+//     }
     // flutter local notification settings
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
