@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../models/account_link_info.dart';
+import '../usecase/url_launcher_interface.dart';
 
 enum AccountLinkType {
   iOS,
@@ -24,7 +24,8 @@ extension AccountLinkTypeExtension on AccountLinkType {
 
 class AccountLinkModel extends ChangeNotifier {
   late AccountLinkServiceInterface _accountLinkService;
-  AccountLinkModel(this._accountLinkService);
+  late UrlLauncherInterface _urlLauncher;
+  AccountLinkModel(this._accountLinkService, this._urlLauncher);
 
   late AccountLinkInfo _accountLinkInfo;
   AccountLinkInfo get accountLinkInfo => _accountLinkInfo;
@@ -41,7 +42,7 @@ class AccountLinkModel extends ChangeNotifier {
   }
 
   Future<void> startLink() async {
-    if (!await canLaunchUrl(Uri.parse(
+    if (!await _urlLauncher.canLaunchUrl(Uri.parse(
         "https://alexa.amazon.com/spa/skill-account-linking-consent"))) {
       _accountLinkType = AccountLinkType.Web;
     }

@@ -11,6 +11,7 @@ import 'package:throwtrash/repository/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
 import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
+import 'package:throwtrash/usecase/url_launcher_service.dart';
 import 'package:throwtrash/user_info.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
 import 'package:uni_links/uni_links.dart';
@@ -32,7 +33,7 @@ import 'package:throwtrash/usecase/account_link_service.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import 'package:throwtrash/usecase/alarm_service.dart';
 import 'package:throwtrash/usecase/alarm_service_interface.dart';
-import 'package:throwtrash/usecase/calendar_usecase.dart';
+import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service.dart';
@@ -194,8 +195,7 @@ class MyApp extends StatelessWidget {
           Provider<ShareServiceInterface>(create: (context) => ShareService(
               _activationApi,
               _userService,
-              _trashRepository,
-              _trashDataService
+              _trashRepository
           ))
         ],
         child: MaterialApp(
@@ -208,7 +208,7 @@ class MyApp extends StatelessWidget {
           // A widget which will be started on application startup
           home: ChangeNotifierProvider<CalendarModel>(
               create: (context) => CalendarModel(
-                  CalendarUseCase(),
+                  CalendarService(),
                   Provider.of<TrashDataServiceInterface>(context,
                       listen: false)),
               child: CalendarWidget()),
@@ -260,7 +260,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       String? code = link?.queryParameters["code"];
       String? state = link?.queryParameters["state"];
       if(code != null && state != null) {
-        AccountLinkModel accountLinkModel = AccountLinkModel(service);
+        AccountLinkModel accountLinkModel = AccountLinkModel(service,UrlLauncherService());
         accountLinkModel.prepareAccountLink(code).then((_) {
           Navigator.push(context,MaterialPageRoute(builder: (context)=>
             Provider<AccountLinkModel>(create: (context)=>accountLinkModel,child: AccountLink())
@@ -541,7 +541,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         child: Icon(Icons.speaker)),
                     onTap: () async {
                       AccountLinkModel accountLinkModel = AccountLinkModel(
-                        Provider.of<AccountLinkServiceInterface>(context, listen: false)
+                        Provider.of<AccountLinkServiceInterface>(context, listen: false),
+                        UrlLauncherService()
                       );
                       accountLinkModel.addListener(() {
                         if(accountLinkModel.accountLinkType == AccountLinkType.iOS) {

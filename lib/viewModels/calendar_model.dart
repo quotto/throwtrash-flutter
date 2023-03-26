@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
-import 'package:throwtrash/usecase/calendar_usecase.dart';
+import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 
 import '../models/trash_data.dart';
@@ -36,7 +36,7 @@ class CalendarModel extends ChangeNotifier {
 
     List<List<int>> get calendarsDateList => _calendarsDateList;
 
-    CalendarUseCase _calendarUseCase;
+    CalendarService _calendarUseCase;
     TrashDataServiceInterface _trashDataService;
 
     CalendarModel(this._calendarUseCase, this._trashDataService) {

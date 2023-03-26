@@ -1,9 +1,9 @@
-import 'package:throwtrash/usecase/calendar_usecase.dart';
+import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('2021年3月のカレンダーが正しいこと',() {
-    CalendarUseCase calendarUseCase = CalendarUseCase();
+    CalendarService calendarUseCase = CalendarService();
     List<int> expectDateList = [28,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,1,2,3];
     List<int> actualDateList = calendarUseCase.generateMonthCalendar(2021, 3);
 
@@ -12,7 +12,7 @@ void main() {
     }
   });
   test('2021年7月のカレンダーが正しいこと',() {
-    CalendarUseCase calendarUseCase = CalendarUseCase();
+    CalendarService calendarUseCase = CalendarService();
     List<int> expectDateList = [27,28,29,30,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
     List<int> actualDateList = calendarUseCase.generateMonthCalendar(2021, 7);
 
@@ -21,7 +21,7 @@ void main() {
     }
   });
   test('2021年8月のカレンダーが正しいこと',() {
-    CalendarUseCase calendarUseCase = CalendarUseCase();
+    CalendarService calendarUseCase = CalendarService();
     List<int> expectDateList = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,1,2,3,4];
     List<int> actualDateList = calendarUseCase.generateMonthCalendar(2021, 8);
 

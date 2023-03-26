@@ -34,6 +34,7 @@ ios/!*.xcodeproj/project.pbxproj
 ios/!*.xcodeproj/xcshareddata/
 ios/!*.xcworkspace/contents.xcworkspacedata
 ios//*.gcno
+*.xcuserstate
 
 ### CocoaPods ###
 ios/Pods
