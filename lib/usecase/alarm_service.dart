@@ -95,7 +95,9 @@ class AlarmService implements AlarmServiceInterface {
     String taskId = Uuid().v4();
     _logger.d("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
     print("Set alarm, next is after ${duration.inSeconds} seconds, task id is $taskId");
+
     await Workmanager().cancelAll();
+
     // if(Platform.isAndroid) {
       await Workmanager().registerOneOffTask(
         // taskId,

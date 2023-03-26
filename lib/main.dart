@@ -111,7 +111,7 @@ void executeWorkManager()  {
         message,
         platformChannelSpecifics);
 
-    alarmService.reserveNextAlarm();
+    // alarmService.reserveNextAlarm();
     return Future.value(true);
   });
 }
