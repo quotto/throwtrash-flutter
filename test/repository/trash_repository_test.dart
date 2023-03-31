@@ -13,9 +13,9 @@ void main() {
 
   group('insertTrashData', () {
     test('登録済みデータ無しの状態で新規追加', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result = await repository.insertTrashData(trashData);
       expect(result, true);
@@ -32,16 +32,16 @@ void main() {
       expect(resultData[0].excludes[0].date, 10);
     });
     test('登録済みデータ有の状態で新規追加', () async {
-      TrashData trashData1 = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData1 = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result = await repository.insertTrashData(trashData1);
       expect(result, true);
 
-      TrashData trashData2 = TrashData('002', 'burn', '', [
+      TrashData trashData2 = TrashData(id: '002', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
       bool result2 = await repository.insertTrashData(trashData2);
       expect(result2, true);
 
@@ -51,16 +51,16 @@ void main() {
       expect(resultData[1].id, '002');
     });
     test('ID重複でエラー', () async {
-      TrashData trashData1 = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData1 = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result = await repository.insertTrashData(trashData1);
       expect(result, true);
 
-      TrashData trashData2 = TrashData('001', 'burn', '', [
+      TrashData trashData2 = TrashData(id: '001', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
       bool result2 = await repository.insertTrashData(trashData2);
       expect(result2, false);
 
@@ -71,9 +71,9 @@ void main() {
   });
   group('updateTrashData', () {
     test('通常のアップデート,全1件,1件目更新', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result = await repository.insertTrashData(trashData);
       expect(result, true);
@@ -97,17 +97,17 @@ void main() {
       expect(resultData[0].excludes[0].date, 10);
     });
     test('通常のアップデート,全3件,2件目更新', () async {
-      TrashData trashData1 = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData1 = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
-      TrashData trashData2 = TrashData('002', 'burn', '', [
+      TrashData trashData2 = TrashData(id: '002', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
-      TrashData trashData3 = TrashData('003', 'unburn', '', [
+      TrashData trashData3 = TrashData(id: '003', type: 'unburn', trashVal: '', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       await repository.insertTrashData(trashData1);
       await repository.insertTrashData(trashData2);
@@ -127,24 +127,24 @@ void main() {
       expect(resultData[2].type, 'unburn');
     });
     test('対象データ無しでエラー（登録済みデータなし）', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result = await repository.updateTrashData(trashData);
       expect(result, false);
     });
     test('対象データ無しでエラー（登録済みデータあり,1件目の更新）', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result = await repository.insertTrashData(trashData);
       expect(result, true);
 
-      TrashData trashData2 = TrashData('002', 'other', '生ごみ', [
+      TrashData trashData2 = TrashData(id: '002', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       bool result2 = await repository.updateTrashData(trashData2);
       expect(result2, false);
@@ -152,15 +152,15 @@ void main() {
   });
   group('deleteTrashData', () {
     test('3件データある状態で1件目を削除', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
-      TrashData trashData2 = TrashData('002', 'other', '生ごみ', [
+      ], excludes: [ExcludeDate(1, 10)]);
+      TrashData trashData2 = TrashData(id: '002', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
-      TrashData trashData3 = TrashData('003', 'other', '生ごみ', [
+      ], excludes: [ExcludeDate(1, 10)]);
+      TrashData trashData3 = TrashData(id: '003', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       await repository.insertTrashData(trashData);
       await repository.insertTrashData(trashData2);
@@ -175,15 +175,15 @@ void main() {
       expect(resultData[1].id, '003');
     });
     test('3件データある状態で2件目を削除', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
-      TrashData trashData2 = TrashData('002', 'other', '生ごみ', [
+      ], excludes: [ExcludeDate(1, 10)]);
+      TrashData trashData2 = TrashData(id: '002', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
-      TrashData trashData3 = TrashData('003', 'other', '生ごみ', [
+      ], excludes: [ExcludeDate(1, 10)]);
+      TrashData trashData3 = TrashData(id: '003', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       await repository.insertTrashData(trashData);
       await repository.insertTrashData(trashData2);
@@ -198,15 +198,15 @@ void main() {
       expect(resultData[1].id, '003');
     });
     test('3件データある状態で3件目を削除', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
-      TrashData trashData2 = TrashData('002', 'other', '生ごみ', [
+      ], excludes: [ExcludeDate(1, 10)]);
+      TrashData trashData2 = TrashData(id: '002', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
-      TrashData trashData3 = TrashData('003', 'other', '生ごみ', [
+      ], excludes: [ExcludeDate(1, 10)]);
+      TrashData trashData3 = TrashData(id: '003', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       await repository.insertTrashData(trashData);
       await repository.insertTrashData(trashData2);
@@ -221,9 +221,9 @@ void main() {
       expect(resultData[1].id, '002');
     });
     test('1件データがある状態の削除', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       await repository.insertTrashData(trashData);
 
@@ -238,9 +238,9 @@ void main() {
       expect(result, false);
     });
     test('対象データ無しでエラー（登録済みデータあり）', () async {
-      TrashData trashData = TrashData('001', 'other', '生ごみ', [
+      TrashData trashData = TrashData(id: '001', type: 'other', trashVal: '生ごみ', schedules: [
         TrashSchedule('weekday', '0')
-      ], [ExcludeDate(1, 10)]);
+      ], excludes: [ExcludeDate(1, 10)]);
 
       await repository.insertTrashData(trashData);
       bool result = await repository.deleteTrashData('002');

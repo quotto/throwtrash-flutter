@@ -10,6 +10,11 @@ class DisplayTrashData {
     final String trashType;
     final String trashName;
 }
+
+/*
+ * カレンダーのモデル
+ * カレンダーの日付とゴミの種類を保持する
+ */
 class CalendarModel extends ChangeNotifier {
     Logger _logger = Logger();
     List<List<List<DisplayTrashData>>> _calendarsTrashList = [];
@@ -39,11 +44,10 @@ class CalendarModel extends ChangeNotifier {
     CalendarService _calendarUseCase;
     TrashDataServiceInterface _trashDataService;
 
-    CalendarModel(this._calendarUseCase, this._trashDataService) {
+    CalendarModel(this._calendarUseCase, this._trashDataService, DateTime today) {
         _trashDataService.refreshTrashData().then((_) async {
-            DateTime now = new DateTime.now();
-            _year = now.year;
-            _month = now.month;
+            _year = today.year;
+            _month = today.month;
 
             for (int i = 0; i < 5; i++) {
                 int tmpYear = _year;
@@ -171,10 +175,6 @@ class CalendarModel extends ChangeNotifier {
             _logger.d("reload complete");
             notifyListeners();
         });
-    }
-
-    Future<void> syncAndReload() async {
-
     }
 
     List<List<DisplayTrashData>> _getDisplayTrashList(int year, int month, List<int> dateList) {

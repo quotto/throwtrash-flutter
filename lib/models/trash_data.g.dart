@@ -7,15 +7,17 @@ part of 'trash_data.dart';
 // **************************************************************************
 
 TrashData _$TrashDataFromJson(Map<String, dynamic> json) => TrashData(
-      json['id'] as String,
-      json['type'] as String,
-      json['trash_val'] as String,
-      (json['schedules'] as List<dynamic>)
-          .map((e) => TrashSchedule.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      (json['excludes'] as List<dynamic>)
-          .map((e) => ExcludeDate.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      id: json['id'] as String,
+      type: json['type'] as String,
+      trashVal: json['trash_val'] as String? ?? "",
+      schedules: (json['schedules'] as List<dynamic>?)
+              ?.map((e) => TrashSchedule.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      excludes: (json['excludes'] as List<dynamic>?)
+              ?.map((e) => ExcludeDate.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$TrashDataToJson(TrashData instance) => <String, dynamic>{

@@ -26,7 +26,11 @@ class TrashDataResponse {
   Map<String,dynamic> toJson() => _$TrashDataResponseToJson(this);
   TrashData toTrashData() {
    return TrashData(
-     this.id,this.type, trashVal != null ? trashVal! : "", schedules, excludes != null ? excludes! : []
+     id: this.id,
+     type: this.type,
+     trashVal: trashVal != null ? trashVal! : "",
+     schedules: schedules,
+     excludes: excludes != null ? excludes! : []
    );
   }
 

@@ -22,8 +22,8 @@ class ExcludeViewModel extends ChangeNotifier {
   ExcludeState get excludeState => _excludeState;
   int get maxDate => _maxDate;
 
-  void addExcludeDate() {
-    _excludeDates.add([1, 1]);
+  void addExcludeDate(ExcludeDate excludeDate) {
+    _excludeDates.add([excludeDate.month, excludeDate.date]);
     notifyListeners();
   }
 
@@ -55,8 +55,4 @@ class ExcludeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setExcludeDates() {
-    _excludeState = ExcludeState.COMPLETE;
-    notifyListeners();
-  }
 }

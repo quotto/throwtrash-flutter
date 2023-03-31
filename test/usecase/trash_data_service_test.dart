@@ -30,10 +30,10 @@ void main() async{
   );
   group('getEnableTrashListByWeekday', () {
     test('毎週（weekday）', () async{
-      TrashData trash1 = TrashData('1', 'burn', '',
-          [TrashSchedule('weekday', '1'), TrashSchedule('weekday', '2')], []);
-      TrashData trash2 = TrashData(
-          '2', 'bin', '', [TrashSchedule('weekday', '1')], []);
+      TrashData trash1 = TrashData(id: '1', type: 'burn', trashVal: '',
+          schedules: [TrashSchedule('weekday', '1'), TrashSchedule('weekday', '2')], excludes: []);
+      TrashData trash2 = TrashData(id:
+          '2', type: 'bin', trashVal: '', schedules: [TrashSchedule('weekday', '1')], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -48,12 +48,12 @@ void main() async{
       expect(result[10].length, 0,);
     });
     test('毎月〇日（month）', () async {
-      TrashData trash1 = TrashData(
-          '1', 'unburn', '',
-          [TrashSchedule('month', '3'), TrashSchedule('month', '29')], []
+      TrashData trash1 = TrashData(id:
+          '1', type: 'unburn', trashVal: '',
+          schedules: [TrashSchedule('month', '3'), TrashSchedule('month', '29')], excludes: []
       );
-      TrashData trash2 = TrashData(
-          '2', 'other', '家電', [TrashSchedule('month', '3')], []);
+      TrashData trash2 = TrashData(id:
+          '2', type: 'other', trashVal: '家電', schedules: [TrashSchedule('month', '3')], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -70,12 +70,12 @@ void main() async{
       expect(result[0][0].type, 'unburn');
     });
     test('第〇△曜日（biweek）', () async {
-      TrashData trash1 = TrashData(
-          '1', 'plastic', '',
-          [TrashSchedule('biweek', '0-3'), TrashSchedule('biweek', '6-1')], []
+      TrashData trash1 = TrashData(id:
+          '1', type: 'plastic', trashVal: '',
+          schedules: [TrashSchedule('biweek', '0-3'), TrashSchedule('biweek', '6-1')], excludes: []
       );
-      TrashData trash2 = TrashData(
-          '2', 'petbottle', '', [TrashSchedule('biweek', '0-3')], []);
+      TrashData trash2 = TrashData(id:
+          '2', type: 'petbottle', trashVal: '', schedules: [TrashSchedule('biweek', '0-3')], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -91,24 +91,24 @@ void main() async{
       expect(result[34][0].type, 'plastic');
     });
     test('隔週(evweek)でinterval=2', () async {
-      TrashData trash1 = TrashData('1', 'can', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'can', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 2}),
         TrashSchedule(
             'evweek', {'weekday': '0', 'start': '2019-12-29', 'interval': 2})
       ],
-          []
+          excludes: []
       );
-      TrashData trash2 = TrashData('2', 'paper', '', [
+      TrashData trash2 = TrashData(id: '2', type: 'paper', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 2})
-      ], []);
+      ], excludes: []);
 
       // intervalの無いevweekはinterval=2として処理される
-      TrashData trash3 = TrashData('3', 'burn', '', [
+      TrashData trash3 = TrashData(id: '3', type: 'burn', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '4', 'start': '2020-01-05'})
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
@@ -136,18 +136,18 @@ void main() async{
       expect(result[0][0].type, 'can');
     });
     test('隔週(evweek)でinterval=3', () async {
-      TrashData trash1 = TrashData('1', 'resource', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'resource', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3}),
         TrashSchedule(
             'evweek', {'weekday': '0', 'start': '2019-12-22', 'interval': 3})
       ],
-          []
+          excludes: []
       );
-      TrashData trash2 = TrashData('2', 'coarse', '', [
+      TrashData trash2 = TrashData(id: '2', type: 'coarse', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3})
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -168,18 +168,18 @@ void main() async{
       expect(result[28].length, 0);
     });
     test('隔週(evweek)でinterval=4', () async {
-      TrashData trash1 = TrashData('1', 'resource', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'resource', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4}),
         TrashSchedule(
             'evweek', {'weekday': '0', 'start': '2019-12-01', 'interval': 4})
       ],
-          []
+          excludes: []
       );
-      TrashData trash2 = TrashData('2', 'coarse', '', [
+      TrashData trash2 = TrashData(id: '2', type: 'coarse', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4})
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1),jsonEncode(trash2.toJson())]);
@@ -200,14 +200,14 @@ void main() async{
       expect(result[28][0].type, 'resource');
     });
     test('weekdayに対するExcludeDate設定',() async {
-      TrashData trash1 = TrashData('1','unburn', '', [
+      TrashData trash1 = TrashData(id: '1',type: 'unburn', trashVal: '', schedules: [
         TrashSchedule('weekday','2'),TrashSchedule('weekday', '6')
-      ],[ExcludeDate(12, 31),ExcludeDate(1, 7), ExcludeDate(2, 1)]);
+      ],excludes: [ExcludeDate(12, 31),ExcludeDate(1, 7), ExcludeDate(2, 1)]);
 
       //trash3の比較用でExcludeDate以外同じスケジュール
-      TrashData trash2 = TrashData('2','plastic', '', [
+      TrashData trash2 = TrashData(id: '2',type: 'plastic', trashVal: '', schedules: [
         TrashSchedule('weekday','2'),TrashSchedule('weekday', '6')
-      ],[]);
+      ],excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -219,12 +219,12 @@ void main() async{
       expect(result[34].length ,1);
     });
     test('monthに対するExcludeDate',() async {
-      TrashData trash1 = TrashData('1', 'burn', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('month', '29'),TrashSchedule('month', '1')
-      ],[ExcludeDate(12, 29), ExcludeDate(1, 1), ExcludeDate(1, 1), ExcludeDate(2, 1)]);
-      TrashData trash2 = TrashData('', 'burn', '', [
+      ],excludes: [ExcludeDate(12, 29), ExcludeDate(1, 1), ExcludeDate(1, 1), ExcludeDate(2, 1)]);
+      TrashData trash2 = TrashData(id: '', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('month', '29'),TrashSchedule('month', '1')
-      ],[]);
+      ],excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -236,17 +236,17 @@ void main() async{
       expect(result[34].length, 1);
     });
     test('biweekに対するExcludeDate設定',() async {
-      TrashData trash1 = TrashData('1', 'burn', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('biweek', '1-1'),
         TrashSchedule('biweek', '0-5'),
         TrashSchedule('biweek', '6-1')
-      ], [ExcludeDate(12, 29), ExcludeDate(1, 6), ExcludeDate(2, 1)]);
+      ], excludes: [ExcludeDate(12, 29), ExcludeDate(1, 6), ExcludeDate(2, 1)]);
       // ExcludeDate以外はtrash1と同じデータ
-      TrashData trash2 = TrashData('2', 'burn', '', [
+      TrashData trash2 = TrashData(id: '2', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('biweek', '1-1'),
         TrashSchedule('biweek', '0-5'),
         TrashSchedule('biweek', '6-1')
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -259,17 +259,17 @@ void main() async{
       expect(result[34].length, 1);
     });
     test('evweekに対する除外設定',() async {
-      TrashData trash1 = TrashData('1', 'paper', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'paper', trashVal: '', schedules: [
         TrashSchedule('evweek', {'start': '2019-12-29', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2020-01-19', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
-      ], [ExcludeDate(12, 29), ExcludeDate(1, 4), ExcludeDate(2, 1)]);
+      ], excludes: [ExcludeDate(12, 29), ExcludeDate(1, 4), ExcludeDate(2, 1)]);
       // ExcludeDate以外はtrash1と同じデータ
-      TrashData trash2 = TrashData('2', 'paper', '', [
+      TrashData trash2 = TrashData(id: '2', type: 'paper', trashVal: '', schedules: [
         TrashSchedule('evweek', {'start': '2019-12-29', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2020-01-19', 'weekday': '6', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
-      ],[]);
+      ],excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
@@ -285,27 +285,27 @@ void main() async{
   });
   group('getTodaysTrash',() {
     test('weekday/month',() async {
-      TrashData trash1 = TrashData('1', 'burn', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('weekday', '3'), TrashSchedule('month', '5')
-      ], []);
-      TrashData trash2 = TrashData('2', 'other', '家電', [
-        TrashSchedule('biweek', '3-1')], []);
-      TrashData trash3 = TrashData('3', 'bin', '', [
+      ], excludes: []);
+      TrashData trash2 = TrashData(id: '2', type: 'other', trashVal: '家電', schedules: [
+        TrashSchedule('biweek', '3-1')], excludes: []);
+      TrashData trash3 = TrashData(id: '3', type: 'bin', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
         TrashSchedule(
             'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
-      ], []);
-      TrashData trash4 = TrashData('4', 'paper', '', [
+      ], excludes: []);
+      TrashData trash4 = TrashData(id: '4', type: 'paper', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'start': '2020-03-08', 'weekday': '0', 'interval': 3})
-      ], []);
-      TrashData trash5 = TrashData('5', 'petbottle', '', [
+      ], excludes: []);
+      TrashData trash5 = TrashData(id: '5', type: 'petbottle', trashVal: '', schedules: [
         TrashSchedule(
             'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
         TrashSchedule(
             'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
@@ -344,15 +344,15 @@ void main() async{
       expect(result4[0].type, 'paper');
     });
     test('biweek',() async {
-      TrashData trash1 = TrashData('1', 'burn', '', [
+      TrashData trash1 = TrashData(id: '1', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('biweek','1-1')
-      ], []);
-      TrashData trash2 = TrashData('2', 'bottle', '',[
+      ], excludes: []);
+      TrashData trash2 = TrashData(id: '2', type: 'bottle', trashVal: '',schedules: [
         TrashSchedule('biweek', '2-2')
-      ],[]);
-      TrashData trash3 = TrashData('3', 'paper', '', [
+      ],excludes: []);
+      TrashData trash3 = TrashData(id: '3', type: 'paper', trashVal: '', schedules: [
         TrashSchedule('biweek', '3-5')
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
@@ -380,13 +380,13 @@ void main() async{
       expect(result4[0].type, 'paper');
     });
     test('exclude',() async {
-      TrashData trash1 = TrashData('id', 'burn', '', [
+      TrashData trash1 = TrashData(id: 'id', type: 'burn', trashVal: '', schedules: [
         TrashSchedule('weekday', '3'),TrashSchedule('month', '5')
-      ], [ExcludeDate(3, 4)]);
-      TrashData trash2 = TrashData('id', 'bin', '', [
+      ], excludes: [ExcludeDate(3, 4)]);
+      TrashData trash2 = TrashData(id: 'id', type: 'bin', trashVal: '', schedules: [
         TrashSchedule('evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
         TrashSchedule('evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4}),
-      ], []);
+      ], excludes: []);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,

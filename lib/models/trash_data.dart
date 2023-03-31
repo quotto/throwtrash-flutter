@@ -6,7 +6,7 @@ part 'trash_data.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class TrashData {
-  TrashData(this.id,this.type,this.trashVal,this.schedules,this.excludes);
+  TrashData({required this.id,required this.type,this.trashVal = "", this.schedules=const [],this.excludes = const []});
 
   final String id;
   String type;

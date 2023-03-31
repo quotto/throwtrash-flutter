@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:throwtrash/models/trash_response.dart';
 import 'package:throwtrash/repository/activation_api_interface.dart';
 import 'package:throwtrash/repository/config_interface.dart';
 
@@ -11,18 +10,19 @@ import '../models/activate_response.dart';
 class ActivationApi implements ActivationApiInterface{
   final ConfigInterface _config;
   final Logger _logger = Logger();
-  ActivationApi(this._config);
+  final http.Client _httpClient;
+  ActivationApi(this._config, this._httpClient);
   @override
   Future<String> requestActivationCode(String userId) async {
     _logger.d("[GET]${this._config.mobileApiEndpoint}/publish_activation_code?user_id=$userId");
      Uri endpointUri = Uri.parse(
          this._config.mobileApiEndpoint + "/publish_activation_code?user_id=$userId");
-     http.Response response = await http.get(
+     http.Response response = await this._httpClient.get(
        endpointUri
      );
      if(response.statusCode == 200) {
        Map<String,dynamic> responseBody = jsonDecode(response.body);
-       return responseBody["code"];
+       return responseBody.containsKey("code") ? responseBody["code"] : "";
      }
      _logger.e("Error request activation code");
      _logger.e(response.body);
@@ -35,7 +35,7 @@ class ActivationApi implements ActivationApiInterface{
     Uri endpointUri = Uri.parse(
       this._config.mobileApiEndpoint + "/activate?code=$code&user_id=$userId"
     );
-    http.Response response = await http.get(endpointUri);
+    http.Response response = await this._httpClient.get(endpointUri);
     if(response.statusCode == 200) {
       ActivateResponse activateResponse = ActivateResponse.fromJson(jsonDecode(response.body));
       return activateResponse;

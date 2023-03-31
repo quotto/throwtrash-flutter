@@ -25,8 +25,11 @@ class EditModel extends ChangeNotifier {
 
   EditModel(this._trashDataService) {
     _trashData = TrashData(
-        DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
-        'burn','',[TrashSchedule('weekday', '0')],[]
+        id: DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: []
     );
   }
 

@@ -91,7 +91,7 @@ class _ExcludeDateState extends State<ExcludeDateView> {
                     child: IconButton(
                       icon: Icon(Icons.delete_forever),
                       iconSize: 32,
-                      color: Theme.of(context).accentColor,
+                      color: Theme.of(context).colorScheme.secondary,
                       onPressed: ()=>excludeViewModel.removeExcludeDate(index),
                     )
                   )
@@ -113,7 +113,7 @@ class _ExcludeDateState extends State<ExcludeDateView> {
                       iconSize: 32,
                       color: Theme.of(context).primaryColor,
                       onPressed: () {
-                        excludeViewModel.addExcludeDate();
+                        excludeViewModel.addExcludeDate(ExcludeDate(1,1));
                       }
                   )
               )

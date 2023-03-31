@@ -49,6 +49,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:throwtrash/repository/config_interface.dart';
 import 'package:throwtrash/repository/config.dart';
 import 'package:throwtrash/repository/trash_api_interface.dart';
+import 'package:http/http.dart' as http;
 
 import 'account_link.dart';
 import 'viewModels/calendar_model.dart';
@@ -141,13 +142,13 @@ Future<void> main() async {
   _config = Config();
   _accountLinkService = AccountLinkService(
       _config,
-      AccountLinkApi(_config.mobileApiEndpoint),
+      AccountLinkApi(_config.mobileApiEndpoint, http.Client()),
       AccountLinkRepository(),
       UserRepository()
   );
 
   _trashRepository = TrashRepository();
-  _activationApi = ActivationApi(_config);
+  _activationApi = ActivationApi(_config, http.Client());
 
   Workmanager().initialize(
       executeWorkManager,
@@ -180,7 +181,7 @@ class MyApp extends StatelessWidget {
               create: (context)=> _trashApi
           ),
           Provider<AccountLinkApiInterface>(
-              create: (context)=> AccountLinkApi(_config.mobileApiEndpoint)
+              create: (context)=> AccountLinkApi(_config.mobileApiEndpoint, http.Client())
           ),
           Provider<AccountLinkRepositoryInterface>(
             create: (context)=> AccountLinkRepository(),
@@ -210,7 +211,9 @@ class MyApp extends StatelessWidget {
               create: (context) => CalendarModel(
                   CalendarService(),
                   Provider.of<TrashDataServiceInterface>(context,
-                      listen: false)),
+                      listen: false),
+                  DateTime.now()
+              ),
               child: CalendarWidget()),
         ));
   }

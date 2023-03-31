@@ -17,9 +17,6 @@ class Config implements ConfigInterface {
   }
 
   Future<void> initialize() async {
-    if(_instance == null) {
-      throw new Exception("Config not initialized");
-    }
     String configStr = await rootBundle.loadString('json/config.json');
     Map<String, dynamic> config = json.decode(configStr);
     _instance!._apiEndpoint = config["apiEndpoint"]!;

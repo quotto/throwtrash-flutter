@@ -27,8 +27,8 @@ void main() {
   group("アラームメッセージの取得",(){
     test("一致するゴミが複数ある",(){
       List<TrashData> list = [
-        TrashData("","burn", "", [],[]),
-        TrashData("","other", "生ごみ",[],[])
+        TrashData(id: "",type: "burn", trashVal: "", schedules: [],excludes: []),
+        TrashData(id: "",type: "other", trashVal: "生ごみ",schedules: [],excludes: [])
       ];
       expect(
         _alarmService.createAlarmMessage(list),
@@ -37,7 +37,7 @@ void main() {
     });
     test("一致するゴミが1つある",(){
       List<TrashData> list = [
-        TrashData("","petbottle", "", [],[]),
+        TrashData(id: "",type: "petbottle", trashVal: "", schedules: [],excludes: []),
       ];
       expect(
           _alarmService.createAlarmMessage(list),

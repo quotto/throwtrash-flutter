@@ -1,4 +1,3 @@
-//TODO: DIでデータ取得用repositoryが必要
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/trash_api_register_response.dart';
 import 'package:throwtrash/models/trash_data.dart';
