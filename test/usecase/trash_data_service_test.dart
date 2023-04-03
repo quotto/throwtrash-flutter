@@ -13,6 +13,7 @@ import 'package:throwtrash/repository/user_repository.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/user_service.dart';
+import 'package:http/http.dart' as http;
 
 class FirebaseFirestoreMock extends Mock implements FirebaseFirestore{}
 
@@ -26,7 +27,7 @@ void main() async{
         UserRepository()
       ),
       TrashRepository(),
-      TrashApi("")
+      TrashApi("", http.Client())
   );
   group('getEnableTrashListByWeekday', () {
     test('毎週（weekday）', () async{

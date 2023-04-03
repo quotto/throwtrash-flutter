@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'trash_response.g.dart';
 
 @JsonSerializable()
-class TrashResponse {
+class TrashApiSyncDataResponse {
   String id;
   String description;
   int timestamp;
@@ -11,7 +11,7 @@ class TrashResponse {
   @JsonKey(name: "shared_id")
   String? sharedId;
 
-  TrashResponse(this.id, this.description,this.platform, this.sharedId, this.timestamp);
-  factory TrashResponse.fromJson(Map<String,dynamic> json) => _$TrashResponseFromJson(json);
-  Map<String,dynamic> toJson() => _$TrashResponseToJson(this);
+  TrashApiSyncDataResponse(this.id, this.description,this.platform, this.sharedId, this.timestamp);
+  factory TrashApiSyncDataResponse.fromJson(Map<String,dynamic> json) => _$TrashApiSyncDataResponseFromJson(json);
+  Map<String,dynamic> toJson() => _$TrashApiSyncDataResponseToJson(this);
 }

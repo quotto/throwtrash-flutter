@@ -8,6 +8,7 @@ import 'package:throwtrash/repository/user_repository.dart';
 import 'package:throwtrash/usecase/alarm_service.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/usecase/user_service.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   setUp(() async{
@@ -21,7 +22,7 @@ void main() {
     TrashDataService(
       UserService(UserRepository()),
       TrashRepository(),
-      TrashApi("")
+      TrashApi("",http.Client())
     )
   );
   group("アラームメッセージの取得",(){

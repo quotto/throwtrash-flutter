@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/repository/trash_repository.dart';
 import 'package:throwtrash/repository/trash_api.dart';
@@ -8,6 +6,7 @@ import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
+import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
 void main(){
@@ -16,7 +15,7 @@ void main(){
     TrashDataService(
         UserService(UserRepository()),
         TrashRepository(),
-        TrashApi("")
+        TrashApi("", http.Client())
     );
 
   test('初期状態のテスト',(){

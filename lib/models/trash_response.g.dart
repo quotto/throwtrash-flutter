@@ -6,8 +6,9 @@ part of 'trash_response.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-TrashResponse _$TrashResponseFromJson(Map<String, dynamic> json) =>
-    TrashResponse(
+TrashApiSyncDataResponse _$TrashApiSyncDataResponseFromJson(
+        Map<String, dynamic> json) =>
+    TrashApiSyncDataResponse(
       json['id'] as String,
       json['description'] as String,
       json['platform'] as String,
@@ -15,7 +16,8 @@ TrashResponse _$TrashResponseFromJson(Map<String, dynamic> json) =>
       json['timestamp'] as int,
     );
 
-Map<String, dynamic> _$TrashResponseToJson(TrashResponse instance) =>
+Map<String, dynamic> _$TrashApiSyncDataResponseToJson(
+        TrashApiSyncDataResponse instance) =>
     <String, dynamic>{
       'id': instance.id,
       'description': instance.description,

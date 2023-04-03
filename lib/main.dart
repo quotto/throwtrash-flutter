@@ -79,7 +79,7 @@ void executeWorkManager()  {
         UserRepository(),
       ),
       TrashRepository(),
-      TrashApi(Config().mobileApiEndpoint),
+      TrashApi(Config().mobileApiEndpoint, http.Client()),
     );
     AlarmServiceInterface alarmService = AlarmService(
         UserService(
@@ -118,37 +118,55 @@ void executeWorkManager()  {
   });
 }
 
+Future<void> initializeService({
+  required UserRepositoryInterface userRepository,
+  required AccountLinkRepositoryInterface accountLinkRepository,
+  required TrashRepositoryInterface trashRepository,
+  required TrashApiInterface trashApi,
+  required ActivationApiInterface activationApi,
+  required AccountLinkApiInterface accountLinkApi,
+}) async {
+  _userService = UserService(
+    userRepository,
+  );
+  await _userService.refreshUser();
+
+  _trashDataService =
+      TrashDataService(
+          _userService,
+          trashRepository,
+          trashApi
+      );
+  _config = Config();
+  _accountLinkService = AccountLinkService(
+      _config,
+      accountLinkApi,
+      accountLinkRepository,
+      userRepository
+  );
+}
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
+WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   await Config().initialize();
 
-  _userService = UserService(
-      UserRepository()
-  );
-  await _userService.refreshUser();
-
-  _trashApi = TrashApi(Config().mobileApiEndpoint);
-  _trashDataService =
-      TrashDataService(
-          _userService,
-          TrashRepository(),
-          _trashApi
-      );
-  _alarmRepository = AlarmRepository();
-  _config = Config();
-  _accountLinkService = AccountLinkService(
-      _config,
-      AccountLinkApi(_config.mobileApiEndpoint, http.Client()),
-      AccountLinkRepository(),
-      UserRepository()
-  );
-
+  _trashApi = TrashApi(Config().mobileApiEndpoint, http.Client());
+  _activationApi = ActivationApi(Config(), http.Client());
   _trashRepository = TrashRepository();
-  _activationApi = ActivationApi(_config, http.Client());
+  _alarmRepository = AlarmRepository();
+
+  await initializeService(
+      userRepository: UserRepository(),
+      accountLinkRepository: AccountLinkRepository(),
+      trashRepository: _trashRepository,
+      trashApi: _trashApi,
+      activationApi: _activationApi,
+      accountLinkApi: AccountLinkApi(Config().mobileApiEndpoint, http.Client())
+  );
 
   Workmanager().initialize(
       executeWorkManager,
@@ -200,17 +218,14 @@ class MyApp extends StatelessWidget {
           ))
         ],
         child: MaterialApp(
-          // Application name
-          title: 'Flutter Hello World',
-          // Application theme data, you can set the colors for the application as
-          // you want
+          title: '今日のゴミ出し',
           theme: ThemeData(
               colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.pinkAccent)),
-          // A widget which will be started on application startup
           home: ChangeNotifierProvider<CalendarModel>(
               create: (context) => CalendarModel(
                   CalendarService(),
-                  Provider.of<TrashDataServiceInterface>(context,
+                  Provider.of<TrashDataServiceInterface>(
+                      context,
                       listen: false),
                   DateTime.now()
               ),
@@ -243,7 +258,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   "other": Colors.grey,
   };
   PageController controller = PageController(initialPage: 0);
-  late StreamSubscription _sub;
+  StreamSubscription? _sub;
 
   Future<void> initUniLinks(AccountLinkServiceInterface service) async {
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -281,7 +296,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   @override
   void dispose() {
     _logger.i("calendar dispose");
-    _sub.cancel();
+    _sub?.cancel();
     super.dispose();
   }
 
@@ -328,17 +343,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     controller.addListener(() {
       if (controller.page == controller.page!.toInt()) {
         if (controller.page! > calendarModel.currentPage) {
-          print('forward: ${controller.page!}');
           calendarModel.forward();
           controller.jumpToPage(calendarModel.currentPage);
         } else if (controller.page! < calendarModel.currentPage) {
-          print('backward: ${controller.page!}');
           calendarModel.backward();
           controller.jumpToPage(calendarModel.currentPage);
         }
       }
     });
-    calendarModel.reload();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      calendarModel.reload();
+    });
   }
 
   void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
@@ -401,7 +416,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   Column _calendarColumn(
-      List<int> allDateList, List<List<DisplayTrashData>> allTrashList) {
+      List<int> allDateList, List<List<DisplayTrashData>> allTrashList, int pageIndex) {
     Flexible week1 = _flexibleRowWeek(
         1, allDateList.sublist(0, 7), allTrashList.sublist(0, 7));
     Flexible week2 = _flexibleRowWeek(
@@ -413,44 +428,53 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     Flexible week5 = _flexibleRowWeek(
         5, allDateList.sublist(28, 35), allTrashList.sublist(28, 35));
 
-    return Column(children: [
-      Flexible(
-          flex: 1,
-          child: FractionallySizedBox(
-            heightFactor: 1.0,
-            child: Row(
-                children: _weekdayLabel.map<Widget>((weekday) {
-                  return Expanded(
-                      child: Text(weekday,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: weekday == '日'
-                                  ? _sundayColor
-                                  : (weekday == '土'
-                                  ? _saturdayColor
-                                  : Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .color))));
-                }).toList()),
-          )),
-      week1,
-      week2,
-      week3,
-      week4,
-      week5
-    ]);
+    return Column(
+        key: Key('calendar_column_$pageIndex'),
+        children: [
+          Flexible(
+              flex: 1,
+              child: FractionallySizedBox(
+                heightFactor: 1.0,
+                child: Row(
+                    key: Key('weekday_label_$pageIndex'),
+                    children: _weekdayLabel.map<Widget>((weekday) {
+                      return Expanded(
+                          child: Text(weekday,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: weekday == '日'
+                                      ? _sundayColor
+                                      : (weekday == '土'
+                                      ? _saturdayColor
+                                      : Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .color))));
+                    }).toList()),
+              )),
+          week1,
+          week2,
+          week3,
+          week4,
+          week5
+        ]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<CalendarModel>(builder: (context, calendar, child) {
-      if (calendar.calendarsTrashList.length == 0) {
-        return Scaffold(body: Container(child: Text('')));
-      }
       return Scaffold(
           appBar: AppBar(
             title: Text('${calendar.year}年${calendar.month}月'),
+            // リロードボタン
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: () {
+                  calendar.reload();
+                },
+              ),
+            ],
           ),
           drawer: Drawer(
             child: ListView(
@@ -608,21 +632,39 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ],
             ),
           ),
-          body: RefreshIndicator(
-            onRefresh: () async {calendar.reload();},
-            child: Column(children: [
-            Flexible(
-                flex: 5,
-                child: PageView(
-                  controller: controller,
-                  children: new List<Column>.generate(
-                      calendar.calendarsDateList.length, (index) {
-                    return _calendarColumn(calendar.calendarsDateList[index],
-                        calendar.calendarsTrashList[index]);
-                  }).toList(),
-                )),
-          ]
-            )));
+          body: Stack(
+            children: [
+              RefreshIndicator(
+                  onRefresh: () async {calendar.reload();},
+                  child: Column(children: [
+                    Flexible(
+                        flex: 5,
+                        child: PageView(
+                          controller: controller,
+                          children: new List<Column>.generate(
+                              calendar.calendarsDateList.length, (index) {
+                            return _calendarColumn(calendar.calendarsDateList[index],
+                                calendar.calendarsTrashList[index], index);
+                          }).toList(),
+                        )),
+                  ]
+                  )),
+              if(calendar.isLoading())
+                loadingContainer
+            ],
+          )
+      );
     });
   }
+
+  Widget loadingContainer = Stack(
+    children: [
+      Container(
+        color: Colors.black.withOpacity(0.5),
+      ),
+      Center(
+          child: CircularProgressIndicator()
+      )
+    ],
+  );
 }

@@ -11,6 +11,12 @@ class DisplayTrashData {
     final String trashName;
 }
 
+enum LoadingStatus {
+    loading,
+    loaded,
+    error,
+}
+
 /*
  * カレンダーのモデル
  * カレンダーの日付とゴミの種類を保持する
@@ -19,6 +25,7 @@ class CalendarModel extends ChangeNotifier {
     Logger _logger = Logger();
     List<List<List<DisplayTrashData>>> _calendarsTrashList = [];
     List<List<int>> _calendarsDateList = [];
+    LoadingStatus _loadingStatus = LoadingStatus.loading;
 
     int _year = 0;
     int _month = 0;
@@ -45,10 +52,9 @@ class CalendarModel extends ChangeNotifier {
     TrashDataServiceInterface _trashDataService;
 
     CalendarModel(this._calendarUseCase, this._trashDataService, DateTime today) {
+        _year = today.year;
+        _month = today.month;
         _trashDataService.refreshTrashData().then((_) async {
-            _year = today.year;
-            _month = today.month;
-
             for (int i = 0; i < 5; i++) {
                 int tmpYear = _year;
                 int tmpMonth = _month + i;
@@ -157,6 +163,8 @@ class CalendarModel extends ChangeNotifier {
     }
 
     void reload() {
+        _loadingStatus = LoadingStatus.loading;
+        notifyListeners();
         _trashDataService.syncTrashData().then((_) {
             for (int index = 0; index < _calendarsDateList.length; index++) {
                 int sub = index - _currentPage;
@@ -173,6 +181,7 @@ class CalendarModel extends ChangeNotifier {
                     targetYear, targetMonth, _calendarsDateList[index ]);
             }
             _logger.d("reload complete");
+            _loadingStatus = LoadingStatus.loaded;
             notifyListeners();
         });
     }
@@ -189,5 +198,9 @@ class CalendarModel extends ChangeNotifier {
                 ))
             ).toList()
         ).toList();
+    }
+
+    bool isLoading() {
+        return _loadingStatus == LoadingStatus.loading;
     }
 }
