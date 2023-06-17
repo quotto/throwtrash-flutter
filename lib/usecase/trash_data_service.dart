@@ -9,7 +9,8 @@ import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
 import '../models/calendar_model.dart';
-import 'crash_report_service.dart';
+import '../repository/crashlytics_report.dart';
+import 'crash_report_interface.dart';
 
 class TrashDataService implements TrashDataServiceInterface {
   List<TrashData> _schedule = [];
@@ -17,9 +18,9 @@ class TrashDataService implements TrashDataServiceInterface {
   final TrashRepositoryInterface _trashRepository;
   final TrashApiInterface _trashApiInterface;
   final _logger = Logger();
-  final _crashReportService = CrashReportService();
+  final CrashReportInterface _crashReport;
 
-  TrashDataService(this._userService,this._trashRepository, this._trashApiInterface) {
+  TrashDataService(this._userService,this._trashRepository, this._trashApiInterface, this._crashReport) {
     refreshTrashData();
   }
 
@@ -266,7 +267,7 @@ class TrashDataService implements TrashDataServiceInterface {
         .registerUserAndTrashData(localTrashList);
     if (registerResponse == null) {
       _logger.e('Failed register new user and trash data list');
-      _crashReportService.recordError(Exception('Failed register new user and trash data list'), fatal:  true);
+      _crashReport.reportCrash(Exception('Failed register new user and trash data list'), fatal:  true);
       return;
     } else {
       _logger.d(
@@ -304,7 +305,7 @@ class TrashDataService implements TrashDataServiceInterface {
         .syncTrashData(_userService.user.id);
     if (trashSyncResult.syncResult == SyncResult.ERROR) {
       _logger.e('Failed sync, please try later.');
-      _crashReportService.recordError(Exception('Failed sync'), fatal:  true);
+      _crashReport.reportCrash(Exception('Failed sync'), fatal:  true);
       return;
     }
 
@@ -330,7 +331,7 @@ class TrashDataService implements TrashDataServiceInterface {
             break;
           default:
             _logger.e('Failed update to remote from local, please try later.');
-            _crashReportService.recordError(Exception('Failed update to remote from local'), fatal:  true);
+            _crashReport.reportCrash(Exception('Failed update to remote from local'), fatal:  true);
             break;
         }
       }

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/models/exclude_date.dart';
@@ -10,11 +11,15 @@ import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/repository/trash_api.dart';
 import 'package:throwtrash/repository/trash_repository.dart';
 import 'package:throwtrash/repository/user_repository.dart';
+import 'package:throwtrash/usecase/crash_report_interface.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/user_service.dart';
 import 'package:http/http.dart' as http;
 
+import 'share_service_test.mocks.dart';
+
+@GenerateMocks([CrashReportInterface])
 class FirebaseFirestoreMock extends Mock implements FirebaseFirestore{}
 
 List<int> dataSet = [29,30,31,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,1];
@@ -22,12 +27,15 @@ List<int> dataSet = [29,30,31,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 
 void main() async{
   SharedPreferences.setMockInitialValues({});
+  final MockCrashReportInterface crashReport = MockCrashReportInterface();
+
   TrashDataService instance = TrashDataService(
       UserService(
         UserRepository()
       ),
       TrashRepository(),
-      TrashApi("", http.Client())
+      TrashApi("", http.Client()),
+      crashReport
   );
   group('getEnableTrashListByWeekday', () {
     test('毎週（weekday）', () async{

@@ -11,6 +11,7 @@ import 'package:throwtrash/usecase/account_link_api_interface.dart' as _i2;
 import 'package:throwtrash/usecase/account_link_repository_interface.dart'
     as _i6;
 import 'package:throwtrash/usecase/config_interface.dart' as _i8;
+import 'package:throwtrash/usecase/crash_report_interface.dart' as _i9;
 import 'package:throwtrash/usecase/user_repository_interface.dart' as _i7;
 import 'package:throwtrash/viewModels/account_link_model.dart' as _i5;
 
@@ -154,4 +155,32 @@ class MockConfigInterface extends _i1.Mock implements _i8.ConfigInterface {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+}
+
+/// A class which mocks [CrashReportInterface].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCrashReportInterface extends _i1.Mock
+    implements _i9.CrashReportInterface {
+  MockCrashReportInterface() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  void reportCrash(
+    dynamic exception, {
+    StackTrace? stackTrace,
+    bool? fatal,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #reportCrash,
+          [exception],
+          {
+            #stackTrace: stackTrace,
+            #fatal: fatal,
+          },
+        ),
+        returnValueForMissingStub: null,
+      );
 }

@@ -11,6 +11,7 @@ import 'package:throwtrash/models/calendar_model.dart' as _i9;
 import 'package:throwtrash/models/trash_data.dart' as _i8;
 import 'package:throwtrash/models/user.dart' as _i2;
 import 'package:throwtrash/usecase/activation_api_interface.dart' as _i3;
+import 'package:throwtrash/usecase/crash_report_interface.dart' as _i10;
 import 'package:throwtrash/usecase/trash_repository_interface.dart' as _i7;
 import 'package:throwtrash/usecase/user_service_interface.dart' as _i6;
 
@@ -191,4 +192,32 @@ class MockTrashRepositoryInterface extends _i1.Mock
         ),
         returnValue: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
+}
+
+/// A class which mocks [CrashReportInterface].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCrashReportInterface extends _i1.Mock
+    implements _i10.CrashReportInterface {
+  MockCrashReportInterface() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  void reportCrash(
+    dynamic exception, {
+    StackTrace? stackTrace,
+    bool? fatal,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #reportCrash,
+          [exception],
+          {
+            #stackTrace: stackTrace,
+            #fatal: fatal,
+          },
+        ),
+        returnValueForMissingStub: null,
+      );
 }

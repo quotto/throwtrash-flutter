@@ -4,11 +4,10 @@ import 'package:throwtrash/usecase/account_link_api_interface.dart';
 import 'package:throwtrash/usecase/account_link_repository_interface.dart';
 import 'package:throwtrash/usecase/config_interface.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
+import 'package:throwtrash/usecase/crash_report_interface.dart';
 import 'package:throwtrash/usecase/user_repository_interface.dart';
 import 'package:throwtrash/usecase/start_link_exception.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
-
-import 'crash_report_service.dart';
 
 class AccountLinkService implements AccountLinkServiceInterface {
   late AccountLinkApiInterface _api;
@@ -16,8 +15,10 @@ class AccountLinkService implements AccountLinkServiceInterface {
   late UserRepositoryInterface _userRepository;
   late ConfigInterface _config;
   final Logger _logger = Logger();
-  final _crashReportService = CrashReportService();
-  AccountLinkService(this._config,this._api,this._accountLinkRepository, this._userRepository);
+  final CrashReportInterface _crashReport;
+
+  AccountLinkService(this._config,this._api,this._accountLinkRepository, this._userRepository, this._crashReport);
+
   @override
   Future<AccountLinkInfo?> getAccountLinkInfoWithCode(String code) async {
     AccountLinkInfo? savedAccountLink =  await _accountLinkRepository.readAccountLinkInfo();
@@ -33,7 +34,7 @@ class AccountLinkService implements AccountLinkServiceInterface {
       );
     }else {
       _logger.e("アカウントリンク情報が保存されていません");
-      _crashReportService.recordError(Exception("アカウントリンク情報が保存されていません"), fatal: true);
+      _crashReport.reportCrash(Exception("アカウントリンク情報が保存されていません"), fatal: true);
       return null;
     }
   }
@@ -50,7 +51,7 @@ class AccountLinkService implements AccountLinkServiceInterface {
       return accountLinkInfo;
     }
     _logger.e("アカウントリンク開始URLの取得に失敗しました");
-    _crashReportService.recordError(Exception("アカウントリンク開始URLの取得に失敗しました"), fatal: true);
+    _crashReport.reportCrash(Exception("アカウントリンク開始URLの取得に失敗しました"), fatal: true);
     throw StartLinkException("API呼び出しに失敗しました");
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:throwtrash/firebase_options.dart';
 import 'package:throwtrash/repository/activation_api.dart';
+import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
@@ -74,14 +75,16 @@ Future<void> initializeService({
       TrashDataService(
           _userService,
           trashRepository,
-          trashApi
+          trashApi,
+          CrashlyticsReport()
       );
   _config = Config();
   _accountLinkService = AccountLinkService(
       _config,
       accountLinkApi,
       accountLinkRepository,
-      userRepository
+      userRepository,
+      CrashlyticsReport()
   );
 }
 
@@ -146,7 +149,8 @@ class MyApp extends StatelessWidget {
           Provider<ShareServiceInterface>(create: (context) => ShareService(
               _activationApi,
               _userService,
-              _trashRepository
+              _trashRepository,
+              CrashlyticsReport()
           ))
         ],
         child: MaterialApp(

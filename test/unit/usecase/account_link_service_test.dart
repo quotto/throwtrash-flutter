@@ -5,6 +5,7 @@ import 'package:throwtrash/models/account_link_info.dart';
 import 'package:throwtrash/usecase/account_link_api_interface.dart';
 import 'package:throwtrash/usecase/account_link_repository_interface.dart';
 import 'package:throwtrash/usecase/config_interface.dart';
+import 'package:throwtrash/usecase/crash_report_interface.dart';
 import 'package:throwtrash/usecase/user_repository_interface.dart';
 import 'package:throwtrash/usecase/account_link_service.dart';
 import 'package:throwtrash/usecase/start_link_exception.dart';
@@ -13,7 +14,13 @@ import 'package:throwtrash/viewModels/account_link_model.dart';
 import 'account_link_service_test.mocks.dart';
 
 
-@GenerateMocks([AccountLinkApiInterface, AccountLinkRepositoryInterface,UserRepositoryInterface,ConfigInterface])
+@GenerateMocks([
+  AccountLinkApiInterface,
+  AccountLinkRepositoryInterface,
+  UserRepositoryInterface,
+  ConfigInterface,
+  CrashReportInterface
+])
 void main() {
   group('AccountLinkService', () {
     late MockAccountLinkApiInterface accountLinkApi;
@@ -21,13 +28,20 @@ void main() {
     late MockUserRepositoryInterface userRepository;
     late MockConfigInterface config;
     late AccountLinkService accountLinkService;
+    late MockCrashReportInterface crashReport;
 
     setUp(() {
       accountLinkApi = MockAccountLinkApiInterface();
       accountLinkRepository = MockAccountLinkRepositoryInterface();
       userRepository = MockUserRepositoryInterface();
       config = MockConfigInterface();
-      accountLinkService = AccountLinkService(config, accountLinkApi, accountLinkRepository, userRepository);
+      crashReport = MockCrashReportInterface();
+      accountLinkService = AccountLinkService(
+          config,
+          accountLinkApi,
+          accountLinkRepository,
+          userRepository,
+      crashReport);
     });
 
     test('getAccountLinkInfoWithCode returns correct AccountLinkInfo when savedAccountLink is not null', () async {

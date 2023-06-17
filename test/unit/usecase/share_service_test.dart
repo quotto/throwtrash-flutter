@@ -1,28 +1,34 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/activate_response.dart';
 import 'package:throwtrash/models/user.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
+import 'package:throwtrash/usecase/crash_report_interface.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
 import 'share_service_test.mocks.dart';
 
-@GenerateMocks([ActivationApiInterface,UserServiceInterface,TrashRepositoryInterface])
+@GenerateMocks([ActivationApiInterface,UserServiceInterface,TrashRepositoryInterface,CrashReportInterface])
 void main() {
   group('ShareService', () {
     late MockActivationApiInterface activationApi;
     late MockUserServiceInterface userService;
     late MockTrashRepositoryInterface trashRepository;
     late ShareService shareService;
+    late MockCrashReportInterface crashReport;
 
     setUp(() {
+      // Firebaseをモック化する
+
       activationApi = MockActivationApiInterface();
       userService = MockUserServiceInterface();
       trashRepository = MockTrashRepositoryInterface();
-      shareService = ShareService(activationApi, userService, trashRepository);
+      crashReport = MockCrashReportInterface();
+      shareService = ShareService(activationApi, userService, trashRepository, crashReport);
     });
 
     test('getActivationCode returns activation code', () async {
