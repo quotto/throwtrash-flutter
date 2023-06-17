@@ -45,6 +45,7 @@ dependencies:
   firebase_crashlytics: ^3.0.15
   webview_flutter: ^4.0.6
   flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.2.19
 
 dev_dependencies:
   flutter_test:
@@ -76,7 +77,11 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/images/app_icon.png"
-  adaptive_icon_background: "#000000"
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/images/splash.png"
+  background_color: "#ffffff"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
