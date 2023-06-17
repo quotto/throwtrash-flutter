@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
-import 'package:throwtrash/repository/activation_api_interface.dart';
-import 'package:throwtrash/repository/config_interface.dart';
+import 'package:throwtrash/usecase/activation_api_interface.dart';
+import 'package:throwtrash/usecase/config_interface.dart';
 
 import '../models/activate_response.dart';
 

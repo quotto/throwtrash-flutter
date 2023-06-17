@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/calendar_model.dart';
 import 'package:throwtrash/models/trash_data.dart';
-import 'package:throwtrash/repository/trash_repository_interface.dart';
+import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TrashRepository implements TrashRepositoryInterface {

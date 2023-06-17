@@ -1,5 +1,5 @@
 name: throwtrash
-description: A new Flutter project.
+description: 今日のゴミ出し
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -44,6 +44,7 @@ dependencies:
   fluttertoast: ^8.0.9
   firebase_crashlytics: ^3.0.15
   webview_flutter: ^4.0.6
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,12 @@ flutter:
   assets:
     - json/config.json
   #  - images/a_dot_ham.jpeg
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#000000"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

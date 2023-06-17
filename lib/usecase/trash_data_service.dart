@@ -3,12 +3,13 @@ import 'package:throwtrash/models/trash_api_register_response.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_sync_result.dart';
 import 'package:throwtrash/models/trash_update_result.dart';
-import 'package:throwtrash/repository/trash_api_interface.dart';
-import 'package:throwtrash/repository/trash_repository_interface.dart';
+import 'package:throwtrash/usecase/trash_api_interface.dart';
+import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
 import '../models/calendar_model.dart';
+import 'crash_report_service.dart';
 
 class TrashDataService implements TrashDataServiceInterface {
   List<TrashData> _schedule = [];
@@ -16,6 +17,7 @@ class TrashDataService implements TrashDataServiceInterface {
   final TrashRepositoryInterface _trashRepository;
   final TrashApiInterface _trashApiInterface;
   final _logger = Logger();
+  final _crashReportService = CrashReportService();
 
   TrashDataService(this._userService,this._trashRepository, this._trashApiInterface) {
     refreshTrashData();
@@ -263,7 +265,8 @@ class TrashDataService implements TrashDataServiceInterface {
     RegisterResponse? registerResponse = await _trashApiInterface
         .registerUserAndTrashData(localTrashList);
     if (registerResponse == null) {
-      _logger.e('Register error');
+      _logger.e('Failed register new user and trash data list');
+      _crashReportService.recordError(Exception('Failed register new user and trash data list'), fatal:  true);
       return;
     } else {
       _logger.d(
@@ -301,6 +304,7 @@ class TrashDataService implements TrashDataServiceInterface {
         .syncTrashData(_userService.user.id);
     if (trashSyncResult.syncResult == SyncResult.ERROR) {
       _logger.e('Failed sync, please try later.');
+      _crashReportService.recordError(Exception('Failed sync'), fatal:  true);
       return;
     }
 
@@ -326,6 +330,7 @@ class TrashDataService implements TrashDataServiceInterface {
             break;
           default:
             _logger.e('Failed update to remote from local, please try later.');
+            _crashReportService.recordError(Exception('Failed update to remote from local'), fatal:  true);
             break;
         }
       }

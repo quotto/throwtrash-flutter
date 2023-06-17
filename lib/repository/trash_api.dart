@@ -8,7 +8,7 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_response.dart';
 import 'package:throwtrash/models/trash_sync_result.dart';
 import 'package:throwtrash/models/trash_update_result.dart';
-import 'package:throwtrash/repository/trash_api_interface.dart';
+import 'package:throwtrash/usecase/trash_api_interface.dart';
 
 import '../models/trash_data_response.dart';
 

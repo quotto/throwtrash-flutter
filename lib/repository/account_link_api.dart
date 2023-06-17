@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/account_link_info.dart';
-import 'package:throwtrash/repository/account_link_api_interface.dart';
+import 'package:throwtrash/usecase/account_link_api_interface.dart';
 
 import '../viewModels/account_link_model.dart';
 
@@ -29,6 +29,7 @@ class AccountLinkApi implements AccountLinkApiInterface {
 
       } else {
         _logger.e("start account link invalid response body");
+        _logger.e(body.toString());
       }
       return null;
     } else {

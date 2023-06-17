@@ -1,4 +1,4 @@
-import 'package:throwtrash/repository/user_repository_interface.dart';
+import 'package:throwtrash/usecase/user_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserRepository implements UserRepositoryInterface {

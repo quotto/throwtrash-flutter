@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:throwtrash/repository/config_interface.dart';
+import 'package:throwtrash/usecase/config_interface.dart';
 
 class Config implements ConfigInterface {
   static Config? _instance;

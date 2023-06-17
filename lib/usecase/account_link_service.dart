@@ -1,25 +1,41 @@
+import 'package:logger/logger.dart';
 import 'package:throwtrash/models/account_link_info.dart';
-import 'package:throwtrash/repository/account_link_api_interface.dart';
-import 'package:throwtrash/repository/account_link_repository_interface.dart';
-import 'package:throwtrash/repository/config_interface.dart';
+import 'package:throwtrash/usecase/account_link_api_interface.dart';
+import 'package:throwtrash/usecase/account_link_repository_interface.dart';
+import 'package:throwtrash/usecase/config_interface.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
-import 'package:throwtrash/repository/user_repository_interface.dart';
+import 'package:throwtrash/usecase/user_repository_interface.dart';
 import 'package:throwtrash/usecase/start_link_exception.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
+
+import 'crash_report_service.dart';
 
 class AccountLinkService implements AccountLinkServiceInterface {
   late AccountLinkApiInterface _api;
   late AccountLinkRepositoryInterface _accountLinkRepository;
   late UserRepositoryInterface _userRepository;
   late ConfigInterface _config;
+  final Logger _logger = Logger();
+  final _crashReportService = CrashReportService();
   AccountLinkService(this._config,this._api,this._accountLinkRepository, this._userRepository);
   @override
   Future<AccountLinkInfo?> getAccountLinkInfoWithCode(String code) async {
     AccountLinkInfo? savedAccountLink =  await _accountLinkRepository.readAccountLinkInfo();
-    return savedAccountLink != null ? AccountLinkInfo(
-      "${this._config.mobileApiEndpoint}/enable_skill?code=$code&redirect_uri=${savedAccountLink.linkUrl}",
-      savedAccountLink.token
-    ) : null;
+
+    if(savedAccountLink != null) {
+      // savedAccountLink.linkUriからredirect_uriパラメータの値を取得する
+      String redirectUri = Uri.parse(savedAccountLink.linkUrl).queryParameters["redirect_uri"]!;
+      // savedAccountLink.linkUriからstateパラメータの値を取得する
+      String state = Uri.parse(savedAccountLink.linkUrl).queryParameters["state"]!;
+      return AccountLinkInfo(
+          "${this._config.mobileApiEndpoint}/enable_skill?code=$code&redirect_uri=$redirectUri&state=$state",
+          savedAccountLink.token
+      );
+    }else {
+      _logger.e("アカウントリンク情報が保存されていません");
+      _crashReportService.recordError(Exception("アカウントリンク情報が保存されていません"), fatal: true);
+      return null;
+    }
   }
 
   @override
@@ -33,6 +49,8 @@ class AccountLinkService implements AccountLinkServiceInterface {
       await this._accountLinkRepository.writeAccountLinkInfo(accountLinkInfo);
       return accountLinkInfo;
     }
+    _logger.e("アカウントリンク開始URLの取得に失敗しました");
+    _crashReportService.recordError(Exception("アカウントリンク開始URLの取得に失敗しました"), fatal: true);
     throw StartLinkException("API呼び出しに失敗しました");
   }
 }
