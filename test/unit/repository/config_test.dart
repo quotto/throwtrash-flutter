@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:throwtrash/repository/config.dart';
-import 'package:throwtrash/repository/config_interface.dart';
+import 'package:throwtrash/usecase/config_interface.dart';
 
 void main(){
   setUpAll(() {
