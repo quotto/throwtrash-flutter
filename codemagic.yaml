@@ -33,7 +33,7 @@ workflows:
         script: flutter pub get
       - name: Install pods
         script: |
-          pod install
+           find . -name "Podfile" -execdir pod install \;
       - name: Run unit tests
         script: |
           mkdir -p test-results
