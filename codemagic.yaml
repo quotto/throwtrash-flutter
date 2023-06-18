@@ -62,4 +62,8 @@ workflows:
         beta_groups:
           - MyInternalGroup
       slack:
-        channel: '#monitor'
+        channel: '#cicd'
+        notify_on_build_start: false
+        notify:
+          success: true
+          failure: true
