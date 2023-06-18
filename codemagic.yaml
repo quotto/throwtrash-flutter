@@ -10,7 +10,7 @@ workflows:
         - production
       ios_signing:
         distribution_type: app_store
-        build_identifier: net.mythrowaway
+        bundle_identifier: net.mythrowaway
       vars:
         MAJOR: "1"
         MINOR: "0"
