@@ -36,6 +36,7 @@ workflows:
       - name: Overwrite Api Config
         script: |
           echo "{\"mobileApiEndpoint\": \"${MOBILE_API_URL}\", \"apiEndpoint\": \"${BACKEND_API_URL}\", \"apiErrorUrl\": \"${BACKEND_ERROR_URL}\"}" > json/config.json
+          rm json/config.json.sample
       - name: Install dependencies
         script: flutter pub get
       - name: Install pods
