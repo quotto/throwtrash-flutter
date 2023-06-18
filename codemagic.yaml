@@ -8,12 +8,17 @@ workflows:
     environment:
       groups:
         - production
+      ios_signing:
+        distribution_type: app_store
+        build_identifier: net.mythrowaway
       vars:
         MAJOR: "1"
         MINOR: "0"
         BUNDLE_ID: "net.mythrowaway"
-      flutter: "3.7.6"
-      xcode: "14.2"
+      flutter: 3.7.6
+      xcode: 14.2
+      cocoaPods: 1.12.0
+      ruby: 3.0.2
     cache:
       cache_paths:
         - ~/.pub-cache
@@ -39,15 +44,15 @@ workflows:
           mkdir -p test-results
           flutter test --machine > test-results/flutter.json
         test_report: test-results/flutter.json
-      - name: Set up keychain to be used for codesigning using Codemagic CLI 'keychain' command
-        script: |
-          keychain initialize
-      - name: Fetch signing files
-        script: |
-          app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create
-      - name: Use system default keychain
-        script: |
-          keychain add-certificates
+      # - name: Set up keychain to be used for codesigning using Codemagic CLI 'keychain' command
+      #   script: |
+      #     keychain initialize
+      # - name: Fetch signing files
+      #   script: |
+      #     app-store-connect fetch-signing-files $BUNDLE_ID --type IOS_APP_STORE --create
+      # - name: Use system default keychain
+      #   script: |
+      #     keychain add-certificates
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Flutter build ipa
