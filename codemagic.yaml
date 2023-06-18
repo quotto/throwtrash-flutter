@@ -18,7 +18,7 @@ workflows:
       flutter: 3.7.6
       xcode: 14.2
       cocoapods: 1.12.0
-      ruby: 3.0.2
+      ruby: 3.0.4
     cache:
       cache_paths:
         - ~/.pub-cache
