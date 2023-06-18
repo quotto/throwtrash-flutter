@@ -1,0 +1,62 @@
+workflows:
+  ios-release:
+    name: iOS Release Workflow
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      groups:
+        - production
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: net.mythrowtrash
+      vars:
+        - MAJOR: 1
+        - MINOR: 0
+      flutter: 3.7.6
+      xcode: 14.2
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+          source: true
+      cancel_previous_builds: false
+    scripts:
+      - name: Overwrite Api Config
+        script: |
+          echo "{\"mobileApiEndpoint\": \"${MOBILE_API_URL}\", \"apiEndpoint\": \"${BACKEND_API_URL}\", \"apiErrorUrl\": \"${BACKEND_ERROR_URL}\"}" > json/config.json
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Run unit tests
+        script: |
+          mkdir -p test-results
+          flutter test --machine > test-results/flutter.json
+        test_report: test-results/flutter.json
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release \
+            --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
+            --build-number=${BUILD_NUMBER} \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/**/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - MyInternalGroup
+    publishing:
+      slack:
+        channel: '#monitor'
