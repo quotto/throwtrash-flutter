@@ -42,6 +42,6 @@ ios/Pods
 ### Flutter ###
 ios/Flutter/Flutter.podspec
 
-.fvm/
+.fvm/flutter_sdk
 
 json/config.json
