@@ -12,10 +12,10 @@ workflows:
         distribution_type: app_store
         bundle_identifier: net.mythrowtrash
       vars:
-        - MAJOR: 1
-        - MINOR: 0
-      flutter: 3.7.6
-      xcode: 14.2
+        - MAJOR: "1"
+        - MINOR: "0"
+      flutter: "3.7.6"
+      xcode: "14.2"
     cache:
       cache_paths:
         - ~/.pub-cache
