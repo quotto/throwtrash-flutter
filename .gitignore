@@ -43,3 +43,5 @@ ios/Pods
 ios/Flutter/Flutter.podspec
 
 .fvm/
+
+json/config.json
