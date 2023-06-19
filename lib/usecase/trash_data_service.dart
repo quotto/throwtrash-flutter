@@ -9,7 +9,6 @@ import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
 import '../models/calendar_model.dart';
-import '../repository/crashlytics_report.dart';
 import 'crash_report_interface.dart';
 
 class TrashDataService implements TrashDataServiceInterface {
@@ -90,22 +89,22 @@ class TrashDataService implements TrashDataServiceInterface {
   @override
   Future<bool> addTrashData(TrashData trashData)  async {
     return await _trashRepository.insertTrashData(trashData) &&
-        await _changeSyncStatusToSyncing() &&
-        await refreshTrashData();
+        await _changeSyncStatusToSyncing(); //&&
+        // await refreshTrashData();
   }
 
   @override
   Future<bool> updateTrashData(TrashData trashData) async {
     return await _trashRepository.updateTrashData(trashData) &&
-        await _changeSyncStatusToSyncing() &&
-        await refreshTrashData();
+        await _changeSyncStatusToSyncing(); //&&
+        // await refreshTrashData();
   }
 
   @override
   Future<bool> deleteTrashData(String id) async {
     return await _trashRepository.deleteTrashData(id) &&
-        await _changeSyncStatusToSyncing() &&
-        await refreshTrashData();
+        await _changeSyncStatusToSyncing(); //&&
+        // await refreshTrashData();
   }
 
   Future<bool> _changeSyncStatusToSyncing() async {
@@ -313,36 +312,38 @@ class TrashDataService implements TrashDataServiceInterface {
     _logger.d('Local Timestamp=$localTimestamp');
     if(trashSyncResult.timestamp == localTimestamp &&
       await _trashRepository.getSyncStatus() == SyncStatus.SYNCING) {
-      if(true) {
-        var response = await _trashApiInterface.updateTrashData(
-            _userService.user.id, localSchedule, localTimestamp);
-        switch (response.updateResult) {
-          case UpdateResult.SUCCESS:
-            _logger.d("Update succeed local to remote");
-            await _updateLocalTimestamp(response.timestamp);
-            break;
-          case UpdateResult.NO_MATCH:
-          // 同期確認からアップデートの間に他のユーザーがデータを更新したケース
-            _logger.d(
-                'Local timestamp $localTimestamp is not match remote timestamp ${response
-                    .timestamp},try sync to local from remote');
-            await _syncRemoteToLocal(trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
-            await refreshTrashData();
-            break;
-          default:
-            _logger.e('Failed update to remote from local, please try later.');
-            _crashReport.reportCrash(Exception('Failed update to remote from local'), fatal:  true);
-            break;
-        }
+      final response = await _trashApiInterface.updateTrashData(
+          _userService.user.id, localSchedule, localTimestamp);
+      switch (response.updateResult) {
+        case UpdateResult.SUCCESS:
+          _logger.d("Update succeed local to remote");
+          await _updateLocalTimestamp(response.timestamp);
+          // 同期ステータスを同期済みにする
+          await _trashRepository.setSyncStatus(SyncStatus.COMPLETE);
+          break;
+        case UpdateResult.NO_MATCH:
+        // 同期確認からアップデートの間に他のユーザーがデータを更新したケース
+          _logger.d(
+              'Local timestamp $localTimestamp is not match remote timestamp ${response
+                  .timestamp},try sync to local from remote');
+          await _syncRemoteToLocal(trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
+          await refreshTrashData();
+          // 同期ステータスを同期済みにする
+          await _trashRepository.setSyncStatus(SyncStatus.COMPLETE);
+          break;
+        default:
+          _logger.e('Failed update to remote from local, please try later.');
+          _crashReport.reportCrash(Exception('Failed update to remote from local'), fatal:  true);
+          break;
       }
     } else if(trashSyncResult.timestamp != localTimestamp) {
       _logger.d(
           'Local timestamp $localTimestamp is not match remote timestamp ${trashSyncResult.timestamp},try sync to local from remote');
       await _syncRemoteToLocal(trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
-      await refreshTrashData();
     } else {
-      _logger.d('Local timestamp equal remote timestamp, not exec update.');
+      _logger.d('Local timestamp equal remote timestamp, skip update.');
     }
+    await refreshTrashData();
   }
 
 

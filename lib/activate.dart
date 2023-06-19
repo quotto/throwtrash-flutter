@@ -26,6 +26,7 @@ class _Activate extends State<Activate> {
                 seconds: 2
             ),
           ));
+          Navigator.pop(context, true);
         } else if(_activationModel.status == ActivationStatus.FAILED) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             backgroundColor: Colors.red,

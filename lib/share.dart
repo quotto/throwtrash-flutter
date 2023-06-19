@@ -63,7 +63,11 @@ class _ShareState extends State<Share> {
                                 child: Activate(),
                               )
                           )
-                      );
+                      ).then((activationResult) {
+                        if(activationResult != null && activationResult) {
+                          Navigator.pop(context, true);
+                        }
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.secondary,

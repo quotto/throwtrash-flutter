@@ -16,7 +16,6 @@ import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/edit.dart';
 import 'package:throwtrash/list.dart';
@@ -46,7 +45,6 @@ import 'package:http/http.dart' as http;
 
 import 'account_link.dart';
 import 'viewModels/calendar_model.dart';
-import 'package:timezone/data/latest.dart' as tz;
 
 late final UserServiceInterface _userService;
 late final TrashDataServiceInterface _trashDataService;
@@ -237,8 +235,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     super.initState();
     initUniLinks(_accountLinkService);
 
-    tz.initializeTimeZones();
-
     CalendarModel calendarModel =
     Provider.of<CalendarModel>(context, listen: false);
     controller.addListener(() {
@@ -255,13 +251,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       calendarModel.reload();
     });
-  }
-
-  void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
-    final String? payload = notificationResponse.payload;
-    if (notificationResponse.payload != null) {
-      debugPrint('notification payload: $payload');
-    }
   }
 
   Flexible _flexibleRowWeek(
@@ -439,7 +428,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           MaterialPageRoute(
                               builder: (context)=>
                                   Share())
-                      );
+                      ).then((activationResult) {
+                        if(activationResult != null && activationResult) {
+                          calendar.reload();
+                        }
+                      });
                     }),
                 ListTile(
                     title: Text("アレクサ連携"),

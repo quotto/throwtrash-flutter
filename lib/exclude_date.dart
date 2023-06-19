@@ -19,7 +19,6 @@ class _ExcludeDateState extends State<ExcludeDateView> {
           List<Widget> columnChildren = [];
           List<Widget> listViewChildren = [];
           excludeViewModel.excludeDates.asMap().forEach((index, pair) {
-            print(excludeViewModel.maxDate);
             listViewChildren.add(
               Row(
                 mainAxisSize: MainAxisSize.max,

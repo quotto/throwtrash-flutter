@@ -9,8 +9,6 @@ import 'package:throwtrash/usecase/activation_api_interface.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
-import '../repository/crashlytics_report.dart';
-
 class ShareService implements ShareServiceInterface {
   final ActivationApiInterface _activationApi;
   final UserServiceInterface _userService;
