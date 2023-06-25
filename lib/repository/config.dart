@@ -17,7 +17,8 @@ class Config implements ConfigInterface {
   }
 
   Future<void> initialize() async {
-    String configStr = await rootBundle.loadString('json/config.json');
+    const String flavor = String.fromEnvironment('flavor');
+    String configStr = await rootBundle.loadString('json/$flavor/config.json');
     Map<String, dynamic> config = json.decode(configStr);
     _instance!._apiEndpoint = config["apiEndpoint"]!;
     _instance!._mobileApiEndpoint = config["mobileApiEndpoint"]!;

@@ -1,5 +1,0 @@
-{
-  "mobileApiEndpoint": "http://localhost:3000/api",
-  "apiEndpoint": "http://localhost:3000/api",
-  "apiErrorUrl": "http://localhost:3000/error",
-}

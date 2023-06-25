@@ -1,0 +1,6 @@
+{
+  "flavor": "development",
+  "appNameSuffix": ".dev",
+  "appIdSuffix": ".dev",
+  "firebaseAppId": "1:248743628975:ios:9368f25805f2a0b55ac45a"
+}
