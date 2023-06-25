@@ -46,6 +46,7 @@ workflows:
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
+            --dart-define-from-file=dart_defines/production.json \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
