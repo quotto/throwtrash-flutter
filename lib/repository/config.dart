@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:throwtrash/usecase/config_interface.dart';
+import 'package:throwtrash/usecase/environment_provider_interface.dart';
 
 class Config implements ConfigInterface {
   static Config? _instance;
@@ -18,9 +18,8 @@ class Config implements ConfigInterface {
     return _instance!;
   }
 
-  Future<void> initialize() async {
-    const String flavor = String.fromEnvironment('flavor');
-    String configStr = await rootBundle.loadString('json/$flavor/config.json');
+  Future<void> initialize(EnvironmentProviderInterface environmentProvider) async {
+    String configStr = await rootBundle.loadString('json/${environmentProvider.flavor}/config.json');
     Map<String, dynamic> config = json.decode(configStr);
     _instance!._apiEndpoint = config["apiEndpoint"]!;
     _instance!._mobileApiEndpoint = config["mobileApiEndpoint"]!;
@@ -28,11 +27,9 @@ class Config implements ConfigInterface {
 
     // package_info_plusを使ってバージョン情報を取得してインスタンス変数に格納
     // flavorがdevの場合はサフィックスを付与する
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String version = packageInfo.version;
-    if(flavor!="production") {
-      const String suffix = String.fromEnvironment('appIdSuffix');
-      version = "$version$suffix";
+    String version = environmentProvider.versionName;
+    if(environmentProvider.flavor!="production") {
+      version = "$version${environmentProvider.appNameSuffix}";
     }
     _instance!._version = version;
   }

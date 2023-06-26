@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:throwtrash/firebase_options.dart';
 import 'package:throwtrash/repository/activation_api.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
+import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
@@ -98,7 +99,9 @@ await Firebase.initializeApp(
       return true;
     };
 
-  await Config().initialize();
+  final environmentProvider = EnvironmentProvider();
+  await environmentProvider.initialize();
+  await Config().initialize(environmentProvider);
 
   _trashApi = TrashApi(Config().mobileApiEndpoint, http.Client());
   _activationApi = ActivationApi(Config(), http.Client());
