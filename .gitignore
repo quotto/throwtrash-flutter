@@ -44,4 +44,4 @@ ios/Flutter/Flutter.podspec
 lib/generated_plugin_registrant.dart
 
 .fvm/flutter_sdk
-ios/GoogleService-Info.plist
+ios/Runner/GoogleService-Info.plist

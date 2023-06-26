@@ -367,149 +367,168 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ],
           ),
           drawer: Drawer(
-            child: ListView(
-              children: <Widget>[
-                ListTile(
-                    title: Text("追加"),
-                    leading: Padding(
-                        padding: const EdgeInsets.all(1.0),
-                        child: Icon(Icons.add)),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<EditModel>(
-                                      create: (context) => EditModel(
-                                        Provider.of<
-                                            TrashDataServiceInterface>(
-                                            context,
-                                            listen: false),
-                                      ),
-                                      child: EditItemMain()))
-                      ).then((result) {
-                        if (result != null && result) {
-                          calendar.reload();
-                        }
-                      });
-                    }
-                  ),
-                ListTile(
-                    title: Text("編集"),
-                    leading: Padding(
-                        padding: const EdgeInsets.all(1.0),
-                        child: Icon(Icons.edit)),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChangeNotifierProvider<
-                                  ListModel>(
-                                  create: (context) => ListModel(
-                                      Provider.of<TrashDataServiceInterface>(
-                                          context,
-                                          listen: false)),
-                                  child: TrashList()))
-                      ).then((result) {
-                        calendar.reload();
-                      });
-                    }),
-                ListTile(
-                    title: Text("スケジュールの共有"),
-                    leading: Padding(
-                        padding: const EdgeInsets.all(1.0),
-                        child: Icon(Icons.share)),
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context)=>
-                                  Share())
-                      ).then((activationResult) {
-                        if(activationResult != null && activationResult) {
-                          calendar.reload();
-                        }
-                      });
-                    }),
-                ListTile(
-                    title: Text("アレクサ連携"),
-                    leading: Padding(
-                        padding: const EdgeInsets.all(1.0),
-                        child: Icon(Icons.speaker)),
-                    onTap: () async {
-                      AccountLinkModel accountLinkModel = AccountLinkModel(
-                        Provider.of<AccountLinkServiceInterface>(context, listen: false)
-                      );
-                      accountLinkModel.addListener(() {
-                        if(accountLinkModel.accountLinkType == AccountLinkType.iOS) {
-                          launchUrl(
-                              Uri.parse(accountLinkModel.accountLinkInfo.linkUrl),
-                              mode: LaunchMode.externalNonBrowserApplication
-                          ).then((value) {
-                            if(!value) {
-                              _logger.w("アレクサアプリがインストールされていません, ブラウザでアカウントリンクを開始します");
-                              accountLinkModel.startLinkAsWeb();
-                            }
-                          });
-                        } else {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) =>
-                                  ChangeNotifierProvider<AccountLinkModel>(
-                                      create: (context) =>
-                                      accountLinkModel,
-                                      child: AccountLink()
+            child: Column(
+                children:[
+                  Expanded(
+                    child:
+                    ListView(
+                      // スクロールは無効化する
+                        physics: NeverScrollableScrollPhysics(),
+                        children: <Widget>[
+                          ListTile(
+                              title: Text("追加"),
+                              leading: Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: Icon(Icons.add)),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ChangeNotifierProvider<EditModel>(
+                                                create: (context) => EditModel(
+                                                  Provider.of<
+                                                      TrashDataServiceInterface>(
+                                                      context,
+                                                      listen: false),
+                                                ),
+                                                child: EditItemMain()))
+                                ).then((result) {
+                                  if (result != null && result) {
+                                    calendar.reload();
+                                  }
+                                });
+                              }
+                          ),
+                          ListTile(
+                              title: Text("編集"),
+                              leading: Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: Icon(Icons.edit)),
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ChangeNotifierProvider<
+                                            ListModel>(
+                                            create: (context) => ListModel(
+                                                Provider.of<TrashDataServiceInterface>(
+                                                    context,
+                                                    listen: false)),
+                                            child: TrashList()))
+                                ).then((result) {
+                                  calendar.reload();
+                                });
+                              }),
+                          ListTile(
+                              title: Text("スケジュールの共有"),
+                              leading: Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: Icon(Icons.share)),
+                              onTap: () async {
+                                Navigator.of(context).pop();
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context)=>
+                                            Share())
+                                ).then((activationResult) {
+                                  if(activationResult != null && activationResult) {
+                                    calendar.reload();
+                                  }
+                                });
+                              }),
+                          ListTile(
+                              title: Text("アレクサ連携"),
+                              leading: Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: Icon(Icons.speaker)),
+                              onTap: () async {
+                                AccountLinkModel accountLinkModel = AccountLinkModel(
+                                    Provider.of<AccountLinkServiceInterface>(context, listen: false)
+                                );
+                                accountLinkModel.addListener(() {
+                                  if(accountLinkModel.accountLinkType == AccountLinkType.iOS) {
+                                    launchUrl(
+                                        Uri.parse(accountLinkModel.accountLinkInfo.linkUrl),
+                                        mode: LaunchMode.externalNonBrowserApplication
+                                    ).then((value) {
+                                      if(!value) {
+                                        _logger.w("アレクサアプリがインストールされていません, ブラウザでアカウントリンクを開始します");
+                                        accountLinkModel.startLinkAsWeb();
+                                      }
+                                    });
+                                  } else {
+                                    Navigator.of(context).pop();
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) =>
+                                            ChangeNotifierProvider<AccountLinkModel>(
+                                                create: (context) =>
+                                                accountLinkModel,
+                                                child: AccountLink()
+                                            )
+                                        )
+                                    );
+                                  }
+                                });
+                                accountLinkModel.startLinkAsIOS();
+                              }),
+                          ListTile(
+                            title: Text("ユーザー情報"),
+                            leading: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.person)),
+                            onTap: (){
+                              Navigator.of(context).pop();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context)  => UserInfo()
                                   )
-                              )
-                          );
-                        }
-                      });
-                      accountLinkModel.startLinkAsIOS();
-                    }),
-                ListTile(
-                  title: Text("ユーザー情報"),
-                  leading: Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: Icon(Icons.person)),
-                  onTap: (){
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context)  => UserInfo()
-                      )
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text("ライセンス"),
-                  leading: Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: Icon(Icons.info)),
-                  onTap: (){
-                    showLicensePage(
-                        context: context,
-                        applicationVersion: "1.0",
-                        applicationName: "今日のゴミ出し",
-                        applicationIcon: Icon(Icons.account_circle_outlined)
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Text("問い合わせ"),
-                  leading: Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: Icon(Icons.mail)),
-                  onTap: () {
-                    Uri askFormUri = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLScQiZNzcYKgto1mQYAmxmo49RTuAnvtmkk3BQ02MsVlE4OmHg/viewform");
-                    launchUrl(askFormUri);
-                  },
-                )
-              ],
+                              );
+                            },
+                          ),
+                          ListTile(
+                            title: Text("ライセンス"),
+                            leading: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.info)),
+                            onTap: (){
+                              showLicensePage(
+                                  context: context,
+                                  applicationVersion: "1.0",
+                                  applicationName: "今日のゴミ出し",
+                                  applicationIcon: Icon(Icons.account_circle_outlined)
+                              );
+                            },
+                          ),
+                          ListTile(
+                            title: Text("問い合わせ"),
+                            leading: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.mail)),
+                            onTap: () {
+                              Uri askFormUri = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLScQiZNzcYKgto1mQYAmxmo49RTuAnvtmkk3BQ02MsVlE4OmHg/viewform");
+                              launchUrl(askFormUri);
+                            },
+                          ),
+                        ]
+                    ),
+                  ),
+                  Container(
+                    child: Text(
+                      "Version ${_config.version}",
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ]
             ),
           ),
           body: Stack(
