@@ -147,14 +147,10 @@ class MockConfigInterface extends _i1.Mock implements _i8.ConfigInterface {
         returnValue: '',
       ) as String);
   @override
-  _i3.Future<void> initialize() => (super.noSuchMethod(
-        Invocation.method(
-          #initialize,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  String get version => (super.noSuchMethod(
+        Invocation.getter(#version),
+        returnValue: '',
+      ) as String);
 }
 
 /// A class which mocks [CrashReportInterface].

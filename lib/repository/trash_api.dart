@@ -84,14 +84,14 @@ class TrashApi implements TrashApiInterface {
           return TrashDataResponse.fromJson(element).toTrashData();
         }).toList();
         return TrashSyncResult(
-            trashDataList, trashResponse.timestamp, SyncResult.SUCCESS);
+            trashDataList, trashResponse.timestamp, TrashApiSyncStatus.SUCCESS);
       } catch(e) {
         _logger.e("failed decode remote trash data cause by: $e");
-        return TrashSyncResult([], -1, SyncResult.ERROR);
+        return TrashSyncResult([], -1, TrashApiSyncStatus.ERROR);
       }
     } else {
       _logger.e("failed get remote trash data cause by: ${response.body}");
-      return TrashSyncResult([], -1, SyncResult.ERROR);
+      return TrashSyncResult([], -1, TrashApiSyncStatus.ERROR);
     }
   }
 

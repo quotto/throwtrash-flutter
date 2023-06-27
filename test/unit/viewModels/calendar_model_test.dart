@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
+import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/viewmodels/calendar_model.dart';
 import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
@@ -172,7 +173,7 @@ void main() {
       TrashData(id: '2', type: 'unburn', trashVal: 'Sample Trash B'),
       TrashData(id: '3', type: 'plastic', trashVal: 'Sample Trash C'),
     ];
-    when(trashDataService.syncTrashData()).thenAnswer((_) async => {});
+    when(trashDataService.syncTrashData()).thenAnswer((_) async => SyncResult.skipped);
     when(trashDataService.getEnableTrashList(
         year: anyNamed('year'),
         month: anyNamed('month'),

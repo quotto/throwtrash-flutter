@@ -1,7 +1,6 @@
 import 'package:throwtrash/models/trash_data.dart';
-import 'package:throwtrash/models/trash_response.dart';
 
-enum SyncResult {
+enum TrashApiSyncStatus {
   SUCCESS,
   NO_MATCH,
   ERROR
@@ -9,6 +8,6 @@ enum SyncResult {
 class TrashSyncResult {
   final List<TrashData> allTrashDataList;
   final int timestamp;
-  final SyncResult syncResult;
+  final TrashApiSyncStatus syncResult;
   TrashSyncResult(this.allTrashDataList, this.timestamp, this.syncResult);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/usecase/calendar_service.dart';
+import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 
 import '../models/trash_data.dart';
@@ -26,6 +27,7 @@ class CalendarModel extends ChangeNotifier {
     List<List<List<DisplayTrashData>>> _calendarsTrashList = [];
     List<List<int>> _calendarsDateList = [];
     LoadingStatus _loadingStatus = LoadingStatus.loading;
+    SyncResult _syncResult = SyncResult.skipped;
 
     int _year = 0;
     int _month = 0;
@@ -47,6 +49,8 @@ class CalendarModel extends ChangeNotifier {
     List<List<List<DisplayTrashData>>> get calendarsTrashList => _calendarsTrashList;
 
     List<List<int>> get calendarsDateList => _calendarsDateList;
+
+    SyncResult get syncResult => _syncResult;
 
     CalendarService _calendarUseCase;
     TrashDataServiceInterface _trashDataService;
@@ -164,8 +168,10 @@ class CalendarModel extends ChangeNotifier {
 
     void reload() {
         _loadingStatus = LoadingStatus.loading;
+        _syncResult = SyncResult.skipped;
         notifyListeners();
-        _trashDataService.syncTrashData().then((_) {
+        _trashDataService.syncTrashData().then((syncResult) {
+            _syncResult = syncResult;
             for (int index = 0; index < _calendarsDateList.length; index++) {
                 int sub = index - _currentPage;
                 int targetMonth = _month + sub;

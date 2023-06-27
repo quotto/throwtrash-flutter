@@ -1,4 +1,5 @@
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/usecase/sync_result.dart';
 
 abstract class TrashDataServiceInterface {
   static Map<String, String> get trashNameMap=> {};
@@ -16,7 +17,7 @@ abstract class TrashDataServiceInterface {
   Future<bool> deleteTrashData(String id);
   TrashData? getTrashDataById(String id);
   Future<bool> updateTrashData(TrashData trashData);
-  Future<void> syncTrashData();
+  Future<SyncResult> syncTrashData();
 
   /// 5週間分全てのゴミを返す
   /// @param

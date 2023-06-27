@@ -10,6 +10,7 @@ import 'package:throwtrash/repository/activation_api.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
+import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
 import 'package:throwtrash/usecase/share_service.dart';
@@ -178,6 +179,21 @@ class CalendarWidget extends StatefulWidget {
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
+  final _rollbackSnackBar = SnackBar(
+    backgroundColor: Colors.amber,
+    content: Text('他の端末でスケジュールが更新されました。', style: TextStyle(color: Colors.white)),
+    duration: Duration(
+        seconds: 1
+    ),
+  );
+  final _failedSnackBar = SnackBar(
+    backgroundColor: Colors.pink,
+    content: Text('データの更新に失敗しました。', style: TextStyle(color: Colors.white)),
+    duration: Duration(
+        seconds: 1
+    ),
+  );
+
   final Color _sundayColor = Colors.redAccent;
   final Color _saturdayColor = Colors.blue;
   final Color _notThisMonthColor = Colors.grey[300]!;
@@ -240,6 +256,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
     CalendarModel calendarModel =
     Provider.of<CalendarModel>(context, listen: false);
+    calendarModel.addListener(() async {
+      if(!calendarModel.isLoading()) {
+        if (calendarModel.syncResult == SyncResult.failed) {
+          ScaffoldMessenger.of(context).showSnackBar(_failedSnackBar);
+          await Future.delayed(Duration(milliseconds: 1000));
+        } else if (calendarModel.syncResult == SyncResult.rollback) {
+          ScaffoldMessenger.of(context).showSnackBar(_rollbackSnackBar);
+          await Future.delayed(Duration(milliseconds: 1000));
+        }
+      }
+    });
     controller.addListener(() {
       if (controller.page == controller.page!.toInt()) {
         if (controller.page! > calendarModel.currentPage) {
@@ -422,6 +449,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                                     listen: false)),
                                             child: TrashList()))
                                 ).then((result) {
+                                  // 編集・削除ではデータの更新有無が判別できないためリロード処理を強制実行する
                                   calendar.reload();
                                 });
                               }),

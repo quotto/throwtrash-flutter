@@ -7,6 +7,7 @@ import 'dart:async' as _i4;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:throwtrash/models/trash_data.dart' as _i3;
+import 'package:throwtrash/usecase/sync_result.dart' as _i5;
 import 'package:throwtrash/usecase/trash_data_service.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -134,12 +135,11 @@ class MockTrashDataService extends _i1.Mock implements _i2.TrashDataService {
         returnValue: <_i3.TrashData>[],
       ) as List<_i3.TrashData>);
   @override
-  _i4.Future<void> syncTrashData() => (super.noSuchMethod(
+  _i4.Future<_i5.SyncResult> syncTrashData() => (super.noSuchMethod(
         Invocation.method(
           #syncTrashData,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i4.Future<_i5.SyncResult>.value(_i5.SyncResult.skipped),
+      ) as _i4.Future<_i5.SyncResult>);
 }

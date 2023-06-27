@@ -198,7 +198,7 @@ void main() {
       TrashSyncResult result = await trashApi.syncTrashData("test_user_id");
       expect(result, isNotNull);
       expect(result.timestamp, 12345678);
-      expect(result.syncResult, SyncResult.SUCCESS);
+      expect(result.syncResult, TrashApiSyncStatus.SUCCESS);
       expect(result.allTrashDataList.length, 4);
       expect(result.allTrashDataList[0].id, "1");
       expect(result.allTrashDataList[0].type, "burn");
@@ -240,7 +240,7 @@ void main() {
       TrashSyncResult result = await trashApi.syncTrashData("test_user_id");
       expect(result, isNotNull);
       expect(result.timestamp, -1);
-      expect(result.syncResult, SyncResult.ERROR);
+      expect(result.syncResult, TrashApiSyncStatus.ERROR);
       expect(result.allTrashDataList.length, 0);
     });
     test(
@@ -259,7 +259,7 @@ void main() {
       TrashSyncResult result = await trashApi.syncTrashData("test_user_id");
       expect(result, isNotNull);
       expect(result.timestamp, -1);
-      expect(result.syncResult, SyncResult.ERROR);
+      expect(result.syncResult, TrashApiSyncStatus.ERROR);
       expect(result.allTrashDataList.length, 0);
     });
   });

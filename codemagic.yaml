@@ -31,6 +31,13 @@ workflows:
           source: true
       cancel_previous_builds: false
     scripts:
+      # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
+      # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
+      # このため事前にbundle identifierをnet.mythrowawayに置換する
+      - name: Replace bundle identifier
+        script: |
+          #!/bin/bash
+          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway;/g'
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Install dependencies

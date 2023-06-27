@@ -8,6 +8,7 @@ import 'dart:async' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:throwtrash/models/trash_data.dart' as _i4;
 import 'package:throwtrash/usecase/calendar_service.dart' as _i2;
+import 'package:throwtrash/usecase/sync_result.dart' as _i6;
 import 'package:throwtrash/usecase/trash_data_service_interface.dart' as _i3;
 
 // ignore_for_file: type=lint
@@ -125,14 +126,13 @@ class MockTrashDataServiceInterface extends _i1.Mock
         returnValue: _i5.Future<bool>.value(false),
       ) as _i5.Future<bool>);
   @override
-  _i5.Future<void> syncTrashData() => (super.noSuchMethod(
+  _i5.Future<_i6.SyncResult> syncTrashData() => (super.noSuchMethod(
         Invocation.method(
           #syncTrashData,
           [],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i5.Future<_i6.SyncResult>.value(_i6.SyncResult.skipped),
+      ) as _i5.Future<_i6.SyncResult>);
   @override
   List<List<_i4.TrashData>> getEnableTrashList({
     required int? year,
