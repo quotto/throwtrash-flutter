@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:logger/logger.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
@@ -18,6 +19,7 @@ enum EditType {
 
 class EditModel extends ChangeNotifier {
   final TrashDataServiceInterface _trashDataService;
+  final Logger _logger = Logger();
   late TrashData _trashData;
   EditState _editState = EditState.EDIT;
   EditType _editType = EditType.NEW;
@@ -125,10 +127,31 @@ class EditModel extends ChangeNotifier {
     return false;
   }
 
+  // 隔週スケジュールの開始日時を直前の日曜日に変更する
+  TrashData _getRemappedEveScheduleTrashData() {
+    TrashData remappedTrashData = TrashData.fromJson(_trashData.toJson());
+    remappedTrashData.schedules = remappedTrashData.schedules.map((element) {
+      if(element.type == 'evweek') {
+        DateTime start = DateTime.parse(element.value['start']);
+        _logger.d("remapEvSchedule: before -> ${element.value}");
+        // 日曜日からの差分を求める
+        // DartのDateTimeでは月曜日が1、日曜日が7となるため、日曜日が0となるように変換する
+        int startWeekday = start.weekday == 7 ? 0 : start.weekday;
+        int diff = 0 - startWeekday;
+        DateTime newStart = start.add(Duration(days: diff));
+        element.value['start'] = newStart.toIso8601String().substring(0,10);
+        _logger.d("remapEvSchedule: after -> ${element.value}");
+      }
+      return element;
+    }).toList();
+
+    return remappedTrashData;
+  }
+
   Future<bool> _registerTrashData() async {
     if(_editState != EditState.PROCESSING && _editState != EditState.COMPLETE) {
       _editState = EditState.PROCESSING;
-      return _trashDataService.addTrashData(_trashData).then((result) {
+      return _trashDataService.addTrashData(_getRemappedEveScheduleTrashData()).then((result) {
         _editState = result ? EditState.COMPLETE : EditState.ERROR;
         return result;
       });
@@ -140,7 +163,7 @@ class EditModel extends ChangeNotifier {
     if(_editState != EditState.PROCESSING && _editState != EditState.COMPLETE) {
       _editState = EditState.PROCESSING;
       notifyListeners();
-      return _trashDataService.updateTrashData(_trashData).then((result) {
+      return _trashDataService.updateTrashData(_getRemappedEveScheduleTrashData()).then((result) {
         _editState = result ? EditState.COMPLETE : EditState.ERROR;
         return result;
       });
