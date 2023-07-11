@@ -91,21 +91,18 @@ class TrashDataService implements TrashDataServiceInterface {
   Future<bool> addTrashData(TrashData trashData)  async {
     return await _trashRepository.insertTrashData(trashData) &&
         await _changeSyncStatusToSyncing(); //&&
-        // await refreshTrashData();
   }
 
   @override
   Future<bool> updateTrashData(TrashData trashData) async {
     return await _trashRepository.updateTrashData(trashData) &&
         await _changeSyncStatusToSyncing(); //&&
-        // await refreshTrashData();
   }
 
   @override
   Future<bool> deleteTrashData(String id) async {
     return await _trashRepository.deleteTrashData(id) &&
         await _changeSyncStatusToSyncing(); //&&
-        // await refreshTrashData();
   }
 
   Future<bool> _changeSyncStatusToSyncing() async {
@@ -193,7 +190,7 @@ class TrashDataService implements TrashDataServiceInterface {
                 int actualYear = actualMonth == 12 && month == 1 ? year - 1 :
                 (actualMonth == 1 && month == 12 ? year + 1 : year);
                 // ISO8601形式とするため、月日を0埋めする
-                String strTargetDate = _convertISO8601(year: actualYear, month: month, date: targetDateList[pos]);
+                String strTargetDate = _convertISO8601(year: actualYear, month: actualMonth, date: targetDateList[pos]);
                 if (_isEvWeek(
                     startDate, strTargetDate, interval) &&
                     !excludeList.contains(
