@@ -190,8 +190,9 @@ void main() {
             '{\\"id\\":\\"1\\",\\"type\\":\\"burn\\",\\"trash_val\\":\\"\\",\\"schedules\\":[{\\"type\\":\\"weekday\\",\\"value\\":\\"0\\"}],\\"excludes\\":[]},'
             '{\\"id\\":\\"2\\",\\"type\\":\\"unburn\\",\\"schedules\\":[{\\"type\\":\\"month\\",\\"value\\":3}],\\"excludes\\":[]},'
             '{\\"id\\":\\"3\\",\\"type\\":\\"bottole\\",\\"schedules\\":[{\\"type\\":\\"biweek\\",\\"value\\":\\"3-2\\"}],\\"excludes\\":[]},'
-            '{\\"id\\":\\"4\\",\\"type\\":\\"other\\",\\"trash_val\\":\\"test_trash_id\\",\\"schedules\\":[{\\"type\\":\\"evweek\\",\\"value\\":{\\"interval\\":2,\\"weekday\\":\\"0\\"}}],\\"excludes\\":[]}'
-            ']", "timestamp": 12345678, "platform": "ios"}', 200);
+            '{\\"id\\":\\"4\\",\\"type\\":\\"other\\",\\"trash_val\\":\\"test_trash_id\\",\\"schedules\\":[{\\"type\\":\\"evweek\\",\\"value\\":{\\"interval\\":2,\\"weekday\\":\\"0\\"}}],\\"excludes\\":[]},'
+            '{\\"id\\":\\"5\\",\\"type\\":\\"other\\",\\"trash_val\\":\\"日本語の名前\\",\\"schedules\\":[{\\"type\\":\\"evweek\\",\\"value\\":{\\"interval\\":2,\\"weekday\\":\\"0\\"}}],\\"excludes\\":[]}'
+            ']", "timestamp": 12345678, "platform": "ios"}',  200,headers: {"content-type": "application/json;charset=utf-8"});
       });
 
       TrashApiInterface trashApi = TrashApi("https://example.com", mockClient);
@@ -199,7 +200,7 @@ void main() {
       expect(result, isNotNull);
       expect(result.timestamp, 12345678);
       expect(result.syncResult, TrashApiSyncStatus.SUCCESS);
-      expect(result.allTrashDataList.length, 4);
+      expect(result.allTrashDataList.length, 5);
       expect(result.allTrashDataList[0].id, "1");
       expect(result.allTrashDataList[0].type, "burn");
       expect(result.allTrashDataList[0].trashVal, "");
@@ -229,6 +230,14 @@ void main() {
       expect(result.allTrashDataList[3].schedules[0].value["interval"], 2);
       expect(result.allTrashDataList[3].schedules[0].value["weekday"], "0");
       expect(result.allTrashDataList[3].excludes.length, 0);
+      expect(result.allTrashDataList[4].id, "5");
+      expect(result.allTrashDataList[4].type, "other");
+      expect(result.allTrashDataList[4].trashVal, "日本語の名前");
+      expect(result.allTrashDataList[4].schedules.length, 1);
+      expect(result.allTrashDataList[4].schedules[0].type, "evweek");
+      expect(result.allTrashDataList[4].schedules[0].value["interval"], 2);
+      expect(result.allTrashDataList[4].schedules[0].value["weekday"], "0");
+      expect(result.allTrashDataList[4].excludes.length, 0);
     });
     test(
         "syncTrashDataでレスポンスのステータスコードが200以外の場合、TrashSyncResultのallTrashDataListが空、タイムスタンプが-1、SyncResultがERRORであること", () async {
