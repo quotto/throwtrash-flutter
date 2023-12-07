@@ -58,26 +58,27 @@ class CalendarModel extends ChangeNotifier {
     CalendarModel(this._calendarUseCase, this._trashDataService, DateTime today) {
         _year = today.year;
         _month = today.month;
+        int calcYear = today.year;
+        int calcMonth = today.month;
         _trashDataService.refreshTrashData().then((_) async {
             for (int i = 0; i < 5; i++) {
-                int tmpYear = _year;
-                int tmpMonth = _month + i;
-                if (tmpMonth > 12) {
-                    tmpMonth = 1;
-                    tmpYear++;
+                if (calcMonth > 12) {
+                    calcMonth = 1;
+                    calcYear++;
                 }
 
                 List<int> tmpCalendarDate = _calendarUseCase
-                    .generateMonthCalendar(tmpYear, tmpMonth);
+                    .generateMonthCalendar(calcYear, calcMonth);
                 _calendarsDateList.add(tmpCalendarDate);
 
                 _calendarsTrashList.add(
                     _getDisplayTrashList(
-                        tmpYear,
-                        tmpMonth,
+                        calcYear,
+                        calcMonth,
                         tmpCalendarDate
                     )
                 );
+                calcMonth++;
             }
             notifyListeners();
         });

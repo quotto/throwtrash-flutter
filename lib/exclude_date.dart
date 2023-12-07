@@ -24,7 +24,7 @@ class _ExcludeDateState extends State<ExcludeDateView> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
+                   GestureDetector(
                     onTap: () {
                       showBottomSheet(context: context, builder: (context) {
                         FixedExtentScrollController _ctrl = FixedExtentScrollController(

@@ -158,7 +158,20 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: '今日のゴミ出し',
           theme: ThemeData(
-              colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.pinkAccent)),
+            buttonBarTheme: ButtonBarThemeData(
+              alignment: MainAxisAlignment.center,
+            ),
+            colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: Colors.blue,
+              backgroundColor: Colors.white,
+              accentColor: Colors.pinkAccent,
+            ),
+            textTheme: TextTheme(
+              bodyMedium: TextStyle(
+                color: Colors.black,
+              ),
+            ),
+          ),
           home: ChangeNotifierProvider<CalendarModel>(
               create: (context) => CalendarModel(
                   CalendarService(),
@@ -295,7 +308,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       : Theme.of(context).canvasColor,
                   border: (week == 1 && date > 7 || week == 5 && date <= 7)
                       ? Border.all(color: _notThisMonthColor)
-                      : Border.all(color: Theme.of(context).canvasColor)),
+                      : Border.all(color: Theme.of(context).dividerColor)),
               child: Column(children: [
                 Text(
                   date.toString(),

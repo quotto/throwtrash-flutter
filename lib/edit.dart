@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:throwtrash/exclude_date.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
@@ -8,13 +7,10 @@ import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:provider/provider.dart';
 import 'package:throwtrash/viewModels/exclude_date_model.dart';
 
-
-Logger _logger = Logger();
-
 class EditItemMain extends StatefulWidget {
   String _id = "";
   EditItemMain();
-  EditItemMain.update(this._id){}
+  EditItemMain.update(this._id);
 
   @override
   _EditItemMainState createState() {
@@ -27,9 +23,10 @@ class _EditItemMainState extends State<EditItemMain> {
 
   _EditItemMainState(this._id);
 
+
   final _failedSnackBar = SnackBar(
-    backgroundColor: Colors.pink,
-    content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
+    backgroundColor: Colors.pinkAccent,
+      content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
     duration: Duration(
         seconds: 1
     ),
@@ -374,13 +371,17 @@ class _EditItemMainState extends State<EditItemMain> {
                         }
                       });
                     },
-                    child: Text('例外日の設定'),
+                    child: Text('例外日の設定',style: TextStyle(color:  Colors.white)),
                   )
                 ),
                 Container(
                   padding: EdgeInsets.only(bottom: 32.0),
                   alignment: Alignment.center,
                     child: ElevatedButton(
+                      key: Key('submit'),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).primaryColor),
+                      ),
                       onPressed: editModel.editState == EditState.PROCESSING ? null : () async {
                         if (_formKey.currentState!.validate()) {
                           if(await editModel.submitTrashData()) {
@@ -392,7 +393,10 @@ class _EditItemMainState extends State<EditItemMain> {
                           }
                         }
                       },
-                      child: editModel.editType == EditType.NEW ? Text('登録') : Text('更新')
+                      child: editModel.editType == EditType.NEW ?
+                        Text('登録',style: TextStyle(color:  Colors.white))  :
+                        Text('更新',style: TextStyle(color:  Colors.white))
+
                     )
                 )
               ]));

@@ -87,7 +87,7 @@ class _TrashListState extends State<TrashList> {
                           iconSize: 32,
                           color: Theme
                               .of(context)
-                              .accentColor,
+                              .colorScheme.secondary,
                           onPressed: () {
                             list.deleteTrashData(index).then((result){
                               if(result) {
