@@ -26,7 +26,7 @@ class _ShareState extends State<Share> {
               children: [
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      backgroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                     ),
                     onPressed: () {
@@ -70,7 +70,7 @@ class _ShareState extends State<Share> {
                       });
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      backgroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                     ),
                     child: Row(
