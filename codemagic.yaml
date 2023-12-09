@@ -17,7 +17,7 @@ workflows:
         BUNDLE_ID: "net.mythrowaway"
       flutter: fvm
       xcode: 15.0
-      cocoapods: 1.14.0
+      cocoapods: 1.14.3
       ruby: 3.2.1
     cache:
       cache_paths:
