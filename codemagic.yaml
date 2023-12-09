@@ -13,7 +13,7 @@ workflows:
         bundle_identifier: net.mythrowaway
       vars:
         MAJOR: "1"
-        MINOR: "1"
+        MINOR: "2"
         BUNDLE_ID: "net.mythrowaway"
       flutter: fvm
       xcode: 15.0
@@ -38,9 +38,9 @@ workflows:
         script: |
           #!/bin/bash
           find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway;/g'
-      # XCode15化に伴いあらかじめxcodeprojをインストールしておく
+      # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
       - name: Install xcodeproj
-        script: gem install xcodeproj
+        script: gem install xcodeproj cocoapods
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Install dependencies
