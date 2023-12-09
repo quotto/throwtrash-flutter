@@ -38,6 +38,9 @@ workflows:
         script: |
           #!/bin/bash
           find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway;/g'
+      # XCode15化に伴いあらかじめxcodeprojをインストールしておく
+      - name: Install xcodeproj
+        script: gem install xcodeproj
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Install dependencies
