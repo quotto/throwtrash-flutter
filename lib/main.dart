@@ -17,6 +17,7 @@ import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
+import 'package:throwtrash/view_common/trash_color.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/edit.dart';
@@ -155,24 +156,7 @@ class MyApp extends StatelessWidget {
               CrashlyticsReport()
           ))
         ],
-        child: MaterialApp(
-          title: '今日のゴミ出し',
-          theme: ThemeData(
-            buttonBarTheme: ButtonBarThemeData(
-              alignment: MainAxisAlignment.center,
-            ),
-            colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.blue,
-              backgroundColor: Colors.white,
-              accentColor: Colors.pinkAccent,
-            ),
-            textTheme: TextTheme(
-              bodyMedium: TextStyle(
-                color: Colors.black,
-              ),
-            ),
-          ),
-          home: ChangeNotifierProvider<CalendarModel>(
+          child: ChangeNotifierProvider<CalendarModel>(
               create: (context) => CalendarModel(
                   CalendarService(),
                   Provider.of<TrashDataServiceInterface>(
@@ -180,10 +164,18 @@ class MyApp extends StatelessWidget {
                       listen: false),
                   DateTime.now()
               ),
-              child: CalendarWidget()),
-        ));
+              child: MaterialApp (
+                theme: ThemeData(
+                  brightness: Brightness.dark,
+                  colorSchemeSeed: Colors.blue,
+                ),
+                home: CalendarWidget()
+              )
+              // child: CalendarWidget()
+            )
+        // )
+    );
   }
-
 }
 
 class CalendarWidget extends StatefulWidget {
@@ -207,22 +199,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     ),
   );
 
-  final Color _sundayColor = Colors.redAccent;
-  final Color _saturdayColor = Colors.blue;
-  final Color _notThisMonthColor = Colors.grey[300]!;
   final List<String> _weekdayLabel = ['日', '月', '火', '水', '木', '金', '土'];
-  final Map<String, Color> _trashColorMap = {
-  "burn": Colors.red,
-  "unburn": Colors.blue,
-  "plastic": Colors.green,
-  "bin": Colors.orange,
-  "can": Colors.pink,
-  "petbottle": Colors.lightGreen,
-  "paper": Colors.brown,
-  "resource": Colors.teal,
-  "coarse": Colors.deepOrangeAccent,
-  "other": Colors.grey,
-  };
+
   PageController controller = PageController(initialPage: 0);
   StreamSubscription? _sub;
 
@@ -300,40 +278,35 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       int week, List<int> dateList, List<List<DisplayTrashData>> trashList) {
     List<Widget> calendarCellColumn = [];
     dateList.asMap().forEach((index, date) {
+      double opacity = week == 1 && date > 7 || week == 5 && date <= 7 ? 0.5 : 1.0;
       calendarCellColumn.add(Expanded(
-          child: DecoratedBox(
-              decoration: BoxDecoration(
-                  color: (week == 1 && date > 7 || week == 5 && date <= 7)
-                      ? _notThisMonthColor
-                      : Theme.of(context).canvasColor,
-                  border: (week == 1 && date > 7 || week == 5 && date <= 7)
-                      ? Border.all(color: _notThisMonthColor)
-                      : Border.all(color: Theme.of(context).dividerColor)),
-              child: Column(children: [
-                Text(
-                  date.toString(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: index == 0
-                          ? _sundayColor
-                          : (index == 6
-                          ? _saturdayColor
-                          : Theme.of(context).textTheme.bodyLarge!.color)),
-                ),
-                Wrap(runSpacing: 6.0, children: [
-                  for (int i = 0; i < trashList[index].length; i++)
-                    Container(
-                        decoration: BoxDecoration(
-                            color: _trashColorMap[trashList[index][i].trashType],
-                            borderRadius: BorderRadius.circular(6)),
-                        alignment: Alignment.topCenter,
-                        child: Text(trashList[index][i].trashName,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                            )))
-                ])
-              ]))));
+          child: Column(children: [
+            Text(
+              date.toString(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: index == 0
+                      ? Colors.red.shade600.withOpacity(opacity)
+                      : (index == 6
+                      ? Colors.blue.shade600.withOpacity(opacity)
+                      : Theme.of(context).textTheme.bodyLarge!.color?.withOpacity(opacity))),
+            ),
+            Wrap(runSpacing: 6.0, children: [
+              for (int i = 0; i < trashList[index].length; i++)
+                Container(
+                    decoration: BoxDecoration(
+                        color: trashColor(trashList[index][i].trashType, Theme.of(context).brightness),//_trashColorMap[trashList[index][i].trashType],
+                        borderRadius: BorderRadius.circular(6)),
+                    alignment: Alignment.topCenter,
+                    child: Text(trashList[index][i].trashName,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        )))
+            ])
+          ]))
+        // )
+      );
     });
     return Flexible(
       flex: 3,
@@ -341,7 +314,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           heightFactor: 1.0,
           child: Container(
               decoration:
-              BoxDecoration(border: Border.all(color: Colors.black)),
+              BoxDecoration(
+                // topのborder以外は消す
+                  border: Border(
+                      top: BorderSide(color: Theme.of(context).dividerColor),
+                      bottom: BorderSide.none,
+                      left: BorderSide.none,
+                      right: BorderSide.none
+                  )
+              ),
               child: Align(
                   alignment: Alignment.topCenter,
                   child: Row(children: calendarCellColumn)))),
@@ -376,9 +357,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   color: weekday == '日'
-                                      ? _sundayColor
+                                      ? Colors.red.shade600
                                       : (weekday == '土'
-                                      ? _saturdayColor
+                                      ? Colors.blue.shade600
                                       : Theme.of(context)
                                       .textTheme
                                       .bodyLarge!

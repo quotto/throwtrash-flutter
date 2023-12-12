@@ -23,7 +23,7 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             backgroundColor: Theme
                 .of(context)
-                .errorColor,
+                .colorScheme.error,
             duration: Duration(
                 seconds: 2
             ),
@@ -43,14 +43,13 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
         key: scaffoldKey,
         appBar: AppBar(
             centerTitle: false,
-            elevation: 2,
             title: Text("スケジュールを共有する")
         ),
         body: _userService.user.id.isEmpty ?
         AlertDialog(
           content: Text("スケジュールを共有するためにはゴミ出しの予定を登録してください"),
           actions: [
-            ElevatedButton(onPressed: () {
+            FilledButton.tonal(onPressed: () {
               Navigator.pop(context);
             },
                 child: Text("戻る"))
@@ -69,7 +68,7 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
                             padding: EdgeInsets.only(top: 20, bottom: 20),
                             decoration: BoxDecoration(
                                 border: Border.all(
-                                    width: 3,
+                                    width: 1,
                                     color: Theme
                                         .of(context)
                                         .colorScheme
@@ -102,7 +101,7 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
+                        FilledButton(
                           onPressed: activationModel.status ==
                               ActivationStatus.SENDING ? null : () async {
                             activationModel.getActivationCode();
