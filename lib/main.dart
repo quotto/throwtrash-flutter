@@ -7,9 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:throwtrash/firebase_options.dart';
 import 'package:throwtrash/repository/activation_api.dart';
+import 'package:throwtrash/repository/config_repository.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
+import 'package:throwtrash/usecase/change_theme_service.dart';
+import 'package:throwtrash/usecase/change_theme_service_interface.dart';
+import 'package:throwtrash/usecase/config_repository_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
@@ -17,6 +21,7 @@ import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
+import 'package:throwtrash/viewModels/change_theme_model.dart';
 import 'package:throwtrash/view_common/trash_color.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:logger/logger.dart';
@@ -55,6 +60,9 @@ late final TrashApiInterface _trashApi;
 late final TrashRepositoryInterface _trashRepository;
 late final ActivationApiInterface _activationApi;
 late final AccountLinkServiceInterface _accountLinkService;
+late final ChangeThemeServiceInterface _changeThemeService;
+late final ConfigRepositoryInterface _configRepository;
+late final ChangeThemeModel _changeThemeModel;
 late final Config _config;
 
 final _logger = Logger();
@@ -90,16 +98,16 @@ Future<void> initializeService({
 }
 
 Future<void> main() async {
-WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
   PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
   final environmentProvider = EnvironmentProvider();
   await environmentProvider.initialize();
@@ -108,6 +116,9 @@ await Firebase.initializeApp(
   _trashApi = TrashApi(Config().mobileApiEndpoint, http.Client());
   _activationApi = ActivationApi(Config(), http.Client());
   _trashRepository = TrashRepository();
+  _configRepository = ConfigRepository();
+  _changeThemeService = ChangeThemeService(_configRepository);
+  _changeThemeModel = ChangeThemeModel(_changeThemeService);
 
   await initializeService(
       userRepository: UserRepository(),
@@ -154,26 +165,30 @@ class MyApp extends StatelessWidget {
               _userService,
               _trashRepository,
               CrashlyticsReport()
-          ))
+          )),
+          ChangeNotifierProvider<ChangeThemeModel>(
+              create: (context)=> _changeThemeModel
+          )
         ],
-          child: ChangeNotifierProvider<CalendarModel>(
-              create: (context) => CalendarModel(
-                  CalendarService(),
-                  Provider.of<TrashDataServiceInterface>(
-                      context,
-                      listen: false),
-                  DateTime.now()
-              ),
-              child: MaterialApp (
-                theme: ThemeData(
-                  brightness: Brightness.dark,
-                  colorSchemeSeed: Colors.blue,
-                ),
-                home: CalendarWidget()
-              )
-              // child: CalendarWidget()
+        child: ChangeNotifierProvider<CalendarModel>(
+            create: (context) => CalendarModel(
+                CalendarService(),
+                Provider.of<TrashDataServiceInterface>(
+                    context,
+                    listen: false),
+                DateTime.now()
+            ),
+            child: Consumer<ChangeThemeModel>(
+                builder: (context, changeThemeModel, child) =>
+                    MaterialApp (
+                        theme: ThemeData(
+                          brightness: _changeThemeModel.darkMode ? Brightness.dark : Brightness.light,
+                          colorSchemeSeed: Colors.blue,
+                        ),
+                        home: CalendarWidget()
+                    )
             )
-        // )
+        )
     );
   }
 }
@@ -219,10 +234,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         AccountLinkModel accountLinkModel = AccountLinkModel(service);
         accountLinkModel.prepareAccountLinkInfo(code).then((_) {
           Navigator.push(context,MaterialPageRoute(builder: (context)=>
-            ChangeNotifierProvider<AccountLinkModel>(
-                create: (context)=>accountLinkModel,
-                child: AccountLink()
-            )
+              ChangeNotifierProvider<AccountLinkModel>(
+                  create: (context)=>accountLinkModel,
+                  child: AccountLink()
+              )
           ));
         });
       } else {
@@ -540,6 +555,25 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               launchUrl(askFormUri);
                             },
                           ),
+                          Divider(
+                            indent: 20,
+                            endIndent: 20,
+                          ),
+                          ListTile(
+                            title: Row(
+                                children: [Switch(
+                                  value: _changeThemeModel.darkMode,
+                                  onChanged: (value) {
+                                    _changeThemeModel.switchDarkMode();
+                                  },
+                                )
+                                ]
+                            ),
+                            leading: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.dark_mode)
+                            ),
+                          )
                         ]
                     ),
                   ),
@@ -570,9 +604,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                             return _calendarColumn(calendar.calendarsDateList[index],
                                 calendar.calendarsTrashList[index], index);
                           }).toList(),
-                        )),
+                        )
+                    ),
                   ]
-                  )),
+                )
+              ),
               if(calendar.isLoading())
                 loadingContainer
             ],
