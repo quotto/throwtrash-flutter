@@ -13,4 +13,10 @@ class ChangeThemeService implements ChangeThemeServiceInterface {
       throw Exception("DarkModeの保存に失敗しました");
     }
   }
+
+  @override
+  Future<bool> readDarkMode() async {
+    bool? darkMode = await _themeRepository.readDarkMode();
+    return darkMode != null ? darkMode : false;
+  }
 }

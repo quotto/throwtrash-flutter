@@ -17,5 +17,29 @@ void main() {
         expect(result, true);
       });
     });
+    test("readDarkMode as true", () async {
+      await SharedPreferences.getInstance().then((value) {
+        value.setBool(ConfigRepository.DARK_MODE_KEY, true);
+      });
+      ConfigRepository repository = ConfigRepository();
+      await repository.readDarkMode().then((result) {
+        expect(result, true);
+      });
+    });
+    test("readDarkMode as false", () async {
+      await SharedPreferences.getInstance().then((value) {
+        value.setBool(ConfigRepository.DARK_MODE_KEY, false);
+      });
+      ConfigRepository repository = ConfigRepository();
+      await repository.readDarkMode().then((result) {
+        expect(result, false);
+      });
+    });
+    test("readDarkMode as null", () async {
+      ConfigRepository repository = ConfigRepository();
+      await repository.readDarkMode().then((result) {
+        expect(result, null);
+      });
+    });
   });
 }

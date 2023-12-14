@@ -18,8 +18,10 @@ void main () {
         });
 
         test('switchDarkMode sets darkMode false to true', () async {
-            final testDarkMode = true;
+            final testDarkMode = false;
 
+            when(changeThemeService.readDarkMode())
+                .thenAnswer((_) async => testDarkMode);
             when(changeThemeService.switchDarkMode(testDarkMode))
                 .thenAnswer((_) async => testDarkMode);
 
@@ -27,6 +29,8 @@ void main () {
             changeThemeModel.addListener(() {
                 done = true;
             });
+
+            await changeThemeModel.init();
             await changeThemeModel.switchDarkMode();
 
             expect(changeThemeModel.darkMode, true);
@@ -34,21 +38,22 @@ void main () {
         });
 
         test('switchDarkMode sets darkMode true to false', () async {
-            final testDarkMode = false;
+            final testDarkMode = true;
 
+            when(changeThemeService.readDarkMode())
+                .thenAnswer((_) async => testDarkMode);
             when(changeThemeService.switchDarkMode(testDarkMode))
                 .thenAnswer((_) async => testDarkMode);
 
-            // TODO: 今のところは事前に1回呼ぶことでtrueにしておく
-            int counter = 0;
+            bool done = false;
             changeThemeModel.addListener(() {
-                counter++;
+                done = true;
             });
-            await changeThemeModel.switchDarkMode();
+            await changeThemeModel.init();
             await changeThemeModel.switchDarkMode();
 
             expect(changeThemeModel.darkMode, false);
-            expect(counter, 2);
+            expect(done, true);
         });
     });
 }

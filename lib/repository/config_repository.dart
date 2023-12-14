@@ -9,4 +9,10 @@ class ConfigRepository implements ConfigRepositoryInterface {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     return preferences.setBool(DARK_MODE_KEY, darkMode);
   }
+
+  @override
+  Future<bool?> readDarkMode() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    return Future.value(preferences.getBool(DARK_MODE_KEY));
+  }
 }

@@ -44,5 +44,26 @@ void main () {
       expect(() async => await changeThemeService.switchDarkMode(testDarkMode),
           throwsException);
     });
+
+    test('read saved darkMode when darkMode is false', () async {
+      final testDarkMode = false;
+      when(configRepository.readDarkMode())
+          .thenAnswer((_) async => testDarkMode);
+      expect(await changeThemeService.readDarkMode(), testDarkMode);
+    });
+
+    test('read saved darkMode when darkMode is true', () async {
+      final testDarkMode = true;
+      when(configRepository.readDarkMode())
+          .thenAnswer((_) async => testDarkMode);
+      expect(await changeThemeService.readDarkMode(), testDarkMode);
+    });
+
+    test('convert darkMode to false when darkMode is null', () async {
+      final testDarkMode = null;
+      when(configRepository.readDarkMode())
+          .thenAnswer((_) async => testDarkMode);
+      expect(await changeThemeService.readDarkMode(), false);
+    });
   });
 }

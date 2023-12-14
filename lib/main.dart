@@ -119,6 +119,7 @@ Future<void> main() async {
   _configRepository = ConfigRepository();
   _changeThemeService = ChangeThemeService(_configRepository);
   _changeThemeModel = ChangeThemeModel(_changeThemeService);
+  await _changeThemeModel.init();
 
   await initializeService(
       userRepository: UserRepository(),
