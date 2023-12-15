@@ -6,9 +6,9 @@ workflows:
     environment:
       groups:
         - development
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: net.mythrowaway.dev
+#      ios_signing:
+#        distribution_type: development
+#        bundle_identifier: net.mythrowaway.dev
       vars:
         MAJOR: "1"
         MINOR: "2"
@@ -41,12 +41,12 @@ workflows:
       - name: Replace bundle identifier
         script: |
           #!/bin/bash
-          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowawa.dev;/g'
+          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway.dev;/g'
       # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
       - name: Install xcodeproj
         script: gem install xcodeproj cocoapods
-      - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
+#      - name: Set up code signing settings on Xcode project
+#        script: xcode-project use-profiles
       - name: Install dependencies
         script: flutter pub get
       - name: Install pods
