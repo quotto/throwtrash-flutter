@@ -1,4 +1,82 @@
 workflows:
+  ios-development:
+    name: iOS Development Workflow
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      groups:
+        - development
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: net.mythrowaway.dev
+      vars:
+        MAJOR: "1"
+        MINOR: "2"
+        BUNDLE_ID: "net.mythrowaway.dev"
+      flutter: fvm
+      xcode: 15.0
+      cocoapods: 1.14.3
+      ruby: 3.2.1
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+        - pattern: 'release'
+          include: false
+          source: false
+        - pattern: 'main'
+          include: false
+          source: false
+      cancel_previous_builds: false
+    scripts:
+      # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
+      # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
+      # このため事前にbundle identifierをnet.mythrowaway.devに置換する
+      - name: Replace bundle identifier
+        script: |
+          #!/bin/bash
+          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowawa.dev;/g'
+      # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
+      - name: Install xcodeproj
+        script: gem install xcodeproj cocoapods
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Run unit tests
+        script: |
+          mkdir -p test-results
+          flutter test --machine > test-results/flutter.json
+        test_report: test-results/flutter.json
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release \
+            --dart-define-from-file=dart_defines/development.json \
+            --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
+            --build-number=${BUILD_NUMBER} \
+            --export-options-plist=/Users/builder/export_options.plist
+      - name: Install deploygate CLI
+        script: |
+          curl -sSL ${DEPLOYGATE_CLI_URL} | bash
+      - name: Upload to deploygate
+        script: |
+          dg deploy ./build/ios/ipa/今日のゴミ出し.dev.ipa
+    publishing:
+      slack:
+        channel: '#cicd'
+        notify_on_build_start: false
+        notify:
+          success: true
+          failure: true
   ios-release:
     name: iOS Release Workflow
     instance_type: mac_mini_m1
