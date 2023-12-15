@@ -18,23 +18,20 @@ void main () {
       changeThemeService = ChangeThemeService(configRepository);
     });
 
-    test('switchDarkMode sets darkMode false to true', () async {
-      final testDarkMode = true;
-
-      bool darkMode = false;
-      when(configRepository.saveDarkMode(testDarkMode))
-          .thenAnswer((_) async => darkMode = testDarkMode);
-      await changeThemeService.switchDarkMode(testDarkMode);
-      expect(darkMode, true);
+    test('switchDarkMode call saveDarkMode when switch to true', () async {
+      bool done = false;
+      when(configRepository.saveDarkMode(true))
+          .thenAnswer((_) async { done = true; return true;});
+      await changeThemeService.switchDarkMode(true);
+      expect(done, true);
     });
 
-    test('switchDarkMode sets darkMode true to false', () async {
-      final testDarkMode = false;
-      bool darkMode = true;
-      when(configRepository.saveDarkMode(testDarkMode))
-          .thenAnswer((_) async => darkMode = testDarkMode);
-      await changeThemeService.switchDarkMode(testDarkMode);
-      expect(darkMode, false);
+    test('switchDarkMode call saveDarkMode when switch to false', () async {
+      bool done = false;
+      when(configRepository.saveDarkMode(false))
+          .thenAnswer((_) async { done = true; return true; });
+      await changeThemeService.switchDarkMode(false);
+      expect(done, true);
     });
 
     test('raise Exception when saveDarkMode failed', () async {

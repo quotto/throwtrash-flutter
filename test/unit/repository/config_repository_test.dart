@@ -36,6 +36,9 @@ void main() {
       });
     });
     test("readDarkMode as null", () async {
+      await SharedPreferences.getInstance().then((value) {
+        value.remove(ConfigRepository.DARK_MODE_KEY);
+      });
       ConfigRepository repository = ConfigRepository();
       await repository.readDarkMode().then((result) {
         expect(result, null);

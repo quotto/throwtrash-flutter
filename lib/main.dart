@@ -12,8 +12,6 @@ import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
 import 'package:throwtrash/usecase/change_theme_service.dart';
-import 'package:throwtrash/usecase/change_theme_service_interface.dart';
-import 'package:throwtrash/usecase/config_repository_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
@@ -60,8 +58,6 @@ late final TrashApiInterface _trashApi;
 late final TrashRepositoryInterface _trashRepository;
 late final ActivationApiInterface _activationApi;
 late final AccountLinkServiceInterface _accountLinkService;
-late final ChangeThemeServiceInterface _changeThemeService;
-late final ConfigRepositoryInterface _configRepository;
 late final ChangeThemeModel _changeThemeModel;
 late final Config _config;
 
@@ -95,6 +91,9 @@ Future<void> initializeService({
       userRepository,
       CrashlyticsReport()
   );
+
+  _changeThemeModel = ChangeThemeModel(ChangeThemeService(ConfigRepository()));
+  await _changeThemeModel.init();
 }
 
 Future<void> main() async {
@@ -116,10 +115,6 @@ Future<void> main() async {
   _trashApi = TrashApi(Config().mobileApiEndpoint, http.Client());
   _activationApi = ActivationApi(Config(), http.Client());
   _trashRepository = TrashRepository();
-  _configRepository = ConfigRepository();
-  _changeThemeService = ChangeThemeService(_configRepository);
-  _changeThemeModel = ChangeThemeModel(_changeThemeService);
-  await _changeThemeModel.init();
 
   await initializeService(
       userRepository: UserRepository(),
