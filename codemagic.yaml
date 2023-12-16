@@ -69,6 +69,7 @@ workflows:
           curl -sSL ${DEPLOYGATE_CLI_URL} | bash
       - name: Upload to deploygate
         script: |
+          dg config --name ${DEPLOYGATE_USER_NAME} --token ${DEPLOYGATE_API_TOKEN}
           dg deploy ./build/ios/ipa/今日のゴミ出し.dev.ipa
     publishing:
       slack:
