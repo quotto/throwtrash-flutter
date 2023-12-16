@@ -32,12 +32,12 @@ class TrashApi implements TrashApiInterface {
     Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/register");
     http.Response response = await this._httpClient.post(
         endpointUri,
-        headers: {"Content-Type": "application/json"},
+        headers: {"content-type": "application/json;charset=utf-8"},
         body: json.encode({"platform": _platform})
     );
 
     if(response.statusCode == 200) {
-      Map<String,dynamic> body = jsonDecode(response.body);
+      Map<String,dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
       _logger.d("Success register: " + body.toString());
       return body.containsKey("id") && body.containsKey("timestamp") ? RegisterResponse(body["id"] as String, body["timestamp"] as int) : null;
     }
@@ -51,12 +51,12 @@ class TrashApi implements TrashApiInterface {
     Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/update");
     http.Response response = await this._httpClient.post(
         endpointUri,
-        headers: {"Content-Type": "application/json"},
+        headers: {"content-type": "application/json;charset=utf-8", "Accept": "application/json"},
         body: json.encode({"id": id, "description": jsonEncode(localSchedule), "platform": _platform, "timestamp": timestamp})
     );
 
     if(response.statusCode == 200) {
-      Map<String,dynamic> body = jsonDecode(response.body);
+      Map<String,dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
       _logger.d("Success update: " + body.toString());
       return body.containsKey("timestamp") ? TrashUpdateResult(body["timestamp"] as int, UpdateResult.SUCCESS) : TrashUpdateResult(-1, UpdateResult.ERROR);
     } else if(response.statusCode == 400) {
@@ -70,12 +70,11 @@ class TrashApi implements TrashApiInterface {
   @override
   Future<TrashSyncResult> syncTrashData(String userId) async {
     Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/sync?user_id=$userId");
-    http.Response response = await this._httpClient.get(endpointUri);
+    http.Response response = await this._httpClient.get(endpointUri, headers: {"content-type":"text/html;charset=utf8","Accept": "application/json"});
     if(response.statusCode == 200) {
-      _logger.d(response.body);
       try {
         TrashApiSyncDataResponse trashResponse = TrashApiSyncDataResponse.fromJson(
-            jsonDecode(response.body));
+            jsonDecode(utf8.decode(response.bodyBytes)));
         _logger.d(trashResponse.description);
         List<TrashData> trashDataList = (jsonDecode(
             trashResponse.description) as List<dynamic>).map<TrashData>((
