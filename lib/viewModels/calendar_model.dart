@@ -210,4 +210,8 @@ class CalendarModel extends ChangeNotifier {
     bool isLoading() {
         return _loadingStatus == LoadingStatus.loading;
     }
+
+    void resetSyncResult() {
+        _syncResult = SyncResult.skipped;
+    }
 }

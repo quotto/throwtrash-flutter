@@ -267,6 +267,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ScaffoldMessenger.of(context).showSnackBar(_rollbackSnackBar);
           await Future.delayed(Duration(milliseconds: 1000));
         }
+        calendarModel.resetSyncResult();
       }
     });
     controller.addListener(() {
