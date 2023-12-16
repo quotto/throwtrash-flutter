@@ -24,9 +24,9 @@ class _ShareState extends State<Share> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                FilledButton(
+                    style: FilledButton.styleFrom(
+                      // backgroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                     ),
                     onPressed: () {
@@ -51,7 +51,7 @@ class _ShareState extends State<Share> {
                     )
                 ),
                 SizedBox(height: 16.0),
-                ElevatedButton(
+                OutlinedButton(
                     onPressed: () {
                       Navigator.push(
                           context,
@@ -69,8 +69,7 @@ class _ShareState extends State<Share> {
                         }
                       });
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                    style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 8.0),
                     ),
                     child: Row(

@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:throwtrash/firebase_options.dart';
 import 'package:throwtrash/repository/activation_api.dart';
+import 'package:throwtrash/repository/config_repository.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
+import 'package:throwtrash/usecase/change_theme_service.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
 import 'package:throwtrash/share.dart';
@@ -17,6 +19,8 @@ import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
+import 'package:throwtrash/viewModels/change_theme_model.dart';
+import 'package:throwtrash/view_common/trash_color.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/edit.dart';
@@ -54,6 +58,7 @@ late final TrashApiInterface _trashApi;
 late final TrashRepositoryInterface _trashRepository;
 late final ActivationApiInterface _activationApi;
 late final AccountLinkServiceInterface _accountLinkService;
+late final ChangeThemeModel _changeThemeModel;
 late final Config _config;
 
 final _logger = Logger();
@@ -86,19 +91,22 @@ Future<void> initializeService({
       userRepository,
       CrashlyticsReport()
   );
+
+  _changeThemeModel = ChangeThemeModel(ChangeThemeService(ConfigRepository()));
+  await _changeThemeModel.init();
 }
 
 Future<void> main() async {
-WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
   PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
   final environmentProvider = EnvironmentProvider();
   await environmentProvider.initialize();
@@ -153,24 +161,32 @@ class MyApp extends StatelessWidget {
               _userService,
               _trashRepository,
               CrashlyticsReport()
-          ))
+          )),
+          ChangeNotifierProvider<ChangeThemeModel>(
+              create: (context)=> _changeThemeModel
+          )
         ],
-        child: MaterialApp(
-          title: '今日のゴミ出し',
-          theme: ThemeData(
-              colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue).copyWith(secondary: Colors.pinkAccent)),
-          home: ChangeNotifierProvider<CalendarModel>(
-              create: (context) => CalendarModel(
-                  CalendarService(),
-                  Provider.of<TrashDataServiceInterface>(
-                      context,
-                      listen: false),
-                  DateTime.now()
-              ),
-              child: CalendarWidget()),
-        ));
+        child: ChangeNotifierProvider<CalendarModel>(
+            create: (context) => CalendarModel(
+                CalendarService(),
+                Provider.of<TrashDataServiceInterface>(
+                    context,
+                    listen: false),
+                DateTime.now()
+            ),
+            child: Consumer<ChangeThemeModel>(
+                builder: (context, changeThemeModel, child) =>
+                    MaterialApp (
+                        theme: ThemeData(
+                          brightness: _changeThemeModel.darkMode ? Brightness.dark : Brightness.light,
+                          colorSchemeSeed: Colors.blue,
+                        ),
+                        home: CalendarWidget()
+                    )
+            )
+        )
+    );
   }
-
 }
 
 class CalendarWidget extends StatefulWidget {
@@ -194,22 +210,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     ),
   );
 
-  final Color _sundayColor = Colors.redAccent;
-  final Color _saturdayColor = Colors.blue;
-  final Color _notThisMonthColor = Colors.grey[300]!;
   final List<String> _weekdayLabel = ['日', '月', '火', '水', '木', '金', '土'];
-  final Map<String, Color> _trashColorMap = {
-  "burn": Colors.red,
-  "unburn": Colors.blue,
-  "plastic": Colors.green,
-  "bin": Colors.orange,
-  "can": Colors.pink,
-  "petbottle": Colors.lightGreen,
-  "paper": Colors.brown,
-  "resource": Colors.teal,
-  "coarse": Colors.deepOrangeAccent,
-  "other": Colors.grey,
-  };
+
   PageController controller = PageController(initialPage: 0);
   StreamSubscription? _sub;
 
@@ -228,10 +230,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         AccountLinkModel accountLinkModel = AccountLinkModel(service);
         accountLinkModel.prepareAccountLinkInfo(code).then((_) {
           Navigator.push(context,MaterialPageRoute(builder: (context)=>
-            ChangeNotifierProvider<AccountLinkModel>(
-                create: (context)=>accountLinkModel,
-                child: AccountLink()
-            )
+              ChangeNotifierProvider<AccountLinkModel>(
+                  create: (context)=>accountLinkModel,
+                  child: AccountLink()
+              )
           ));
         });
       } else {
@@ -287,40 +289,35 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       int week, List<int> dateList, List<List<DisplayTrashData>> trashList) {
     List<Widget> calendarCellColumn = [];
     dateList.asMap().forEach((index, date) {
+      double opacity = week == 1 && date > 7 || week == 5 && date <= 7 ? 0.5 : 1.0;
       calendarCellColumn.add(Expanded(
-          child: DecoratedBox(
-              decoration: BoxDecoration(
-                  color: (week == 1 && date > 7 || week == 5 && date <= 7)
-                      ? _notThisMonthColor
-                      : Theme.of(context).canvasColor,
-                  border: (week == 1 && date > 7 || week == 5 && date <= 7)
-                      ? Border.all(color: _notThisMonthColor)
-                      : Border.all(color: Theme.of(context).canvasColor)),
-              child: Column(children: [
-                Text(
-                  date.toString(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: index == 0
-                          ? _sundayColor
-                          : (index == 6
-                          ? _saturdayColor
-                          : Theme.of(context).textTheme.bodyLarge!.color)),
-                ),
-                Wrap(runSpacing: 6.0, children: [
-                  for (int i = 0; i < trashList[index].length; i++)
-                    Container(
-                        decoration: BoxDecoration(
-                            color: _trashColorMap[trashList[index][i].trashType],
-                            borderRadius: BorderRadius.circular(6)),
-                        alignment: Alignment.topCenter,
-                        child: Text(trashList[index][i].trashName,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                            )))
-                ])
-              ]))));
+          child: Column(children: [
+            Text(
+              date.toString(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: index == 0
+                      ? Colors.red.shade600.withOpacity(opacity)
+                      : (index == 6
+                      ? Colors.blue.shade600.withOpacity(opacity)
+                      : Theme.of(context).textTheme.bodyLarge!.color?.withOpacity(opacity))),
+            ),
+            Wrap(runSpacing: 6.0, children: [
+              for (int i = 0; i < trashList[index].length; i++)
+                Container(
+                    decoration: BoxDecoration(
+                        color: trashColor(trashList[index][i].trashType, Theme.of(context).brightness),//_trashColorMap[trashList[index][i].trashType],
+                        borderRadius: BorderRadius.circular(6)),
+                    alignment: Alignment.topCenter,
+                    child: Text(trashList[index][i].trashName,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                        )))
+            ])
+          ]))
+        // )
+      );
     });
     return Flexible(
       flex: 3,
@@ -328,7 +325,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           heightFactor: 1.0,
           child: Container(
               decoration:
-              BoxDecoration(border: Border.all(color: Colors.black)),
+              BoxDecoration(
+                // topのborder以外は消す
+                  border: Border(
+                      top: BorderSide(color: Theme.of(context).dividerColor),
+                      bottom: BorderSide.none,
+                      left: BorderSide.none,
+                      right: BorderSide.none
+                  )
+              ),
               child: Align(
                   alignment: Alignment.topCenter,
                   child: Row(children: calendarCellColumn)))),
@@ -363,9 +368,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   color: weekday == '日'
-                                      ? _sundayColor
+                                      ? Colors.red.shade600
                                       : (weekday == '土'
-                                      ? _saturdayColor
+                                      ? Colors.blue.shade600
                                       : Theme.of(context)
                                       .textTheme
                                       .bodyLarge!
@@ -546,6 +551,25 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               launchUrl(askFormUri);
                             },
                           ),
+                          Divider(
+                            indent: 20,
+                            endIndent: 20,
+                          ),
+                          ListTile(
+                            title: Row(
+                                children: [Switch(
+                                  value: _changeThemeModel.darkMode,
+                                  onChanged: (value) {
+                                    _changeThemeModel.switchDarkMode();
+                                  },
+                                )
+                                ]
+                            ),
+                            leading: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.dark_mode)
+                            ),
+                          )
                         ]
                     ),
                   ),
@@ -576,9 +600,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                             return _calendarColumn(calendar.calendarsDateList[index],
                                 calendar.calendarsTrashList[index], index);
                           }).toList(),
-                        )),
+                        )
+                    ),
                   ]
-                  )),
+                )
+              ),
               if(calendar.isLoading())
                 loadingContainer
             ],

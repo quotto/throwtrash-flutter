@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
-import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 
 class TrashListData {
   final String id;
+  final String type;
   final String name;
   final List<String> schedules;
 
-  TrashListData({required this.id, required this.name, required this.schedules});
+  TrashListData({required this.id, required this.type, required this.name, required this.schedules});
 }
 
 class ListModel extends ChangeNotifier {
@@ -52,6 +52,7 @@ class ListModel extends ChangeNotifier {
       });
       _trashList.add(TrashListData(
           id: element.id,
+          type: element.type,
           name: _trashDataService.getTrashName(type: element.type, trashVal: element.trashVal),
           schedules: schedules
       ));

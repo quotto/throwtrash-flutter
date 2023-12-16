@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:throwtrash/exclude_date.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
@@ -8,13 +7,10 @@ import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:provider/provider.dart';
 import 'package:throwtrash/viewModels/exclude_date_model.dart';
 
-
-Logger _logger = Logger();
-
 class EditItemMain extends StatefulWidget {
   String _id = "";
   EditItemMain();
-  EditItemMain.update(this._id){}
+  EditItemMain.update(this._id);
 
   @override
   _EditItemMainState createState() {
@@ -27,9 +23,10 @@ class _EditItemMainState extends State<EditItemMain> {
 
   _EditItemMainState(this._id);
 
+
   final _failedSnackBar = SnackBar(
-    backgroundColor: Colors.pink,
-    content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
+    backgroundColor: Colors.pinkAccent,
+      content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
     duration: Duration(
         seconds: 1
     ),
@@ -207,8 +204,8 @@ class _EditItemMainState extends State<EditItemMain> {
     return Container(
         decoration: BoxDecoration(
             color: (scheduleNumber + 1) % 2 == 0
-                ? Colors.grey[200]
-                : Theme.of(context).canvasColor),
+                ? Theme.of(context).colorScheme.primaryContainer
+                : Theme.of(context).colorScheme.background),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
@@ -245,7 +242,7 @@ class _EditItemMainState extends State<EditItemMain> {
                         child: IconButton(
                           icon: Icon(Icons.delete_forever),
                           iconSize: 32,
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: Theme.of(context).colorScheme.error,
                           onPressed: () => model.removeSchedule(scheduleNumber),
                         ))
                       )
@@ -266,7 +263,7 @@ class _EditItemMainState extends State<EditItemMain> {
       children.add(IconButton(
         icon: Icon(Icons.add_circle_outline),
         iconSize: 32,
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).colorScheme.primary,
         onPressed: () {
           model.addSchedule();
         },
@@ -327,7 +324,7 @@ class _EditItemMainState extends State<EditItemMain> {
                             color:
                                 Theme.of(context).textTheme.bodyLarge!.color),
                         underline: Container(
-                            height: 2, color: Theme.of(context).primaryColor),
+                            height: 2, color: Theme.of(context).colorScheme.secondary),
                       ),
                       Visibility(
                           visible: editModel.trash.type == 'other',
@@ -355,10 +352,7 @@ class _EditItemMainState extends State<EditItemMain> {
                 Container(
                   padding: EdgeInsets.only(bottom: 32.0),
                   alignment: Alignment.center,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.green)
-                    ),
+                  child: FilledButton.tonal(
                     onPressed: editModel.editState == EditState.PROCESSING ? null : () {
                       Navigator.push(
                           context,
@@ -380,7 +374,8 @@ class _EditItemMainState extends State<EditItemMain> {
                 Container(
                   padding: EdgeInsets.only(bottom: 32.0),
                   alignment: Alignment.center,
-                    child: ElevatedButton(
+                    child: FilledButton(
+                      key: Key('submit'),
                       onPressed: editModel.editState == EditState.PROCESSING ? null : () async {
                         if (_formKey.currentState!.validate()) {
                           if(await editModel.submitTrashData()) {
@@ -392,7 +387,9 @@ class _EditItemMainState extends State<EditItemMain> {
                           }
                         }
                       },
-                      child: editModel.editType == EditType.NEW ? Text('登録') : Text('更新')
+                      child: editModel.editType == EditType.NEW ?
+                        Text('登録') : Text('更新')
+
                     )
                 )
               ]));
