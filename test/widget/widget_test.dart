@@ -33,6 +33,8 @@ void main() {
     // ActivationApiInterfaceのモックを作成
     ActivationApiInterface mockActivationApi = MockActivationApiInterface();
 
+
+
     await initializeService(
       userRepository: UserRepository(),
       trashRepository: TrashRepository(),

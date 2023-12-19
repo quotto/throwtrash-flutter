@@ -21,23 +21,32 @@ class _UserInfo extends State<UserInfo>  {
       body: Column(
         children: [
           Container(
-           child: Consumer<UserServiceInterface> (
-             builder: (context,userService,child) {
-               return Row(
-                 children: [
-                   Text(userService.user.id),
-                   IconButton(
-                       icon: Icon(Icons.copy),
-                     onPressed: () async {
-                      ClipboardData userId = ClipboardData(text: userService.user.id);
-                      await Clipboard.setData(userId);
-                      Fluttertoast.showToast(msg: "クリップボードにコピーしました");
-                     },
-                   )
-                 ],
-               );
-             }
-           )
+              child: Consumer<UserServiceInterface> (
+                  builder: (context,userService,child) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                            userService.user.id,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary
+                            )
+                        ),
+                        IconButton(
+                          icon: Icon(
+                              Icons.copy,
+                              color: Theme.of(context).colorScheme.secondary
+                          ),
+                          onPressed: () async {
+                            ClipboardData userId = ClipboardData(text: userService.user.id);
+                            await Clipboard.setData(userId);
+                            Fluttertoast.showToast(msg: "クリップボードにコピーしました");
+                          },
+                        )
+                      ],
+                    );
+                  }
+              )
           )
         ],
       ),

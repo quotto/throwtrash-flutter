@@ -5,6 +5,7 @@ import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:throwtrash/viewModels/list_model.dart';
 import 'package:provider/provider.dart';
+import 'package:throwtrash/view_common/trash_color.dart';
 
 class TrashList extends StatefulWidget {
   @override
@@ -29,7 +30,10 @@ class _TrashListState extends State<TrashList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('登録されているゴミ出し予定'),
+        title:
+        Text(
+            '登録されているゴミ出し予定',
+        ),
       ),
       body: Container(
           child: Consumer<ListModel>(
@@ -50,8 +54,11 @@ class _TrashListState extends State<TrashList> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(trashData.name,style: TextStyle(
-                                  fontSize: 24
+                                Text(
+                                  trashData.name,
+                                  style: TextStyle(
+                                    color: trashColor(trashData.type, Theme.of(context).brightness),
+                                    fontSize: 24
                                 ),),
                                 Column(
                                     children: trashData.schedules.map<Widget>((
@@ -83,11 +90,13 @@ class _TrashListState extends State<TrashList> {
                         Padding(
                           padding: EdgeInsets.all(8.0),
                           child: IconButton(
-                          icon: Icon(Icons.delete_forever),
+                          icon: Icon(
+                              Icons.delete_forever,
+                          ),
                           iconSize: 32,
                           color: Theme
                               .of(context)
-                              .colorScheme.secondary,
+                              .colorScheme.error,
                           onPressed: () {
                             list.deleteTrashData(index).then((result){
                               if(result) {
