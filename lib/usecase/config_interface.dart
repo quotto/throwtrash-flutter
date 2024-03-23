@@ -3,4 +3,5 @@ abstract class ConfigInterface {
   String get mobileApiEndpoint;
   String get apiErrorUrl;
   String get version;
+  String get alarmApiUrl;
 }

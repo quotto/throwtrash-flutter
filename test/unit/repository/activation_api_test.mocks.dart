@@ -325,4 +325,13 @@ class MockConfigInterface extends _i1.Mock implements _i7.ConfigInterface {
           Invocation.getter(#version),
         ),
       ) as String);
+
+  @override
+  String get alarmApiUrl => (super.noSuchMethod(
+        Invocation.getter(#alarmApiUrl),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
+        ),
+      ) as String);
 }

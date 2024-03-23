@@ -10,6 +10,7 @@ class Config implements ConfigInterface {
   String _mobileApiEndpoint ="";
   String _apiErrorUrl="";
   String _version="";
+  String _alarmApiUrl = "";
 
   factory Config() {
     if(_instance==null) {
@@ -24,6 +25,7 @@ class Config implements ConfigInterface {
     _instance!._apiEndpoint = config["apiEndpoint"]!;
     _instance!._mobileApiEndpoint = config["mobileApiEndpoint"]!;
     _instance!._apiErrorUrl = config["apiErrorUrl"]!;
+    _instance!._alarmApiUrl = config["alarmApiUrl"]!;
 
     // package_info_plusを使ってバージョン情報を取得してインスタンス変数に格納
     // flavorがdevの場合はサフィックスを付与する
@@ -39,4 +41,5 @@ class Config implements ConfigInterface {
   String get mobileApiEndpoint => _instance!._mobileApiEndpoint;
   String get apiErrorUrl => _instance!._apiErrorUrl;
   String get version => _instance!._version;
+  String get alarmApiUrl => _instance!._alarmApiUrl;
 }

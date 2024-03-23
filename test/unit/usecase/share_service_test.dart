@@ -35,7 +35,7 @@ void main() {
       final testUserId = 'test_user_id';
       final testActivationCode = 'test_activation_code';
 
-      when(userService.user).thenReturn(User(testUserId, ''));
+      when(userService.user).thenReturn(User(testUserId));
       when(activationApi.requestActivationCode(testUserId)).thenAnswer((_) async => testActivationCode);
 
       final activationCode = await shareService.getActivationCode();
@@ -52,7 +52,7 @@ void main() {
 
       when(activationApi.requestAuthorizationActivationCode(testActivationCode, testUserId))
           .thenAnswer((_) async => activateResponse);
-      when(userService.user).thenReturn(User(testUserId, ''));
+      when(userService.user).thenReturn(User(testUserId));
       when(trashRepository.truncateAllTrashData()).thenAnswer((_) async => true);
       when(trashRepository.insertTrashData(any)).thenAnswer((_) async => true);
       when(trashRepository.updateLastUpdateTime(testTimestamp)).thenAnswer((_) async => true);
@@ -68,7 +68,7 @@ void main() {
 
       when(activationApi.requestAuthorizationActivationCode(testActivationCode, testUserId))
           .thenAnswer((_) async => null);
-      when(userService.user).thenReturn(User(testUserId, ''));
+      when(userService.user).thenReturn(User(testUserId));
 
       final result = await shareService.importSchedule(testActivationCode);
 

@@ -45,4 +45,24 @@ class MockConfigRepositoryInterface extends _i1.Mock
         returnValue: _i3.Future<bool?>.value(),
         returnValueForMissingStub: _i3.Future<bool?>.value(),
       ) as _i3.Future<bool?>);
+
+  @override
+  _i3.Future<String?> getDeviceToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getDeviceToken,
+          [],
+        ),
+        returnValue: _i3.Future<String?>.value(),
+        returnValueForMissingStub: _i3.Future<String?>.value(),
+      ) as _i3.Future<String?>);
+
+  @override
+  _i3.Future<bool> saveDeviceToken(String? deviceToken) => (super.noSuchMethod(
+        Invocation.method(
+          #saveDeviceToken,
+          [deviceToken],
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+        returnValueForMissingStub: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
 }

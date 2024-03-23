@@ -9,6 +9,8 @@ import 'package:throwtrash/usecase/user_repository_interface.dart';
 import 'package:throwtrash/usecase/start_link_exception.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
 
+import '../models/user.dart';
+
 class AccountLinkService implements AccountLinkServiceInterface {
   late AccountLinkApiInterface _api;
   late AccountLinkRepositoryInterface _accountLinkRepository;
@@ -41,11 +43,11 @@ class AccountLinkService implements AccountLinkServiceInterface {
 
   @override
   Future<AccountLinkInfo> startLink(AccountLinkType accountLinkType) async{
-    String userId = await _userRepository.readUserId();
-    if(userId.isEmpty) {
+    User? user = await _userRepository.readUser();
+    if(user == null) {
       throw StartLinkException("ユーザーIDが登録されていません");
     }
-    AccountLinkInfo? accountLinkInfo = await this._api.startAccountLink(userId, accountLinkType);
+    AccountLinkInfo? accountLinkInfo = await this._api.startAccountLink(user.id, accountLinkType);
     if(accountLinkInfo != null) {
       await this._accountLinkRepository.writeAccountLinkInfo(accountLinkInfo);
       return accountLinkInfo;

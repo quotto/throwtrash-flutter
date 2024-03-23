@@ -1,6 +1,6 @@
+import '../models/user.dart';
+
 abstract class UserRepositoryInterface {
-  Future<String> readUserId();
-  Future<bool> writeUserId(String userId);
-  Future<bool> writeDeviceToken(String deviceToken);
-  Future<String> readDeviceToken();
+  Future<User?> readUser();
+  Future<bool> writeUser(User user);
 }

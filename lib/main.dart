@@ -3,14 +3,22 @@ import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/firebase_options.dart';
 import 'package:throwtrash/repository/activation_api.dart';
+import 'package:throwtrash/repository/alarm_api.dart';
+import 'package:throwtrash/repository/alarm_repository.dart';
 import 'package:throwtrash/repository/config_repository.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
+import 'package:throwtrash/repository/fcm_service.dart';
 import 'package:throwtrash/usecase/activation_api_interface.dart';
+import 'package:throwtrash/usecase/alarm_service.dart';
+import 'package:throwtrash/usecase/alarm_service_interface.dart';
 import 'package:throwtrash/usecase/change_theme_service.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_repository_interface.dart';
@@ -19,6 +27,7 @@ import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
+import 'package:throwtrash/alarm.dart';
 import 'package:throwtrash/viewModels/change_theme_model.dart';
 import 'package:throwtrash/view_common/trash_color.dart';
 import 'package:uni_links/uni_links.dart';
@@ -58,10 +67,43 @@ late final TrashApiInterface _trashApi;
 late final TrashRepositoryInterface _trashRepository;
 late final ActivationApiInterface _activationApi;
 late final AccountLinkServiceInterface _accountLinkService;
+late final AlarmServiceInterface _alarmService;
 late final ChangeThemeModel _changeThemeModel;
 late final Config _config;
 
 final _logger = Logger();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+  final String? payload = notificationResponse.payload;
+  if (notificationResponse.payload != null) {
+    debugPrint('notification payload: $payload');
+  }
+  Navigator.popUntil(
+    navigatorKey.currentContext!,
+    (route) => route.isFirst,
+  );
+}
+
+Future<void> _showForegroundNotification(RemoteMessage message) async {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  final DarwinInitializationSettings initializationSettingsDarwin =
+  DarwinInitializationSettings();
+  final InitializationSettings initializationSettings = InitializationSettings(
+      android: AndroidInitializationSettings('app_icon'),
+      iOS: initializationSettingsDarwin
+  );
+
+  const DarwinNotificationDetails notificationDetailsDarwin = DarwinNotificationDetails();
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+  const NotificationDetails notificationDetails =
+  NotificationDetails(iOS: notificationDetailsDarwin);
+  await flutterLocalNotificationsPlugin.show(
+      0, message.notification?.title, message.notification?.body, notificationDetails,
+      payload: 'item x');
+}
 
 Future<void> initializeService({
   required UserRepositoryInterface userRepository,
@@ -92,6 +134,14 @@ Future<void> initializeService({
       CrashlyticsReport()
   );
 
+  _alarmService = AlarmService(
+      AlarmRepository(await SharedPreferences.getInstance()),
+      AlarmApi(_config.alarmApiUrl, http.Client()),
+      ConfigRepository(),
+      FcmService(FirebaseMessaging.instance, ConfigRepository()),
+      UserRepository()
+  );
+
   _changeThemeModel = ChangeThemeModel(ChangeThemeService(ConfigRepository()));
   await _changeThemeModel.init();
 }
@@ -101,7 +151,36 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  String? token = await FirebaseMessaging.instance.getToken();
+  _logger.i('Token: $token');
+
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
+  _logger.i('User granted permission: ${settings.authorizationStatus}');
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _logger.i('Got a message whilst in the foreground!');
+
+    if (message.notification != null) {
+      _logger.i('Message also contained a notification: ${message.notification.toString()}');
+    }
+    _showForegroundNotification(message);
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    _logger.i('A new onMessageOpenedApp event was published!');
+    Navigator.popUntil(navigatorKey.currentContext!, (route) => route.isFirst);
+  });
 
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
@@ -162,6 +241,9 @@ class MyApp extends StatelessWidget {
               _trashRepository,
               CrashlyticsReport()
           )),
+          Provider<AlarmServiceInterface>(
+              create: (context) => _alarmService
+          ),
           ChangeNotifierProvider<ChangeThemeModel>(
               create: (context)=> _changeThemeModel
           )
@@ -181,7 +263,10 @@ class MyApp extends StatelessWidget {
                           brightness: _changeThemeModel.darkMode ? Brightness.dark : Brightness.light,
                           colorSchemeSeed: Colors.blue,
                         ),
-                        home: CalendarWidget()
+                        home: CalendarWidget(),
+                        // フォアグラウンドでプッシュ通知を受けた際にトップ画面に戻る。
+                        // この実装にはトップレベルメソッドでBuildContextを取得する必要があるため,グローバル宣言したNavigatorStateを渡す
+                        navigatorKey: navigatorKey,
                     )
             )
         )
@@ -458,6 +543,22 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                   calendar.reload();
                                 });
                               }),
+                          ListTile(
+                            title: Text("アラーム設定") ,
+                            leading: Padding(
+                                padding: const EdgeInsets.all(1.0),
+                                child: Icon(Icons.alarm)),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => AlarmPage()
+                                  )
+                              );
+                            }
+                          ),
+
                           ListTile(
                               title: Text("スケジュールの共有"),
                               leading: Padding(

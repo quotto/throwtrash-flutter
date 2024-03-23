@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/account_link_info.dart';
+import 'package:throwtrash/models/user.dart';
 import 'package:throwtrash/usecase/account_link_api_interface.dart';
 import 'package:throwtrash/usecase/account_link_repository_interface.dart';
 import 'package:throwtrash/usecase/config_interface.dart';
@@ -77,7 +78,7 @@ void main() {
       final accountLinkType = AccountLinkType.Web;
       final accountLinkInfo = AccountLinkInfo(testLinkUrl, testToken);
 
-      when(userRepository.readUserId()).thenAnswer((_) async => testUserId);
+      when(userRepository.readUser()).thenAnswer((_) async => User(testUserId));
       when(accountLinkApi.startAccountLink(testUserId, accountLinkType)).thenAnswer((_) async => accountLinkInfo);
       when(accountLinkRepository.writeAccountLinkInfo(accountLinkInfo)).thenAnswer((_) async => true);
 
@@ -90,7 +91,7 @@ void main() {
     test('startLink throws StartLinkException when userId is empty', () async {
       final accountLinkType = AccountLinkType.Web;
 
-      when(userRepository.readUserId()).thenAnswer((_) async => '');
+      when(userRepository.readUser()).thenAnswer((_) async => null);
 
       expect(() => accountLinkService.startLink(accountLinkType), throwsA(isA<StartLinkException>()));
     });
@@ -99,7 +100,7 @@ void main() {
       final testUserId = 'test_user_id';
       final accountLinkType = AccountLinkType.Web;
 
-      when(userRepository.readUserId()).thenAnswer((_) async => testUserId);
+      when(userRepository.readUser()).thenAnswer((_) async => User(testUserId));
       when(accountLinkApi.startAccountLink(testUserId, accountLinkType)).thenAnswer((_) async => null);
 
       expect(() => accountLinkService.startLink(accountLinkType), throwsA(isA<StartLinkException>()));

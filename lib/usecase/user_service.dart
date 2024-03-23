@@ -3,7 +3,7 @@ import 'package:throwtrash/usecase/user_service_interface.dart';
 import 'package:throwtrash/usecase/user_repository_interface.dart';
 
 class UserService extends UserServiceInterface {
-  User _user = User('', '');
+  User _user = User('');
   final UserRepositoryInterface _userRepository;
 
   UserService(
@@ -15,14 +15,17 @@ class UserService extends UserServiceInterface {
 
   @override
   Future<void> refreshUser() async {
-    String id = await _userRepository.readUserId();
-    String deviceToken = await _userRepository.readDeviceToken();
-    _user = User(id, deviceToken);
+    await _userRepository.readUser().then((value) {
+      if(value != null) {
+        _user = value;
+      }
+    });
   }
 
   @override
   Future<bool> registerUser(String id) async {
-    if(await _userRepository.writeUserId(id)) {
+    User newUser = User(id);
+    if(await _userRepository.writeUser(newUser)) {
       await refreshUser();
       return true;
     }

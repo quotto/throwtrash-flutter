@@ -6,13 +6,14 @@
 import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i10;
 import 'package:throwtrash/models/account_link_info.dart' as _i4;
+import 'package:throwtrash/models/user.dart' as _i8;
 import 'package:throwtrash/usecase/account_link_api_interface.dart' as _i2;
 import 'package:throwtrash/usecase/account_link_repository_interface.dart'
     as _i6;
 import 'package:throwtrash/usecase/config_interface.dart' as _i9;
-import 'package:throwtrash/usecase/crash_report_interface.dart' as _i10;
+import 'package:throwtrash/usecase/crash_report_interface.dart' as _i11;
 import 'package:throwtrash/usecase/user_repository_interface.dart' as _i7;
 import 'package:throwtrash/viewModels/account_link_model.dart' as _i5;
 
@@ -94,52 +95,22 @@ class MockUserRepositoryInterface extends _i1.Mock
   }
 
   @override
-  _i3.Future<String> readUserId() => (super.noSuchMethod(
+  _i3.Future<_i8.User?> readUser() => (super.noSuchMethod(
         Invocation.method(
-          #readUserId,
+          #readUser,
           [],
         ),
-        returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
-          this,
-          Invocation.method(
-            #readUserId,
-            [],
-          ),
-        )),
-      ) as _i3.Future<String>);
+        returnValue: _i3.Future<_i8.User?>.value(),
+      ) as _i3.Future<_i8.User?>);
 
   @override
-  _i3.Future<bool> writeUserId(String? userId) => (super.noSuchMethod(
+  _i3.Future<bool> writeUser(_i8.User? user) => (super.noSuchMethod(
         Invocation.method(
-          #writeUserId,
-          [userId],
+          #writeUser,
+          [user],
         ),
         returnValue: _i3.Future<bool>.value(false),
       ) as _i3.Future<bool>);
-
-  @override
-  _i3.Future<bool> writeDeviceToken(String? deviceToken) => (super.noSuchMethod(
-        Invocation.method(
-          #writeDeviceToken,
-          [deviceToken],
-        ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
-
-  @override
-  _i3.Future<String> readDeviceToken() => (super.noSuchMethod(
-        Invocation.method(
-          #readDeviceToken,
-          [],
-        ),
-        returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
-          this,
-          Invocation.method(
-            #readDeviceToken,
-            [],
-          ),
-        )),
-      ) as _i3.Future<String>);
 }
 
 /// A class which mocks [ConfigInterface].
@@ -153,7 +124,7 @@ class MockConfigInterface extends _i1.Mock implements _i9.ConfigInterface {
   @override
   String get apiEndpoint => (super.noSuchMethod(
         Invocation.getter(#apiEndpoint),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i10.dummyValue<String>(
           this,
           Invocation.getter(#apiEndpoint),
         ),
@@ -162,7 +133,7 @@ class MockConfigInterface extends _i1.Mock implements _i9.ConfigInterface {
   @override
   String get mobileApiEndpoint => (super.noSuchMethod(
         Invocation.getter(#mobileApiEndpoint),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i10.dummyValue<String>(
           this,
           Invocation.getter(#mobileApiEndpoint),
         ),
@@ -171,7 +142,7 @@ class MockConfigInterface extends _i1.Mock implements _i9.ConfigInterface {
   @override
   String get apiErrorUrl => (super.noSuchMethod(
         Invocation.getter(#apiErrorUrl),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i10.dummyValue<String>(
           this,
           Invocation.getter(#apiErrorUrl),
         ),
@@ -180,9 +151,18 @@ class MockConfigInterface extends _i1.Mock implements _i9.ConfigInterface {
   @override
   String get version => (super.noSuchMethod(
         Invocation.getter(#version),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i10.dummyValue<String>(
           this,
           Invocation.getter(#version),
+        ),
+      ) as String);
+
+  @override
+  String get alarmApiUrl => (super.noSuchMethod(
+        Invocation.getter(#alarmApiUrl),
+        returnValue: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
         ),
       ) as String);
 }
@@ -191,7 +171,7 @@ class MockConfigInterface extends _i1.Mock implements _i9.ConfigInterface {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCrashReportInterface extends _i1.Mock
-    implements _i10.CrashReportInterface {
+    implements _i11.CrashReportInterface {
   MockCrashReportInterface() {
     _i1.throwOnMissingStub(this);
   }
