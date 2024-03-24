@@ -16,13 +16,9 @@ class _AlarmPage extends State<AlarmPage> {
   final _logger = Logger();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     _alarmModel = AlarmModel(Provider.of<AlarmServiceInterface>(context));
+    _alarmModel.initialize();
     _alarmModel.addListener(() {
       if(_alarmModel.submitState == AlarmSubmitState.COMPLETE) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

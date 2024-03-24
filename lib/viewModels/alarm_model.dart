@@ -19,19 +19,21 @@ class AlarmModel extends ChangeNotifier {
 
   AlarmModel(this._alarmService);
 
+  Future<void> initialize() async {
+    _alarmService.getAlarm().then((alarm) {
+      _isAlarmEnabled = alarm.isEnable;
+      _lastAlarmState = alarm.isEnable;
+      _hour = alarm.hour;
+      _minute = alarm.minute;
+      _logger.d("initialize alarm-> $_hour:$_minute, enable:$_isAlarmEnabled");
+      notifyListeners();
+    });
+  }
+
   bool get isAlarmEnabled => _isAlarmEnabled;
   int get hour => _hour;
   int get minute => _minute;
   AlarmSubmitState get submitState => _submitState;
-
-  Future<void> initialize() async {
-    final alarm = await _alarmService.getAlarm();
-    _isAlarmEnabled = alarm.isEnable;
-    _lastAlarmState = alarm.isEnable;
-    _hour = alarm.hour;
-    _minute = alarm.minute;
-    notifyListeners();
-  }
 
   void toggleAlarmEnabled() {
     _isAlarmEnabled = !_isAlarmEnabled;
@@ -64,5 +66,11 @@ class AlarmModel extends ChangeNotifier {
     }
     _submitState = result ? AlarmSubmitState.COMPLETE : AlarmSubmitState.ERROR;
     notifyListeners();
+
+    // 保存に成功したら最後の状態を更新
+    if(result) {
+      _lastAlarmState = isAlarmEnabled;
+    }
+    _submitState = AlarmSubmitState.INIT;
   }
 }

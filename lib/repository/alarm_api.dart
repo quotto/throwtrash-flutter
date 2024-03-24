@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
+import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/usecase/alarm_api_interface.dart';
 
 import '../models/alarm.dart';
@@ -27,13 +28,18 @@ class AlarmApi implements AlarmApiInterface {
               "hour": alarm.hour,
               "minute": alarm.minute
             },
-            "user_id": user.id
+            "user_id": user.id,
+            "platform": "ios"
           }),
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-API-KEY": EnvironmentProvider().alarmApiKey
           }
       );
 
+      _logger.d(EnvironmentProvider().alarmApiKey);
+      _logger.d(response.request?.headers.toString());
+      _logger.d(response.request.toString());
       if(response.statusCode == 200) {
         return true;
       } else {
@@ -56,10 +62,12 @@ class AlarmApi implements AlarmApiInterface {
             "device_token": deviceToken
           }),
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-API-KEY": EnvironmentProvider().alarmApiKey
           }
       );
 
+      _logger.d(response.request.toString());
       if (response.statusCode == 200) {
         return true;
       } else {
@@ -88,10 +96,12 @@ class AlarmApi implements AlarmApiInterface {
             }
           }),
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-API-KEY": EnvironmentProvider().alarmApiKey
           }
       );
 
+      _logger.d(response.request.toString());
       if (response.statusCode == 200) {
         return true;
       } else {

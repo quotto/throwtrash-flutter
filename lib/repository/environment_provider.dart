@@ -17,4 +17,6 @@ class EnvironmentProvider implements EnvironmentProviderInterface {
   String get appNameSuffix => const String.fromEnvironment('appNameSuffix');
   @override
   String get versionName => _versionName;
+  @override
+  String get alarmApiKey => const String.fromEnvironment('alarmApiKey');
 }

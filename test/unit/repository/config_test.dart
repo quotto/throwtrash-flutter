@@ -25,7 +25,7 @@ void main(){
       );
 
       MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
-      environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev");
+      environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev", "alarmApiKey");
       Config config = Config();
       await config.initialize(environmentProvider);
       expect(config.apiEndpoint, "https://example.com");
@@ -57,7 +57,7 @@ void main(){
         return null;
       });
       MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
-      environmentProvider.setEnvironment("production", "1.0.0", ".prod", ".prod");
+      environmentProvider.setEnvironment("production", "1.0.0", ".prod", ".prod", "alarmApiKey");
       Config config = Config();
       await config.initialize(environmentProvider);
       expect(config.version, "1.0.0");
@@ -82,7 +82,7 @@ void main(){
         return null;
       });
       MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
-      environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev");
+      environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev", "alarmApiKey");
       Config config = Config();
       await config.initialize(environmentProvider);
       expect(config.version, "1.0.0-dev");
@@ -95,11 +95,13 @@ class MockEnvironmentProvider implements EnvironmentProviderInterface {
   String _versionName = "";
   String _appNameSuffix = "";
   String _appIdSuffix = "";
-  void setEnvironment(String flavor, String versionName, String appNameSuffix, String appIdSuffix) {
+  String _alarmApiKey = "";
+  void setEnvironment(String flavor, String versionName, String appNameSuffix, String appIdSuffix, String alarmApiKey) {
     this._flavor = flavor;
     this._versionName = versionName;
     this._appNameSuffix = appNameSuffix;
     this._appIdSuffix = appIdSuffix;
+    this._alarmApiKey = alarmApiKey;
   }
   @override
   String get flavor => _flavor;
@@ -112,4 +114,7 @@ class MockEnvironmentProvider implements EnvironmentProviderInterface {
 
   @override
   String get appIdSuffix => _appIdSuffix;
+
+  @override
+  String get alarmApiKey => _alarmApiKey;
 }

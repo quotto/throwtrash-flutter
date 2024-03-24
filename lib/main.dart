@@ -86,6 +86,7 @@ void onDidReceiveNotificationResponse(NotificationResponse notificationResponse)
 }
 
 Future<void> _showForegroundNotification(RemoteMessage message) async {
+  _logger.d('showForegroundNotification: ${message.notification}');
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
   final DarwinInitializationSettings initializationSettingsDarwin =
@@ -152,8 +153,6 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-  String? token = await FirebaseMessaging.instance.getToken();
-  _logger.i('Token: $token');
 
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   NotificationSettings settings = await messaging.requestPermission(
