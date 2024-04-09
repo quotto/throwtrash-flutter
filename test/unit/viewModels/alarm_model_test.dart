@@ -131,6 +131,30 @@ void main() {
       verify(alarmService.changeAlarmTime(hour: 12, minute: 30));
       expect(alarmModel.submitState, AlarmSubmitState.INIT);
     });
+    test('有効状態で何も変更しない',() async {
+      when(alarmService.getAlarm())
+          .thenAnswer((_) async => Alarm(12, 30, true));
+
+      final AlarmModel alarmModel = AlarmModel(alarmService);
+      await _waitFor((){alarmModel.initialize();}, alarmModel);
+      await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
+      verify(alarmService.changeAlarmTime(hour: 12, minute: 30));
+      expect(alarmModel.submitState, AlarmSubmitState.INIT);
+    });
+    test('無効状態で時間を変更', () async {
+      when(alarmService.getAlarm())
+          .thenAnswer((_) async => Alarm(0, 0, false));
+      when(alarmService.changeAlarmTime(hour: 12, minute: 30))
+          .thenAnswer((_) async => true);
+
+      final AlarmModel alarmModel = AlarmModel(alarmService);
+      await _waitFor((){alarmModel.initialize();}, alarmModel);
+      await _waitFor(()=>alarmModel.setAlarmTime(12, 30), alarmModel);
+      await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
+      verifyNever(alarmService.changeAlarmTime(hour: 12, minute: 30));
+      verify(alarmService.cancelAlarm());
+      expect(alarmModel.submitState, AlarmSubmitState.INIT);
+    });
   });
 }
 

@@ -59,7 +59,7 @@ class AlarmModel extends ChangeNotifier {
     bool result = false;
     if(isAlarmEnabled && ! _lastAlarmState) {
       result = await _alarmService.enableAlarm(hour: hour, minute: minute);
-    } else if(!isAlarmEnabled && _lastAlarmState) {
+    } else if(!isAlarmEnabled) {
       result = await _alarmService.cancelAlarm();
     } else if(isAlarmEnabled && _lastAlarmState){
       result = await _alarmService.changeAlarmTime(hour: hour, minute: minute);

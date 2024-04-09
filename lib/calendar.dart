@@ -298,7 +298,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                 });
                               }),
                           ListTile(
-                              title: Text("アラーム設定") ,
+                              title: Text("通知設定") ,
                               leading: Padding(
                                   padding: const EdgeInsets.all(1.0),
                                   child: Icon(Icons.alarm)),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:throwtrash/usecase/alarm_service_interface.dart';
 import 'package:throwtrash/viewModels/alarm_model.dart';
@@ -13,7 +12,6 @@ class AlarmPage extends StatefulWidget {
 
 class _AlarmPage extends State<AlarmPage> {
   late AlarmModel _alarmModel;
-  final _logger = Logger();
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +19,10 @@ class _AlarmPage extends State<AlarmPage> {
     _alarmModel.initialize();
     _alarmModel.addListener(() {
       if(_alarmModel.submitState == AlarmSubmitState.COMPLETE) {
+        final alarmStatusText = _alarmModel.isAlarmEnabled ? '設定' : '解除';
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.green,
-          content: Text('アラームを設定しました', style: TextStyle(color: Colors.white)),
+          content: Text('アラームを$alarmStatusTextしました', style: TextStyle(color: Colors.white)),
           duration: Duration(seconds: 2),
         ));
       } else if(_alarmModel.submitState == AlarmSubmitState.ERROR) {
@@ -36,22 +35,22 @@ class _AlarmPage extends State<AlarmPage> {
     });
     return Scaffold(
         appBar: AppBar(
-          title: Text('アラーム設定'),
+          title: Text('通知設定'),
         ),
         body: ListenableBuilder(listenable: _alarmModel, builder: (BuildContext context, Widget? child) {
-          return Center(
+          return Container(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SwitchListTile(
-                  title: Text('アラーム'),
+                  title: Text('ゴミ出しを通知する'),
                   value: _alarmModel.isAlarmEnabled,
                   onChanged: (value) {
                     _alarmModel.toggleAlarmEnabled();
                   },
                 ),
                 ListTile(
-                  title: Text('アラーム時刻'),
+                  title: Text('通知時刻'),
                   trailing: Text('${_alarmModel.hour}:${_alarmModel.minute}'),
                   onTap: () async {
                     final time = await showTimePicker(
@@ -70,7 +69,25 @@ class _AlarmPage extends State<AlarmPage> {
                   child: Text('設定'),
                 ),
                 if(_alarmModel.submitState == AlarmSubmitState.SUBMITTING)
-                  CircularProgressIndicator()
+                  CircularProgressIndicator(),
+                Expanded(
+                 child: Container(
+                   alignment: Alignment.bottomCenter,
+                     child: Container(
+                       margin: EdgeInsets.only(bottom: 40),
+                       padding: EdgeInsets.all(10),
+                       child: Text(
+                           '通知の設定および受信には、スマートフォンがインターネットに接続されている必要があります',
+                           style: TextStyle(color: Theme.of(context).hintColor)
+                       ),
+                       decoration: BoxDecoration(
+                         border: Border.all(color: Theme.of(context).dividerColor),
+                         borderRadius: BorderRadius.circular(10),
+                         color: Theme.of(context).dialogBackgroundColor,
+                       ),
+                     )
+                 )
+                )
               ],
             ),
           );
