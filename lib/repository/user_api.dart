@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:throwtrash/usecase/user_api_interface.dart';
+import 'package:throwtrash/usecase/repository/user_api_interface.dart';
 import 'package:uuid/uuid.dart';
 
 class UserApi extends UserApiInterface {

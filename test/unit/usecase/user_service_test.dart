@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/user.dart';
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:throwtrash/usecase/user_service.dart';
 
 import 'user_service_test.mocks.dart';

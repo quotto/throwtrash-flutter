@@ -1,4 +1,4 @@
-import '../models/alarm.dart';
+import '../../models/alarm.dart';
 
 abstract class AlarmRepositoryInterface {
   Future<bool> saveAlarm(Alarm alarm);

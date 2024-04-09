@@ -1,11 +1,11 @@
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/account_link_info.dart';
-import 'package:throwtrash/usecase/account_link_api_interface.dart';
-import 'package:throwtrash/usecase/account_link_repository_interface.dart';
-import 'package:throwtrash/usecase/config_interface.dart';
+import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
+import 'package:throwtrash/usecase/repository/account_link_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
-import 'package:throwtrash/usecase/crash_report_interface.dart';
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/crash_report_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:throwtrash/usecase/start_link_exception.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
 
@@ -15,7 +15,7 @@ class AccountLinkService implements AccountLinkServiceInterface {
   late AccountLinkApiInterface _api;
   late AccountLinkRepositoryInterface _accountLinkRepository;
   late UserRepositoryInterface _userRepository;
-  late ConfigInterface _config;
+  late AppConfigProviderInterface _config;
   final Logger _logger = Logger();
   final CrashReportInterface _crashReport;
 
@@ -31,7 +31,7 @@ class AccountLinkService implements AccountLinkServiceInterface {
       // savedAccountLink.linkUriからstateパラメータの値を取得する
       String state = Uri.parse(savedAccountLink.linkUrl).queryParameters["state"]!;
       return AccountLinkInfo(
-          "${this._config.mobileApiEndpoint}/enable_skill?code=$code&redirect_uri=$redirectUri&state=$state",
+          "${this._config.mobileApiUrl}/enable_skill?code=$code&redirect_uri=$redirectUri&state=$state",
           savedAccountLink.token
       );
     }else {

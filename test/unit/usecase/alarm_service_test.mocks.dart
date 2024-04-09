@@ -9,11 +9,14 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i9;
 import 'package:throwtrash/models/alarm.dart' as _i4;
 import 'package:throwtrash/models/user.dart' as _i6;
-import 'package:throwtrash/usecase/alarm_api_interface.dart' as _i5;
-import 'package:throwtrash/usecase/alarm_repository_interface.dart' as _i2;
-import 'package:throwtrash/usecase/config_repository_interface.dart' as _i7;
-import 'package:throwtrash/usecase/fcm_interface.dart' as _i8;
-import 'package:throwtrash/usecase/user_repository_interface.dart' as _i10;
+import 'package:throwtrash/usecase/repository/alarm_api_interface.dart' as _i5;
+import 'package:throwtrash/usecase/repository/alarm_repository_interface.dart'
+    as _i2;
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart'
+    as _i7;
+import 'package:throwtrash/usecase/repository/fcm_interface.dart' as _i8;
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart'
+    as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

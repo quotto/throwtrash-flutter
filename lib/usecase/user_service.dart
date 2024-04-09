@@ -1,6 +1,6 @@
 import 'package:throwtrash/models/user.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 
 class UserService extends UserServiceInterface {
   User _user = User('');

@@ -2,12 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/alarm.dart';
-import 'package:throwtrash/usecase/alarm_api_interface.dart';
-import 'package:throwtrash/usecase/alarm_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/alarm_api_interface.dart';
+import 'package:throwtrash/usecase/repository/alarm_repository_interface.dart';
 import 'package:throwtrash/usecase/alarm_service.dart';
-import 'package:throwtrash/usecase/config_repository_interface.dart';
-import 'package:throwtrash/usecase/fcm_interface.dart';
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/fcm_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 
 import 'alarm_service_test.mocks.dart';
 

@@ -1,4 +1,4 @@
-import 'package:throwtrash/usecase/config_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart';
 
 import 'change_theme_service_interface.dart';
 

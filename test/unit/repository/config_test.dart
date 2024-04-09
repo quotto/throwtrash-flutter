@@ -5,9 +5,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:throwtrash/repository/config.dart';
-import 'package:throwtrash/usecase/config_interface.dart';
-import 'package:throwtrash/usecase/environment_provider_interface.dart';
+import 'package:throwtrash/repository/app_config_provider.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/environment_provider_interface.dart';
 
 void main(){
   setUpAll(() {
@@ -26,15 +26,15 @@ void main(){
 
       MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
       environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev", "alarmApiKey");
-      Config config = Config();
+      AppConfigProvider config = AppConfigProvider();
       await config.initialize(environmentProvider);
-      expect(config.apiEndpoint, "https://example.com");
-      expect(config.mobileApiEndpoint, "https://example.com");
-      expect(config.apiErrorUrl, "https://example.com");
+      expect(config.trashApiUrl, "https://example.com");
+      expect(config.mobileApiUrl, "https://example.com");
+      expect(config.accountLinkErrorUrl, "https://example.com");
     });
     test("複数回コンストラクタを実行した場合は同じインスタンスが返ること", () async {
-      ConfigInterface config1 = Config();
-      ConfigInterface config2 = Config();
+      AppConfigProviderInterface config1 = AppConfigProvider();
+      AppConfigProviderInterface config2 = AppConfigProvider();
       expect(config1, config2);
     });
     test("flavorがproductionの場合はバージョンにサフィックスが付与されないこと",() async{
@@ -58,7 +58,7 @@ void main(){
       });
       MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
       environmentProvider.setEnvironment("production", "1.0.0", ".prod", ".prod", "alarmApiKey");
-      Config config = Config();
+      AppConfigProvider config = AppConfigProvider();
       await config.initialize(environmentProvider);
       expect(config.version, "1.0.0");
     });
@@ -83,7 +83,7 @@ void main(){
       });
       MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
       environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev", "alarmApiKey");
-      Config config = Config();
+      AppConfigProvider config = AppConfigProvider();
       await config.initialize(environmentProvider);
       expect(config.version, "1.0.0-dev");
     });

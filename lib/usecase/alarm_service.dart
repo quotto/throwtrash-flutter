@@ -1,13 +1,13 @@
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/user.dart';
-import 'package:throwtrash/usecase/config_repository_interface.dart';
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 
 import '../models/alarm.dart';
-import 'alarm_api_interface.dart';
-import 'alarm_repository_interface.dart';
+import 'repository/alarm_api_interface.dart';
+import 'repository/alarm_repository_interface.dart';
 import 'alarm_service_interface.dart';
-import 'fcm_interface.dart';
+import 'repository/fcm_interface.dart';
 
 class AlarmService implements AlarmServiceInterface {
   final AlarmRepositoryInterface _alarmRepository;

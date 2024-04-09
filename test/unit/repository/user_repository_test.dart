@@ -6,6 +6,7 @@ import 'package:throwtrash/repository/user_repository.dart';
 void main() {
   SharedPreferences.setMockInitialValues({});
   test('readUser',() async{
+    UserRepository.initialize(await SharedPreferences.getInstance());
     UserRepository instance = UserRepository();
     await instance.readUser().then((user){
       expect(user, null);
@@ -16,6 +17,5 @@ void main() {
     await instance.readUser().then((user){
       expect(user?.id, 'testId');
     });
-
   });
 }

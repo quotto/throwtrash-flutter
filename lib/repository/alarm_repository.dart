@@ -2,7 +2,7 @@ import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/alarm.dart';
-import '../usecase/alarm_repository_interface.dart';
+import '../usecase/repository/alarm_repository_interface.dart';
 
 class AlarmRepository implements AlarmRepositoryInterface {
   static const ALARM_HOUR_KEY = 'ALARM_HOUR';
@@ -10,7 +10,20 @@ class AlarmRepository implements AlarmRepositoryInterface {
   static const ALARM_ENABLED_KEY = 'ALARM_ENABLED';
   final _logger = Logger();
   final SharedPreferences _preferences;
-  AlarmRepository(this._preferences);
+  static AlarmRepository? _instance;
+
+  AlarmRepository._(this._preferences);
+
+  static void initialize(SharedPreferences preferences) {
+    if(_instance != null) throw StateError('AlarmRepositoryは既に初期化されています');
+    _instance = AlarmRepository._(preferences);
+  }
+  factory AlarmRepository() {
+    if(_instance == null) {
+      throw StateError('AlarmRepositoryが初期化されていません');
+    }
+    return _instance!;
+  }
 
   @override
   Future<Alarm?> readAlarm() async {

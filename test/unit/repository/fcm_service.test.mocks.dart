@@ -10,7 +10,8 @@ import 'package:firebase_messaging/firebase_messaging.dart' as _i4;
 import 'package:firebase_messaging_platform_interface/firebase_messaging_platform_interface.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:throwtrash/usecase/config_repository_interface.dart' as _i6;
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart'
+    as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

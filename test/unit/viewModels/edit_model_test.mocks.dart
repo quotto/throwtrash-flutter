@@ -3,8 +3,15 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:async' as _i5;
+
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:throwtrash/usecase/crash_report_interface.dart' as _i2;
+import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:throwtrash/models/trash_data.dart' as _i4;
+import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
+    as _i2;
+import 'package:throwtrash/usecase/sync_result.dart' as _i7;
+import 'package:throwtrash/usecase/trash_data_service_interface.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -24,10 +31,6 @@ import 'package:throwtrash/usecase/crash_report_interface.dart' as _i2;
 /// See the documentation for Mockito's code generation for more information.
 class MockCrashReportInterface extends _i1.Mock
     implements _i2.CrashReportInterface {
-  MockCrashReportInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   void reportCrash(
     dynamic exception, {
@@ -45,4 +48,167 @@ class MockCrashReportInterface extends _i1.Mock
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [TrashDataServiceInterface].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockTrashDataServiceInterface extends _i1.Mock
+    implements _i3.TrashDataServiceInterface {
+  @override
+  List<_i4.TrashData> get allTrashList => (super.noSuchMethod(
+        Invocation.getter(#allTrashList),
+        returnValue: <_i4.TrashData>[],
+        returnValueForMissingStub: <_i4.TrashData>[],
+      ) as List<_i4.TrashData>);
+
+  @override
+  _i5.Future<bool> refreshTrashData() => (super.noSuchMethod(
+        Invocation.method(
+          #refreshTrashData,
+          [],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  String getTrashName({
+    String? type = r'',
+    String? trashVal = r'',
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getTrashName,
+          [],
+          {
+            #type: type,
+            #trashVal: trashVal,
+          },
+        ),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getTrashName,
+            [],
+            {
+              #type: type,
+              #trashVal: trashVal,
+            },
+          ),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getTrashName,
+            [],
+            {
+              #type: type,
+              #trashVal: trashVal,
+            },
+          ),
+        ),
+      ) as String);
+
+  @override
+  int getScheduleCount() => (super.noSuchMethod(
+        Invocation.method(
+          #getScheduleCount,
+          [],
+        ),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  _i5.Future<bool> addTrashData(_i4.TrashData? trashData) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addTrashData,
+          [trashData],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<bool> deleteTrashData(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteTrashData,
+          [id],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i4.TrashData? getTrashDataById(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #getTrashDataById,
+          [id],
+        ),
+        returnValueForMissingStub: null,
+      ) as _i4.TrashData?);
+
+  @override
+  _i5.Future<bool> updateTrashData(_i4.TrashData? trashData) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateTrashData,
+          [trashData],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<_i7.SyncResult> syncTrashData() => (super.noSuchMethod(
+        Invocation.method(
+          #syncTrashData,
+          [],
+        ),
+        returnValue: _i5.Future<_i7.SyncResult>.value(_i7.SyncResult.skipped),
+        returnValueForMissingStub:
+            _i5.Future<_i7.SyncResult>.value(_i7.SyncResult.skipped),
+      ) as _i5.Future<_i7.SyncResult>);
+
+  @override
+  List<List<_i4.TrashData>> getEnableTrashList({
+    required int? year,
+    required int? month,
+    required List<int>? targetDateList,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getEnableTrashList,
+          [],
+          {
+            #year: year,
+            #month: month,
+            #targetDateList: targetDateList,
+          },
+        ),
+        returnValue: <List<_i4.TrashData>>[],
+        returnValueForMissingStub: <List<_i4.TrashData>>[],
+      ) as List<List<_i4.TrashData>>);
+
+  @override
+  List<_i4.TrashData> getTrashOfToday({
+    required int? year,
+    required int? month,
+    required int? date,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getTrashOfToday,
+          [],
+          {
+            #year: year,
+            #month: month,
+            #date: date,
+          },
+        ),
+        returnValue: <_i4.TrashData>[],
+        returnValueForMissingStub: <_i4.TrashData>[],
+      ) as List<_i4.TrashData>);
 }

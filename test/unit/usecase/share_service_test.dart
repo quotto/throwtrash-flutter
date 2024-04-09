@@ -4,9 +4,9 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/activate_response.dart';
 import 'package:throwtrash/models/user.dart';
-import 'package:throwtrash/usecase/activation_api_interface.dart';
-import 'package:throwtrash/usecase/crash_report_interface.dart';
-import 'package:throwtrash/usecase/trash_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/activation_api_interface.dart';
+import 'package:throwtrash/usecase/repository/crash_report_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 

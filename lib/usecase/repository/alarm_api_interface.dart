@@ -1,5 +1,5 @@
-import '../models/alarm.dart';
-import '../models/user.dart';
+import '../../models/alarm.dart';
+import '../../models/user.dart';
 
 abstract class AlarmApiInterface {
   Future<bool> setAlarm(Alarm alarm, String deviceToken, User user);

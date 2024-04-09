@@ -1,12 +1,25 @@
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:throwtrash/usecase/environment_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/environment_provider_interface.dart';
 
 class EnvironmentProvider implements EnvironmentProviderInterface {
-  String _versionName = "";
+  final String _versionName;
+  static EnvironmentProvider? _instance;
 
-  Future<void> initialize() async {
+  EnvironmentProvider._(this._versionName);
+
+  static Future<void> initialize() async {
+    if(_instance!=null) {
+      throw StateError("EnvironmentProvider is already initialized");
+    }
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    _versionName = packageInfo.version;
+    _instance = EnvironmentProvider._(packageInfo.version);
+  }
+
+  factory EnvironmentProvider() {
+    if(_instance==null) {
+      throw StateError("EnvironmentProvider is not initialized");
+    }
+    return _instance!;
   }
 
   @override
