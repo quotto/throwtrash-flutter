@@ -61,6 +61,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --dart-define-from-file=dart_defines/development.json \
+            --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
@@ -136,6 +137,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --dart-define-from-file=dart_defines/production.json \
+            --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
@@ -215,6 +217,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --dart-define-from-file=dart_defines/development.json \
+            --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist

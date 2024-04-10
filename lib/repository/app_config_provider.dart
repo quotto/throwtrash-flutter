@@ -14,12 +14,17 @@ class AppConfigProvider implements AppConfigProviderInterface {
 
   factory AppConfigProvider() {
     if(_instance==null) {
-      _instance = new AppConfigProvider._();
+      throw StateError("AppConfigProvider is not initialized");
     }
     return _instance!;
   }
 
-  Future<void> initialize(EnvironmentProviderInterface environmentProvider) async {
+  static Future<void> initialize(EnvironmentProviderInterface environmentProvider) async {
+    if(_instance != null) {
+      throw StateError("AppConfigProvider is already initialized");
+    }
+    _instance = AppConfigProvider._();
+
     String configStr = await rootBundle.loadString('json/${environmentProvider.flavor}/config.json');
     Map<String, dynamic> config = json.decode(configStr);
     _instance!._trashApiEndpoint = config["apiEndpoint"]!;
@@ -34,6 +39,10 @@ class AppConfigProvider implements AppConfigProviderInterface {
       version = "$version${environmentProvider.appNameSuffix}";
     }
     _instance!._version = version;
+  }
+
+  static void reset() {
+    _instance = null;
   }
 
   AppConfigProvider._();

@@ -48,7 +48,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> _initializeRepository() async {
   await EnvironmentProvider.initialize();
-  await AppConfigProvider().initialize(EnvironmentProvider());
+  await AppConfigProvider.initialize(EnvironmentProvider());
   TrashRepository.initialize(await SharedPreferences.getInstance());
   UserRepository.initialize(await SharedPreferences.getInstance());
   AccountLinkRepository.initialize(await SharedPreferences.getInstance());
