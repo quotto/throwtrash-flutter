@@ -10,13 +10,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/main.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/viewModels/change_theme_model.dart';
 
 import 'widget_test.mocks.dart';
 
-@GenerateNiceMocks([MockSpec<TrashDataServiceInterface>(), MockSpec<ChangeThemeModel>(), MockSpec<AccountLinkServiceInterface>()])
+@GenerateNiceMocks([
+  MockSpec<TrashDataServiceInterface>(),
+  MockSpec<ChangeThemeModel>(),
+  MockSpec<AccountLinkServiceInterface>(),
+  MockSpec<AppConfigProviderInterface>()
+])
 void main() {
   final trashDataService = MockTrashDataServiceInterface();
   final mockTrashNameMap = {
@@ -61,6 +67,8 @@ void main() {
 
     final accountLinkService = MockAccountLinkServiceInterface();
     final changeThemeModel = MockChangeThemeModel();
+    final appConfigProvider = MockAppConfigProviderInterface();
+    when(appConfigProvider.version).thenReturn("1.0.0");
     await tester.pumpWidget(
         MultiProvider(
             providers: [
@@ -69,6 +77,9 @@ void main() {
               ),
               Provider<AccountLinkServiceInterface>(
                   create: (context)=> accountLinkService
+              ),
+              Provider<AppConfigProviderInterface>(
+                  create: (context)=> appConfigProvider
               ),
               ChangeNotifierProvider<ChangeThemeModel>(
                   create: (context)=> changeThemeModel

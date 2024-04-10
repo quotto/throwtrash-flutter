@@ -11,6 +11,8 @@ import 'package:mockito/src/dummies.dart' as _i6;
 import 'package:throwtrash/models/account_link_info.dart' as _i2;
 import 'package:throwtrash/models/trash_data.dart' as _i4;
 import 'package:throwtrash/usecase/account_link_service_interface.dart' as _i10;
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart'
+    as _i12;
 import 'package:throwtrash/usecase/sync_result.dart' as _i7;
 import 'package:throwtrash/usecase/trash_data_service_interface.dart' as _i3;
 import 'package:throwtrash/viewModels/account_link_model.dart' as _i11;
@@ -319,4 +321,75 @@ class MockAccountLinkServiceInterface extends _i1.Mock
         returnValue: _i5.Future<_i2.AccountLinkInfo?>.value(),
         returnValueForMissingStub: _i5.Future<_i2.AccountLinkInfo?>.value(),
       ) as _i5.Future<_i2.AccountLinkInfo?>);
+}
+
+/// A class which mocks [AppConfigProviderInterface].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAppConfigProviderInterface extends _i1.Mock
+    implements _i12.AppConfigProviderInterface {
+  @override
+  String get trashApiUrl => (super.noSuchMethod(
+        Invocation.getter(#trashApiUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#trashApiUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#trashApiUrl),
+        ),
+      ) as String);
+
+  @override
+  String get mobileApiUrl => (super.noSuchMethod(
+        Invocation.getter(#mobileApiUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#mobileApiUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#mobileApiUrl),
+        ),
+      ) as String);
+
+  @override
+  String get accountLinkErrorUrl => (super.noSuchMethod(
+        Invocation.getter(#accountLinkErrorUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#accountLinkErrorUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#accountLinkErrorUrl),
+        ),
+      ) as String);
+
+  @override
+  String get version => (super.noSuchMethod(
+        Invocation.getter(#version),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#version),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#version),
+        ),
+      ) as String);
+
+  @override
+  String get alarmApiUrl => (super.noSuchMethod(
+        Invocation.getter(#alarmApiUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
+        ),
+      ) as String);
 }

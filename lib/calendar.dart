@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:throwtrash/repository/app_config_provider.dart';
 import 'package:throwtrash/share.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/user_info.dart';
@@ -433,7 +434,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   ),
                   Container(
                     child: Text(
-                      "Version ${AppConfigProvider().version}",
+                      "Version ${Provider.of<AppConfigProviderInterface>(context).version}",
                       style: TextStyle(
                         fontSize: 10,
                         color: Colors.grey,
