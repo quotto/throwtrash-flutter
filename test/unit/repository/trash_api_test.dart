@@ -29,6 +29,9 @@ void main() {
     TrashApi.initialize(appConfigProvider, httpClient);
     trashApi = TrashApi();
   });
+  tearDown(() {
+    clearInteractions(httpClient);
+  });
   group("registerUserAndTrashData",()
   {
     test("registerUserAndTrashDataで正常に登録できること", () async {
