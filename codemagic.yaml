@@ -65,13 +65,13 @@ workflows:
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
-      - name: Install deploygate CLI
-        script: |
-          curl -sSL ${DEPLOYGATE_CLI_URL} | bash
       - name: Upload to deploygate
         script: |
-          dg config --name ${DEPLOYGATE_USER_NAME} --token ${DEPLOYGATE_API_TOKEN}
-          dg deploy ./build/ios/ipa/今日のゴミ出し.dev.ipa
+          curl \
+            --url "https://deploygate.com/api/users/${DEPLOYGATE_USER_NAME}/apps" \
+            -H "Authorization: Bearer ${DEPLOYGATE_API_TOKEN}" \
+            -X POST \
+            -F "file=@./build/ios/ipa/今日のゴミ出し.dev.ipa"
     publishing:
       slack:
         channel: '#cicd'
