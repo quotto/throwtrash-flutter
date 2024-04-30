@@ -20,6 +20,7 @@ workflows:
     cache:
       cache_paths:
         - ~/.pub-cache
+        - ~/Library/Caches/CocoaPods
     triggering:
       events:
         - push
@@ -35,6 +36,17 @@ workflows:
           source: false
       cancel_previous_builds: false
     scripts:
+      # Firebaseに必要な設定ファイルを環境変数から復元する。
+      # これらはFlutterfire　CLIによって生成されるファイルであり、CLIから生成するには
+      # firebase loginが必要となるため、CI/CD環境では事前に環境変数に定義しておく。
+      - name: Restore firebase configurations
+        script: |
+          mkdir -p ios/development
+          echo -n ${FIREBASE_INFO} >> ./ios/development/firebase.json
+          echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
+          echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
+      - name: Install flutterfire cli
+        script: dart pub global activate flutterfire_cli
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowaway.devに置換する
@@ -102,6 +114,7 @@ workflows:
     cache:
       cache_paths:
         - ~/.pub-cache
+        - ~/Library/Caches/CocoaPods
     triggering:
       events:
         - push
@@ -111,6 +124,15 @@ workflows:
           source: true
       cancel_previous_builds: false
     scripts:
+      # Firebaseに必要な設定ファイルを環境変数から復元する。
+      # これらはFlutterfire　CLIによって生成されるファイルであり、CLIから生成するには
+      # firebase loginが必要となるため、CI/CD環境では事前に環境変数に定義しておく。
+      - name: Restore firebase configurations
+        script: |
+          mkdir -p ios/production
+          echo -n ${FIREBASE_INFO} >> ./ios/production/firebase.json
+          echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
+          echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowawayに置換する
