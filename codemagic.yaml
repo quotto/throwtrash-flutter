@@ -37,8 +37,9 @@ workflows:
     scripts:
       - name: Restore Google Services Info
         script: |
-          echo ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d > ios/development/GoogleService-Info.plist
-          echo ${FIREBASE_APP_ID}  > ios/development/firebase_app_id_file.json
+          mkdir -p ios/development
+          echo ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
+          echo ${FIREBASE_APP_ID}  >> ios/development/firebase_app_id_file.json
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowaway.devに置換する
@@ -117,8 +118,9 @@ workflows:
     scripts:
       - name: Restore Google Services Info
         script: |
-          echo ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d > ios/production/GoogleService-Info.plist
-          echo ${FIREBASE_APP_ID}  > ios/production/firebase_app_id_file.json
+          mkdir -p ios/production
+          echo ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
+          echo ${FIREBASE_APP_ID}  >> ios/production/firebase_app_id_file.json
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowawayに置換する
