@@ -79,7 +79,7 @@ class AlarmService implements AlarmServiceInterface {
   }
 
   @override
-  Future<void> refreshAlarmToken(String oldToken ,String newToken) async {
+  Future<void> reRegisterAlarm() async {
     User? user  = await _userRepository.readUser();
     if(user == null) {
       _logger.e('ユーザー情報が取得できませんでした');
@@ -92,10 +92,15 @@ class AlarmService implements AlarmServiceInterface {
       return;
     }
 
+    final oldToken = await _configRepository.getDeviceToken();
+    final newToken = await _fcm.refreshDeviceToken();
     if(oldToken != newToken) {
       _logger.i('デバイストークンが変更されました');
-      _logger.i('古いデバイストークンのアラームをキャンセルします');
-      await _api.cancelAlarm(oldToken);
+      _logger.i('古いデバイストークンのアラームをキャンセルします: $oldToken');
+      if(oldToken != null) {
+        await _api.cancelAlarm(oldToken);
+      }
+      _logger.i('新しいデバイストークンでアラームを登録します: $newToken');
       await _api.setAlarm(alarm, newToken, user);
     }
   }
