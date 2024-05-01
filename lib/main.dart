@@ -104,6 +104,8 @@ Future<void> main() async {
       UserRepository()
   );
 
+  // デバイスの更新やアプリアップデート時にデバイストークンが更新されるため、アラームの再登録を行う
+  alarmService.reRegisterAlarm();
 
   ChangeThemeModel changeThemeModel = ChangeThemeModel(ChangeThemeService(ConfigRepository()));
   await changeThemeModel.init();
