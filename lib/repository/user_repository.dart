@@ -1,34 +1,41 @@
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/user.dart';
 
 class UserRepository implements UserRepositoryInterface {
   static const String USER_ID_KEY = 'USER_ID';
   static const String DEVICE_TOKEN_KEY = 'DEVICE_TOKEN';
+  static UserRepository? _instance;
+  final SharedPreferences _preferences;
 
-  @override
-  Future<String> readUserId() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? userId = preferences.getString(USER_ID_KEY);
-    return userId != null ? userId : '';
+  UserRepository._(this._preferences);
+
+  static void initialize(SharedPreferences preferences) {
+    if(_instance != null) {
+      throw StateError('UserRepository is already initialized');
+    }
+    _instance = UserRepository._(preferences);
+  }
+
+  factory UserRepository() {
+    if(_instance == null) {
+      throw StateError('UserRepository is not initialized');
+    }
+    return _instance!;
   }
 
   @override
-  Future<bool> writeUserId(String userId) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    return preferences.setString(USER_ID_KEY, userId);
+  Future<User?> readUser() async {
+    String? userId = this._preferences.getString(USER_ID_KEY);
+    if(userId == null) {
+      return null;
+    }
+    return User(userId);
   }
 
   @override
-  Future<String> readDeviceToken() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? deviceToken = preferences.getString(DEVICE_TOKEN_KEY);
-    return deviceToken != null ? deviceToken : '';
+  Future<bool> writeUser(User user) async {
+    return this._preferences.setString(USER_ID_KEY, user.id);
   }
-
-  @override
-  Future<bool> writeDeviceToken(String deviceToken) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    return preferences.setString(DEVICE_TOKEN_KEY, deviceToken);
-  }
-  
 }

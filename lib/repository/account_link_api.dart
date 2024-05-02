@@ -2,21 +2,37 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/account_link_info.dart';
-import 'package:throwtrash/usecase/account_link_api_interface.dart';
+import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 
 import '../viewModels/account_link_model.dart';
 
 class AccountLinkApi implements AccountLinkApiInterface {
-  String _accountLinkApiUrl = "";
   final Logger _logger = Logger();
-  late http.Client _httpClient;
+  final AppConfigProviderInterface _configProvider;
+  final http.Client _httpClient;
+  static AccountLinkApi? _instance;
 
 
-  AccountLinkApi(this._accountLinkApiUrl, this._httpClient);
+  AccountLinkApi._(this._configProvider, this._httpClient);
+
+  static initialize(AppConfigProviderInterface configProvider, http.Client httpClient) {
+    if(_instance != null) {
+      throw StateError("AccountLinkApi is already initialized");
+    }
+    _instance = AccountLinkApi._(configProvider, httpClient);
+  }
+
+  factory AccountLinkApi() {
+    if(_instance == null) {
+      throw StateError("AccountLinkApi is not initialized");
+    }
+    return _instance!;
+  }
 
   @override
   Future<AccountLinkInfo?> startAccountLink(String userId, AccountLinkType accountLinkType) async {
-    Uri endpointUri = Uri.parse("${this._accountLinkApiUrl}/start_link?user_id=$userId&platform=${accountLinkType.toStringValue()}");
+    Uri endpointUri = Uri.parse("${this._configProvider.mobileApiUrl}/start_link?user_id=$userId&platform=${accountLinkType.toStringValue()}");
     http.Response response = await this._httpClient.get(
       endpointUri
     );

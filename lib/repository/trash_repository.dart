@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/calendar_model.dart';
 import 'package:throwtrash/models/trash_data.dart';
-import 'package:throwtrash/usecase/trash_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TrashRepository implements TrashRepositoryInterface {
@@ -11,11 +11,24 @@ class TrashRepository implements TrashRepositoryInterface {
   static const LAST_UPDATE_TIME_KEY = 'LAST_UPDATE_TIME';
   static const SYNC_STATUS_KEY = 'SYNC_STATUS_KEY';
   final _logger = Logger();
+  late final SharedPreferences _preferences;
+
+  static TrashRepository? _instance;
+  TrashRepository._(this._preferences);
+  static void initialize(SharedPreferences _preferences) {
+    if(_instance != null) throw StateError('TrashRepository is already initialized');
+    _instance = TrashRepository._(_preferences);
+  }
+  factory TrashRepository() {
+    if(_instance == null) {
+      throw StateError('TrashRepository is not initialized');
+    }
+    return _instance!;
+  }
 
   @override
   Future<List<TrashData>> readAllTrashData() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    List<String>? rawList = preferences.getStringList(TRASH_DATA_KEY);
+    List<String>? rawList = this._preferences.getStringList(TRASH_DATA_KEY);
 
     if(rawList != null && rawList.isNotEmpty) {
       _logger.d("Read all trash data: " + rawList.join("\n"));
@@ -31,8 +44,7 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<bool> insertTrashData(TrashData trashData) async {
     _logger.d("Insert trash data: " + json.encode(trashData.toJson()));
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    List<String>? allTrashData  = preferences.getStringList(TRASH_DATA_KEY);
+    List<String>? allTrashData  = this._preferences.getStringList(TRASH_DATA_KEY);
     if(allTrashData != null && allTrashData.isNotEmpty) {
       bool check = allTrashData.every((element) {
         TrashData data  = TrashData.fromJson(jsonDecode(element));
@@ -47,20 +59,19 @@ class TrashRepository implements TrashRepositoryInterface {
       allTrashData = [jsonEncode(trashData.toJson())];
     }
 
-    return preferences.setStringList(TRASH_DATA_KEY, allTrashData);
+    return this._preferences.setStringList(TRASH_DATA_KEY, allTrashData);
   }
 
   @override
   Future<bool> updateTrashData(TrashData trashData) async {
     _logger.d("Update trash data: " + json.encode(trashData.toJson()));
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    List<String>? allTrashData  = preferences.getStringList(TRASH_DATA_KEY);
+    List<String>? allTrashData  = this._preferences.getStringList(TRASH_DATA_KEY);
     if(allTrashData != null && allTrashData.isNotEmpty) {
       for(int index=0; index < allTrashData.length; index++) {
         TrashData data  = TrashData.fromJson(jsonDecode(allTrashData[index]));
         if(data.id == trashData.id) {
           allTrashData[index] = jsonEncode(trashData.toJson());
-          return preferences.setStringList(TRASH_DATA_KEY, allTrashData);
+          return this._preferences.setStringList(TRASH_DATA_KEY, allTrashData);
         }
       }
     }
@@ -71,15 +82,14 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<bool> deleteTrashData(String id) async {
     _logger.d("Delete trash data: $id");
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    List<String>? allTrashData  = preferences.getStringList(TRASH_DATA_KEY);
+    List<String>? allTrashData  = this._preferences.getStringList(TRASH_DATA_KEY);
     if(allTrashData != null && allTrashData.length > 0) {
       for (int index = 0; index < allTrashData.length; index++) {
         TrashData trashData = TrashData.fromJson(
             jsonDecode(allTrashData[index]));
         if(trashData.id == id) {
           allTrashData.removeAt(index);
-          return await preferences.setStringList(TRASH_DATA_KEY, allTrashData);
+          return await this._preferences.setStringList(TRASH_DATA_KEY, allTrashData);
         }
       }
     }
@@ -89,8 +99,7 @@ class TrashRepository implements TrashRepositoryInterface {
 
   @override
   Future<int> getLastUpdateTime() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    int? preferenceValue = preferences.getInt(LAST_UPDATE_TIME_KEY);
+    int? preferenceValue = this._preferences.getInt(LAST_UPDATE_TIME_KEY);
     int lastUpdateTime = preferenceValue == null ? 0 : preferenceValue;
     _logger.d("get lastUpdateTimeStamp: $lastUpdateTime");
     return lastUpdateTime;
@@ -99,22 +108,19 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<bool> updateLastUpdateTime(int updateTimestamp) async {
     _logger.d("Update lastUpdateTime: $updateTimestamp");
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    return await preferences.setInt(LAST_UPDATE_TIME_KEY, updateTimestamp);
+    return await this._preferences.setInt(LAST_UPDATE_TIME_KEY, updateTimestamp);
   }
 
   @override
   Future<bool> truncateAllTrashData() async{
     _logger.d("truncate trash data");
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    return await preferences.remove(TRASH_DATA_KEY);
+    return await this._preferences.remove(TRASH_DATA_KEY);
   }
 
   @override
   Future<SyncStatus> getSyncStatus() async {
     _logger.d("get sync status");
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    int? value = preferences.getInt(SYNC_STATUS_KEY);
+    int? value = this._preferences.getInt(SYNC_STATUS_KEY);
     if(value == null) {
       return SyncStatus.SYNCING;
     } else {

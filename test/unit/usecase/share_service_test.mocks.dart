@@ -11,9 +11,12 @@ import 'package:throwtrash/models/activate_response.dart' as _i6;
 import 'package:throwtrash/models/calendar_model.dart' as _i10;
 import 'package:throwtrash/models/trash_data.dart' as _i9;
 import 'package:throwtrash/models/user.dart' as _i2;
-import 'package:throwtrash/usecase/activation_api_interface.dart' as _i3;
-import 'package:throwtrash/usecase/crash_report_interface.dart' as _i11;
-import 'package:throwtrash/usecase/trash_repository_interface.dart' as _i8;
+import 'package:throwtrash/usecase/repository/activation_api_interface.dart'
+    as _i3;
+import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
+    as _i11;
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
+    as _i8;
 import 'package:throwtrash/usecase/user_service_interface.dart' as _i7;
 
 // ignore_for_file: type=lint

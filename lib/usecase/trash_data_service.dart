@@ -4,13 +4,13 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_sync_result.dart';
 import 'package:throwtrash/models/trash_update_result.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
-import 'package:throwtrash/usecase/trash_api_interface.dart';
-import 'package:throwtrash/usecase/trash_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_api_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
 import '../models/calendar_model.dart';
-import 'crash_report_interface.dart';
+import 'repository/crash_report_interface.dart';
 
 class TrashDataService implements TrashDataServiceInterface {
   List<TrashData> _schedule = [];

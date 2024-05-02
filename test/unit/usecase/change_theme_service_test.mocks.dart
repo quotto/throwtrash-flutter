@@ -6,7 +6,8 @@
 import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:throwtrash/usecase/config_repository_interface.dart' as _i2;
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart'
+    as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -45,4 +46,24 @@ class MockConfigRepositoryInterface extends _i1.Mock
         returnValue: _i3.Future<bool?>.value(),
         returnValueForMissingStub: _i3.Future<bool?>.value(),
       ) as _i3.Future<bool?>);
+
+  @override
+  _i3.Future<String?> getDeviceToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getDeviceToken,
+          [],
+        ),
+        returnValue: _i3.Future<String?>.value(),
+        returnValueForMissingStub: _i3.Future<String?>.value(),
+      ) as _i3.Future<String?>);
+
+  @override
+  _i3.Future<bool> saveDeviceToken(String? deviceToken) => (super.noSuchMethod(
+        Invocation.method(
+          #saveDeviceToken,
+          [deviceToken],
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+        returnValueForMissingStub: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
 }

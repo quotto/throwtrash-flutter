@@ -35,6 +35,11 @@ workflows:
           source: false
       cancel_previous_builds: false
     scripts:
+      - name: Restore Google Services Info
+        script: |
+          mkdir -p ios/development
+          echo ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
+          echo ${FIREBASE_APP_ID}  >> ios/development/firebase_app_id_file.json
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowaway.devに置換する
@@ -61,16 +66,17 @@ workflows:
         script: |
           flutter build ipa --release \
             --dart-define-from-file=dart_defines/development.json \
+            --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
-      - name: Install deploygate CLI
-        script: |
-          curl -sSL ${DEPLOYGATE_CLI_URL} | bash
       - name: Upload to deploygate
         script: |
-          dg config --name ${DEPLOYGATE_USER_NAME} --token ${DEPLOYGATE_API_TOKEN}
-          dg deploy ./build/ios/ipa/今日のゴミ出し.dev.ipa
+          curl \
+            --url "https://deploygate.com/api/users/${DEPLOYGATE_USER_NAME}/apps" \
+            -H "Authorization: Bearer ${DEPLOYGATE_API_TOKEN}" \
+            -X POST \
+            -F "file=@./build/ios/ipa/今日のゴミ出し.dev.ipa"
     publishing:
       slack:
         channel: '#cicd'
@@ -110,6 +116,11 @@ workflows:
           source: true
       cancel_previous_builds: false
     scripts:
+      - name: Restore Google Services Info
+        script: |
+          mkdir -p ios/production
+          echo ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
+          echo ${FIREBASE_APP_ID}  >> ios/production/firebase_app_id_file.json
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowawayに置換する
@@ -136,85 +147,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --dart-define-from-file=dart_defines/production.json \
-            --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
-            --build-number=${BUILD_NUMBER} \
-            --export-options-plist=/Users/builder/export_options.plist
-    artifacts:
-      - build/ios/ipa/**/*.ipa
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        beta_groups:
-          - MyInternalGroup
-      slack:
-        channel: '#cicd'
-        notify_on_build_start: false
-        notify:
-          success: true
-          failure: true
-
-  ios-test:
-    name: iOS Release Development Workflow
-    instance_type: mac_mini_m1
-    max_build_duration: 60
-    integrations:
-      app_store_connect: codemagic
-    environment:
-      groups:
-        - development
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: net.mythrowaway.dev
-      vars:
-        MAJOR: "1"
-        MINOR: "1"
-        BUNDLE_ID: "net.mythrowaway.dev"
-      flutter: fvm
-      xcode: 14.2
-      cocoapods: 1.12.0
-      ruby: 3.0.4
-    cache:
-      cache_paths:
-        - ~/.pub-cache
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: '*'
-          include: true
-          source: true
-        - pattern: 'release'
-          include: false
-          source: false
-        - pattern: 'main'
-          include: false
-          source: false
-      cancel_previous_builds: false
-    scripts:
-      # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
-      # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
-      # このため事前にbundle identifierをnet.mythrowaway.devに置換する
-      - name: Replace bundle identifier
-        script: |
-          #!/bin/bash
-          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway.dev;/g'
-      - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
-      - name: Install dependencies
-        script: flutter pub get
-      - name: Install pods
-        script: |
-          find . -name "Podfile" -execdir pod install \;
-      - name: Run unit tests
-        script: |
-          mkdir -p test-results
-          flutter test --machine > test-results/flutter.json
-        test_report: test-results/flutter.json
-      - name: Flutter build ipa
-        script: |
-          flutter build ipa --release \
-            --dart-define-from-file=dart_defines/development.json \
+            --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/usecase/change_theme_service.dart';
-import 'package:throwtrash/usecase/config_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/config_repository_interface.dart';
 
 import 'change_theme_service_test.mocks.dart';
 

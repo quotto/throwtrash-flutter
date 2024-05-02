@@ -1,4 +1,4 @@
-import '../models/activate_response.dart';
+import '../../models/activate_response.dart';
 
 abstract class ActivationApiInterface {
   Future<String> requestActivationCode(String userId);

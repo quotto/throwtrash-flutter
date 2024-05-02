@@ -3,4 +3,5 @@ abstract class EnvironmentProviderInterface {
   String get appIdSuffix;
   String get appNameSuffix;
   String get versionName;
+  String get alarmApiKey;
 }
