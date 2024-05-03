@@ -51,7 +51,7 @@ class _AlarmPage extends State<AlarmPage> {
                 ),
                 ListTile(
                   title: Text('通知時刻'),
-                  trailing: Text('${_alarmModel.hour}:${_alarmModel.minute}'),
+                  trailing: Text('${_alarmModel.hourString}:${_alarmModel.minuteString}'),
                   onTap: () async {
                     final time = await showTimePicker(
                       context: context,
