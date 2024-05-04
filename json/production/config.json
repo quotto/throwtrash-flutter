@@ -1,5 +1,6 @@
 {
   "mobileApiEndpoint": "https://mobile.mythrowaway.net/v5",
   "apiEndpoint": "https://backend.mythrowaway.net/v5",
-  "apiErrorUrl": "https://backend.mythrowaway.net/v5/500.html"
+  "apiErrorUrl": "https://backend.mythrowaway.net/v5/500.html",
+  "alarmApiUrl": "https://alarm.mythrowaway.net/v1"
 }

@@ -33,6 +33,8 @@ class AlarmModel extends ChangeNotifier {
   bool get isAlarmEnabled => _isAlarmEnabled;
   int get hour => _hour;
   int get minute => _minute;
+  String get hourString =>  _hour.toString().padLeft(2, '0');
+  String get minuteString => _minute.toString().padLeft(2, '0');
   AlarmSubmitState get submitState => _submitState;
 
   void toggleAlarmEnabled() {
@@ -58,11 +60,11 @@ class AlarmModel extends ChangeNotifier {
 
     bool result = false;
     if(isAlarmEnabled && ! _lastAlarmState) {
-      result = await _alarmService.enableAlarm(hour: hour, minute: minute);
+      result = await _alarmService.enableAlarm(hour: _hour, minute: _minute);
     } else if(!isAlarmEnabled) {
       result = await _alarmService.cancelAlarm();
     } else if(isAlarmEnabled && _lastAlarmState){
-      result = await _alarmService.changeAlarmTime(hour: hour, minute: minute);
+      result = await _alarmService.changeAlarmTime(hour: _hour, minute: _minute);
     }
     _submitState = result ? AlarmSubmitState.COMPLETE : AlarmSubmitState.ERROR;
     notifyListeners();
