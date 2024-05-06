@@ -133,6 +133,8 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/production/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
+      - name: Install flutterfire cli
+        script: dart pub global activate flutterfire_cli
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
       # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
       # このため事前にbundle identifierをnet.mythrowawayに置換する
