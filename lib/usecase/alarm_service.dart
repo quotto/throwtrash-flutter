@@ -94,6 +94,8 @@ class AlarmService implements AlarmServiceInterface {
 
     final oldToken = await _configRepository.getDeviceToken();
     final newToken = await _fcm.refreshDeviceToken();
+    _logger.i('古いデバイストークン: $oldToken');
+    _logger.i('新しいデバイストークン: $newToken');
     if(oldToken != newToken) {
       _logger.i('デバイストークンが変更されました');
       _logger.i('古いデバイストークンのアラームをキャンセルします: $oldToken');

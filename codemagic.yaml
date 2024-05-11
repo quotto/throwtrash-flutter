@@ -11,7 +11,7 @@ workflows:
         bundle_identifier: net.mythrowaway.dev
       vars:
         MAJOR: "1"
-        MINOR: "2"
+        MINOR: "3"
         BUNDLE_ID: "net.mythrowaway.dev"
       flutter: fvm
       xcode: 15.0
@@ -105,7 +105,7 @@ workflows:
         bundle_identifier: net.mythrowaway
       vars:
         MAJOR: "1"
-        MINOR: "2"
+        MINOR: "3"
         BUNDLE_ID: "net.mythrowaway"
       flutter: fvm
       xcode: 15.0
