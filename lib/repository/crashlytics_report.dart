@@ -4,7 +4,7 @@ CrashReportService
  */
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
-import '../usecase/crash_report_interface.dart';
+import '../usecase/repository/crash_report_interface.dart';
 
 class CrashlyticsReport implements CrashReportInterface {
   static CrashlyticsReport? _instance;

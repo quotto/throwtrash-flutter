@@ -6,8 +6,9 @@
 import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i4;
-import 'package:throwtrash/repository/user_repository.dart' as _i2;
+import 'package:throwtrash/models/user.dart' as _i4;
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart'
+    as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -22,58 +23,29 @@ import 'package:throwtrash/repository/user_repository.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-/// A class which mocks [UserRepository].
+/// A class which mocks [UserRepositoryInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
-  MockUserRepository() {
+class MockUserRepositoryInterface extends _i1.Mock
+    implements _i2.UserRepositoryInterface {
+  MockUserRepositoryInterface() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<String> readUserId() => (super.noSuchMethod(
+  _i3.Future<_i4.User?> readUser() => (super.noSuchMethod(
         Invocation.method(
-          #readUserId,
+          #readUser,
           [],
         ),
-        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #readUserId,
-            [],
-          ),
-        )),
-      ) as _i3.Future<String>);
+        returnValue: _i3.Future<_i4.User?>.value(),
+      ) as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<bool> writeUserId(String? userId) => (super.noSuchMethod(
+  _i3.Future<bool> writeUser(_i4.User? user) => (super.noSuchMethod(
         Invocation.method(
-          #writeUserId,
-          [userId],
-        ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
-
-  @override
-  _i3.Future<String> readDeviceToken() => (super.noSuchMethod(
-        Invocation.method(
-          #readDeviceToken,
-          [],
-        ),
-        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #readDeviceToken,
-            [],
-          ),
-        )),
-      ) as _i3.Future<String>);
-
-  @override
-  _i3.Future<bool> writeDeviceToken(String? deviceToken) => (super.noSuchMethod(
-        Invocation.method(
-          #writeDeviceToken,
-          [deviceToken],
+          #writeUser,
+          [user],
         ),
         returnValue: _i3.Future<bool>.value(false),
       ) as _i3.Future<bool>);

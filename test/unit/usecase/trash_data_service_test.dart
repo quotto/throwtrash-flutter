@@ -5,37 +5,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
-import 'package:throwtrash/repository/trash_api.dart';
-import 'package:throwtrash/repository/trash_repository.dart';
-import 'package:throwtrash/repository/user_repository.dart';
-import 'package:throwtrash/usecase/crash_report_interface.dart';
+import 'package:throwtrash/usecase/repository/crash_report_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_api_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/models/trash_data.dart';
-import 'package:throwtrash/usecase/user_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:throwtrash/usecase/user_service_interface.dart';
 
-import 'share_service_test.mocks.dart';
+import './trash_data_service_test.mocks.dart';
 
-@GenerateMocks([CrashReportInterface])
 class FirebaseFirestoreMock extends Mock implements FirebaseFirestore{}
 
 List<int> dataSet = [29,30,31,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,1];
 
 
+@GenerateNiceMocks([MockSpec<CrashReportInterface>(),MockSpec<TrashRepositoryInterface>(), MockSpec<TrashApiInterface>(), MockSpec<UserServiceInterface>()])
 void main() async{
-  SharedPreferences.setMockInitialValues({});
   final MockCrashReportInterface crashReport = MockCrashReportInterface();
+  final MockTrashRepositoryInterface trashRepository = MockTrashRepositoryInterface();
+  final MockTrashApiInterface trashApiInterface = MockTrashApiInterface();
+  final MockUserServiceInterface userService = MockUserServiceInterface();
 
   TrashDataService instance = TrashDataService(
-      UserService(
-        UserRepository()
-      ),
-      TrashRepository(),
-      TrashApi("", http.Client()),
-      crashReport
+    userService,
+    trashRepository,
+    trashApiInterface,
+    crashReport
   );
   group('getEnableTrashListByWeekday', () {
     test('毎週（weekday）', () async{
@@ -44,8 +41,7 @@ void main() async{
       TrashData trash2 = TrashData(id:
           '2', type: 'bin', trashVal: '', schedules: [TrashSchedule('weekday', '1')], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -64,8 +60,7 @@ void main() async{
       TrashData trash2 = TrashData(id:
           '2', type: 'other', trashVal: '家電', schedules: [TrashSchedule('month', '3')], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -86,8 +81,7 @@ void main() async{
       TrashData trash2 = TrashData(id:
           '2', type: 'petbottle', trashVal: '', schedules: [TrashSchedule('biweek', '0-3')], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -119,14 +113,7 @@ void main() async{
             'evweek', {'weekday': '4', 'start': '2020-01-05'})
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
-          [
-            jsonEncode(trash1.toJson()),
-            jsonEncode(trash2.toJson()),
-            jsonEncode(trash3.toJson())
-          ]
-      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2,trash3]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -158,8 +145,7 @@ void main() async{
             'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3})
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -190,8 +176,7 @@ void main() async{
             'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4})
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -218,8 +203,7 @@ void main() async{
         TrashSchedule('weekday','2'),TrashSchedule('weekday', '6')
       ],excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(year: 2020, month: 1, targetDateList: dataSet);
@@ -235,8 +219,7 @@ void main() async{
         TrashSchedule('month', '29'),TrashSchedule('month', '1')
       ],excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(year: 2020, month: 1, targetDateList: dataSet);
@@ -257,8 +240,7 @@ void main() async{
         TrashSchedule('biweek', '6-1')
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -280,8 +262,7 @@ void main() async{
         TrashSchedule('evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
       ],excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,[jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]);
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
@@ -316,16 +297,7 @@ void main() async{
             'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
-          [
-            jsonEncode(trash1.toJson()),
-            jsonEncode(trash2.toJson()),
-            jsonEncode(trash3.toJson()),
-            jsonEncode(trash4.toJson()),
-            jsonEncode(trash5.toJson())
-          ]
-      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2,trash3,trash4,trash5]);
       await instance.refreshTrashData();
 
       List<TrashData> result1 = instance.getTrashOfToday(
@@ -363,14 +335,7 @@ void main() async{
         TrashSchedule('biweek', '3-5')
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
-          [
-            jsonEncode(trash1.toJson()),
-            jsonEncode(trash2.toJson()),
-            jsonEncode(trash3.toJson())
-          ]
-      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2,trash3]);
       await instance.refreshTrashData();
 
       List<TrashData> result1 = instance.getTrashOfToday(year: 2020, month: 9, date: 7);
@@ -397,10 +362,7 @@ void main() async{
         TrashSchedule('evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4}),
       ], excludes: []);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(TrashRepository.TRASH_DATA_KEY,
-          [jsonEncode(trash1.toJson()),jsonEncode(trash2.toJson())]
-      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash1,trash2]);
       await instance.refreshTrashData();
 
       // 3月4日は除外設定されているためburnは設定されない

@@ -5,47 +5,62 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:throwtrash/repository/config.dart';
-import 'package:throwtrash/usecase/config_interface.dart';
-import 'package:throwtrash/usecase/environment_provider_interface.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:throwtrash/repository/app_config_provider.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/environment_provider_interface.dart';
 
+import 'config_test.mocks.dart';
+
+@GenerateNiceMocks([MockSpec<EnvironmentProviderInterface>()])
 void main(){
-  setUpAll(() {
-    TestWidgetsFlutterBinding.ensureInitialized();
-  });
-
   group("Config", () {
-    test("Configの初期化ができること", () async {
-      // Create a fake rootBundle
+    MockEnvironmentProviderInterface environmentProvider = MockEnvironmentProviderInterface();
+    setUpAll(() {
+      TestWidgetsFlutterBinding.ensureInitialized();
+    });
+
+    setUp(() {
       ServicesBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
         'flutter/assets',
             (ByteData? message) async {
-          return ByteData.sublistView(Uint8List.fromList('{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com"}'.codeUnits));
+          return ByteData.sublistView(
+              Uint8List.fromList(
+                  '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com"}'.codeUnits
+              )
+          );
         },
       );
-
-      MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
-      environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev");
-      Config config = Config();
-      await config.initialize(environmentProvider);
-      expect(config.apiEndpoint, "https://example.com");
-      expect(config.mobileApiEndpoint, "https://example.com");
-      expect(config.apiErrorUrl, "https://example.com");
+    });
+    tearDown(() {
+      AppConfigProvider.reset();
+      clearInteractions(environmentProvider);
     });
     test("複数回コンストラクタを実行した場合は同じインスタンスが返ること", () async {
-      ConfigInterface config1 = Config();
-      ConfigInterface config2 = Config();
+      when(environmentProvider.flavor).thenReturn("development");
+      when(environmentProvider.versionName).thenReturn("1.0.0");
+      when(environmentProvider.appNameSuffix).thenReturn("-dev");
+      when(environmentProvider.appIdSuffix).thenReturn("-dev");
+      when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
+      await AppConfigProvider.initialize(environmentProvider);
+      AppConfigProviderInterface config1 = AppConfigProvider();
+      AppConfigProviderInterface config2 = AppConfigProvider();
       expect(config1, config2);
     });
     test("flavorがproductionの場合はバージョンにサフィックスが付与されないこと",() async{
       // Create a fake rootBundle
-      ServicesBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
         'flutter/assets',
             (ByteData? message) async {
-          return ByteData.sublistView(Uint8List.fromList('{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com"}'.codeUnits));
+          return ByteData.sublistView(
+              Uint8List.fromList(
+                  '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com"}'.codeUnits
+              )
+          );
         },
       );
-      const MethodChannel('dev.fluttercommunity.plus/package_info').setMockMethodCallHandler((MethodCall methodCall) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'),  (MethodCall methodCall) async {
         if (methodCall.method == 'getAll') {
           return <String, dynamic>{
             'appName': 'net.mythrowaway',
@@ -56,21 +71,27 @@ void main(){
         }
         return null;
       });
-      MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
-      environmentProvider.setEnvironment("production", "1.0.0", ".prod", ".prod");
-      Config config = Config();
-      await config.initialize(environmentProvider);
+      when(environmentProvider.flavor).thenReturn("production");
+      when(environmentProvider.versionName).thenReturn("1.0.0");
+      when(environmentProvider.appNameSuffix).thenReturn(".prod");
+      when(environmentProvider.appIdSuffix).thenReturn(".prod");
+      when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
+      await AppConfigProvider.initialize(environmentProvider);
+      AppConfigProvider config = AppConfigProvider();
       expect(config.version, "1.0.0");
     });
     test("flavorがdevelopmentの場合はバージョンにサフィックスが付与されること",() async{
-      // Create a fake rootBundle
-      ServicesBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
         'flutter/assets',
             (ByteData? message) async {
-          return ByteData.sublistView(Uint8List.fromList('{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com"}'.codeUnits));
+          return ByteData.sublistView(
+              Uint8List.fromList(
+                  '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com"}'.codeUnits
+              )
+          );
         },
       );
-      const MethodChannel('dev.fluttercommunity.plus/package_info').setMockMethodCallHandler((MethodCall methodCall) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'),  (MethodCall methodCall) async {
         if (methodCall.method == 'getAll') {
           return <String, dynamic>{
             'appName': 'net.mythrowaway',
@@ -81,35 +102,19 @@ void main(){
         }
         return null;
       });
-      MockEnvironmentProvider environmentProvider = MockEnvironmentProvider();
-      environmentProvider.setEnvironment("development", "1.0.0", "-dev", "-dev");
-      Config config = Config();
-      await config.initialize(environmentProvider);
+
+      when(environmentProvider.flavor).thenReturn("development");
+      when(environmentProvider.versionName).thenReturn("1.0.0");
+      when(environmentProvider.appNameSuffix).thenReturn("-dev");
+      when(environmentProvider.appIdSuffix).thenReturn("-dev");
+      when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
+      await AppConfigProvider.initialize(environmentProvider);
+      AppConfigProviderInterface config = AppConfigProvider();
+      expect(config.trashApiUrl, "https://example.com");
+      expect(config.mobileApiUrl, "https://example.com");
+      expect(config.accountLinkErrorUrl, "https://example.com");
+      expect(config.alarmApiUrl, "https://alarm.com");
       expect(config.version, "1.0.0-dev");
     });
   });
-}
-
-class MockEnvironmentProvider implements EnvironmentProviderInterface {
-  String _flavor = "";
-  String _versionName = "";
-  String _appNameSuffix = "";
-  String _appIdSuffix = "";
-  void setEnvironment(String flavor, String versionName, String appNameSuffix, String appIdSuffix) {
-    this._flavor = flavor;
-    this._versionName = versionName;
-    this._appNameSuffix = appNameSuffix;
-    this._appIdSuffix = appIdSuffix;
-  }
-  @override
-  String get flavor => _flavor;
-
-  @override
-  String get versionName => _versionName;
-
-  @override
-  String get appNameSuffix => _appNameSuffix;
-
-  @override
-  String get appIdSuffix => _appIdSuffix;
 }

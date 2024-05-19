@@ -2,11 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/account_link_info.dart';
-import 'package:throwtrash/usecase/account_link_api_interface.dart';
-import 'package:throwtrash/usecase/account_link_repository_interface.dart';
-import 'package:throwtrash/usecase/config_interface.dart';
-import 'package:throwtrash/usecase/crash_report_interface.dart';
-import 'package:throwtrash/usecase/user_repository_interface.dart';
+import 'package:throwtrash/models/user.dart';
+import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
+import 'package:throwtrash/usecase/repository/account_link_repository_interface.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/crash_report_interface.dart';
+import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:throwtrash/usecase/account_link_service.dart';
 import 'package:throwtrash/usecase/start_link_exception.dart';
 import 'package:throwtrash/viewModels/account_link_model.dart';
@@ -18,7 +19,7 @@ import 'account_link_service_test.mocks.dart';
   AccountLinkApiInterface,
   AccountLinkRepositoryInterface,
   UserRepositoryInterface,
-  ConfigInterface,
+  AppConfigProviderInterface,
   CrashReportInterface
 ])
 void main() {
@@ -26,7 +27,7 @@ void main() {
     late MockAccountLinkApiInterface accountLinkApi;
     late MockAccountLinkRepositoryInterface accountLinkRepository;
     late MockUserRepositoryInterface userRepository;
-    late MockConfigInterface config;
+    late MockAppConfigProviderInterface config;
     late AccountLinkService accountLinkService;
     late MockCrashReportInterface crashReport;
 
@@ -34,7 +35,7 @@ void main() {
       accountLinkApi = MockAccountLinkApiInterface();
       accountLinkRepository = MockAccountLinkRepositoryInterface();
       userRepository = MockUserRepositoryInterface();
-      config = MockConfigInterface();
+      config = MockAppConfigProviderInterface();
       crashReport = MockCrashReportInterface();
       accountLinkService = AccountLinkService(
           config,
@@ -51,7 +52,7 @@ void main() {
       final testApiEndpoint = 'https://api.example.com';
       final savedAccountLink = AccountLinkInfo(testLinkUrl, testToken);
 
-      when(config.mobileApiEndpoint).thenReturn(testApiEndpoint);
+      when(config.mobileApiUrl).thenReturn(testApiEndpoint);
       when(accountLinkRepository.readAccountLinkInfo()).thenAnswer((_) async => savedAccountLink);
 
       final accountLinkInfo = await accountLinkService.getAccountLinkInfoWithCode(testCode);
@@ -77,7 +78,7 @@ void main() {
       final accountLinkType = AccountLinkType.Web;
       final accountLinkInfo = AccountLinkInfo(testLinkUrl, testToken);
 
-      when(userRepository.readUserId()).thenAnswer((_) async => testUserId);
+      when(userRepository.readUser()).thenAnswer((_) async => User(testUserId));
       when(accountLinkApi.startAccountLink(testUserId, accountLinkType)).thenAnswer((_) async => accountLinkInfo);
       when(accountLinkRepository.writeAccountLinkInfo(accountLinkInfo)).thenAnswer((_) async => true);
 
@@ -90,7 +91,7 @@ void main() {
     test('startLink throws StartLinkException when userId is empty', () async {
       final accountLinkType = AccountLinkType.Web;
 
-      when(userRepository.readUserId()).thenAnswer((_) async => '');
+      when(userRepository.readUser()).thenAnswer((_) async => null);
 
       expect(() => accountLinkService.startLink(accountLinkType), throwsA(isA<StartLinkException>()));
     });
@@ -99,7 +100,7 @@ void main() {
       final testUserId = 'test_user_id';
       final accountLinkType = AccountLinkType.Web;
 
-      when(userRepository.readUserId()).thenAnswer((_) async => testUserId);
+      when(userRepository.readUser()).thenAnswer((_) async => User(testUserId));
       when(accountLinkApi.startAccountLink(testUserId, accountLinkType)).thenAnswer((_) async => null);
 
       expect(() => accountLinkService.startLink(accountLinkType), throwsA(isA<StartLinkException>()));

@@ -1,6 +1,6 @@
 import 'package:throwtrash/models/trash_data.dart';
 
-import '../models/calendar_model.dart';
+import '../../models/calendar_model.dart';
 
 abstract class TrashRepositoryInterface {
   Future<bool> updateTrashData(TrashData trashData);

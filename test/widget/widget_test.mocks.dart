@@ -3,18 +3,20 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
-import 'dart:convert' as _i4;
-import 'dart:typed_data' as _i6;
+import 'dart:async' as _i5;
+import 'dart:ui' as _i9;
 
-import 'package:http/http.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:throwtrash/models/account_link_info.dart' as _i8;
-import 'package:throwtrash/models/activate_response.dart' as _i11;
-import 'package:throwtrash/usecase/account_link_api_interface.dart' as _i7;
-import 'package:throwtrash/usecase/activation_api_interface.dart' as _i10;
-import 'package:throwtrash/viewModels/account_link_model.dart' as _i9;
+import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:throwtrash/models/account_link_info.dart' as _i2;
+import 'package:throwtrash/models/trash_data.dart' as _i4;
+import 'package:throwtrash/usecase/account_link_service_interface.dart' as _i10;
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart'
+    as _i12;
+import 'package:throwtrash/usecase/sync_result.dart' as _i7;
+import 'package:throwtrash/usecase/trash_data_service_interface.dart' as _i3;
+import 'package:throwtrash/viewModels/account_link_model.dart' as _i11;
+import 'package:throwtrash/viewModels/change_theme_model.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -29,8 +31,9 @@ import 'package:throwtrash/viewModels/account_link_model.dart' as _i9;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeResponse_0 extends _i1.SmartFake implements _i2.Response {
-  _FakeResponse_0(
+class _FakeAccountLinkInfo_0 extends _i1.SmartFake
+    implements _i2.AccountLinkInfo {
+  _FakeAccountLinkInfo_0(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -39,317 +42,354 @@ class _FakeResponse_0 extends _i1.SmartFake implements _i2.Response {
         );
 }
 
-class _FakeStreamedResponse_1 extends _i1.SmartFake
-    implements _i2.StreamedResponse {
-  _FakeStreamedResponse_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-/// A class which mocks [Client].
+/// A class which mocks [TrashDataServiceInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockClient extends _i1.Mock implements _i2.Client {
-  MockClient() {
-    _i1.throwOnMissingStub(this);
-  }
+class MockTrashDataServiceInterface extends _i1.Mock
+    implements _i3.TrashDataServiceInterface {
+  @override
+  List<_i4.TrashData> get allTrashList => (super.noSuchMethod(
+        Invocation.getter(#allTrashList),
+        returnValue: <_i4.TrashData>[],
+        returnValueForMissingStub: <_i4.TrashData>[],
+      ) as List<_i4.TrashData>);
 
   @override
-  _i3.Future<_i2.Response> head(
-    Uri? url, {
-    Map<String, String>? headers,
-  }) =>
-      (super.noSuchMethod(
+  _i5.Future<bool> refreshTrashData() => (super.noSuchMethod(
         Invocation.method(
-          #head,
-          [url],
-          {#headers: headers},
+          #refreshTrashData,
+          [],
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
-          this,
-          Invocation.method(
-            #head,
-            [url],
-            {#headers: headers},
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
 
   @override
-  _i3.Future<_i2.Response> get(
-    Uri? url, {
-    Map<String, String>? headers,
+  String getTrashName({
+    String? type = r'',
+    String? trashVal = r'',
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #get,
-          [url],
-          {#headers: headers},
-        ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
-          this,
-          Invocation.method(
-            #get,
-            [url],
-            {#headers: headers},
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
-
-  @override
-  _i3.Future<_i2.Response> post(
-    Uri? url, {
-    Map<String, String>? headers,
-    Object? body,
-    _i4.Encoding? encoding,
-  }) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #post,
-          [url],
+          #getTrashName,
+          [],
           {
-            #headers: headers,
-            #body: body,
-            #encoding: encoding,
+            #type: type,
+            #trashVal: trashVal,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.method(
-            #post,
-            [url],
+            #getTrashName,
+            [],
             {
-              #headers: headers,
-              #body: body,
-              #encoding: encoding,
+              #type: type,
+              #trashVal: trashVal,
             },
           ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getTrashName,
+            [],
+            {
+              #type: type,
+              #trashVal: trashVal,
+            },
+          ),
+        ),
+      ) as String);
 
   @override
-  _i3.Future<_i2.Response> put(
-    Uri? url, {
-    Map<String, String>? headers,
-    Object? body,
-    _i4.Encoding? encoding,
+  int getScheduleCount() => (super.noSuchMethod(
+        Invocation.method(
+          #getScheduleCount,
+          [],
+        ),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  _i5.Future<bool> addTrashData(_i4.TrashData? trashData) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addTrashData,
+          [trashData],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<bool> deleteTrashData(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteTrashData,
+          [id],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i4.TrashData? getTrashDataById(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #getTrashDataById,
+          [id],
+        ),
+        returnValueForMissingStub: null,
+      ) as _i4.TrashData?);
+
+  @override
+  _i5.Future<bool> updateTrashData(_i4.TrashData? trashData) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateTrashData,
+          [trashData],
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+        returnValueForMissingStub: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<_i7.SyncResult> syncTrashData() => (super.noSuchMethod(
+        Invocation.method(
+          #syncTrashData,
+          [],
+        ),
+        returnValue: _i5.Future<_i7.SyncResult>.value(_i7.SyncResult.skipped),
+        returnValueForMissingStub:
+            _i5.Future<_i7.SyncResult>.value(_i7.SyncResult.skipped),
+      ) as _i5.Future<_i7.SyncResult>);
+
+  @override
+  List<List<_i4.TrashData>> getEnableTrashList({
+    required int? year,
+    required int? month,
+    required List<int>? targetDateList,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #put,
-          [url],
+          #getEnableTrashList,
+          [],
           {
-            #headers: headers,
-            #body: body,
-            #encoding: encoding,
+            #year: year,
+            #month: month,
+            #targetDateList: targetDateList,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
-          this,
-          Invocation.method(
-            #put,
-            [url],
-            {
-              #headers: headers,
-              #body: body,
-              #encoding: encoding,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+        returnValue: <List<_i4.TrashData>>[],
+        returnValueForMissingStub: <List<_i4.TrashData>>[],
+      ) as List<List<_i4.TrashData>>);
 
   @override
-  _i3.Future<_i2.Response> patch(
-    Uri? url, {
-    Map<String, String>? headers,
-    Object? body,
-    _i4.Encoding? encoding,
+  List<_i4.TrashData> getTrashOfToday({
+    required int? year,
+    required int? month,
+    required int? date,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #patch,
-          [url],
+          #getTrashOfToday,
+          [],
           {
-            #headers: headers,
-            #body: body,
-            #encoding: encoding,
+            #year: year,
+            #month: month,
+            #date: date,
           },
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
-          this,
-          Invocation.method(
-            #patch,
-            [url],
-            {
-              #headers: headers,
-              #body: body,
-              #encoding: encoding,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+        returnValue: <_i4.TrashData>[],
+        returnValueForMissingStub: <_i4.TrashData>[],
+      ) as List<_i4.TrashData>);
+}
+
+/// A class which mocks [ChangeThemeModel].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockChangeThemeModel extends _i1.Mock implements _i8.ChangeThemeModel {
+  @override
+  bool get darkMode => (super.noSuchMethod(
+        Invocation.getter(#darkMode),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
 
   @override
-  _i3.Future<_i2.Response> delete(
-    Uri? url, {
-    Map<String, String>? headers,
-    Object? body,
-    _i4.Encoding? encoding,
-  }) =>
-      (super.noSuchMethod(
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i5.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
-          #delete,
-          [url],
-          {
-            #headers: headers,
-            #body: body,
-            #encoding: encoding,
-          },
+          #init,
+          [],
         ),
-        returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
-          this,
-          Invocation.method(
-            #delete,
-            [url],
-            {
-              #headers: headers,
-              #body: body,
-              #encoding: encoding,
-            },
-          ),
-        )),
-      ) as _i3.Future<_i2.Response>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i3.Future<String> read(
-    Uri? url, {
-    Map<String, String>? headers,
-  }) =>
-      (super.noSuchMethod(
+  _i5.Future<void> switchDarkMode() => (super.noSuchMethod(
         Invocation.method(
-          #read,
-          [url],
-          {#headers: headers},
+          #switchDarkMode,
+          [],
         ),
-        returnValue: _i3.Future<String>.value(_i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #read,
-            [url],
-            {#headers: headers},
-          ),
-        )),
-      ) as _i3.Future<String>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  _i3.Future<_i6.Uint8List> readBytes(
-    Uri? url, {
-    Map<String, String>? headers,
-  }) =>
-      (super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
-          #readBytes,
-          [url],
-          {#headers: headers},
+          #addListener,
+          [listener],
         ),
-        returnValue: _i3.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
-      ) as _i3.Future<_i6.Uint8List>);
+        returnValueForMissingStub: null,
+      );
 
   @override
-  _i3.Future<_i2.StreamedResponse> send(_i2.BaseRequest? request) =>
-      (super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
-          #send,
-          [request],
+          #removeListener,
+          [listener],
         ),
-        returnValue:
-            _i3.Future<_i2.StreamedResponse>.value(_FakeStreamedResponse_1(
-          this,
-          Invocation.method(
-            #send,
-            [request],
-          ),
-        )),
-      ) as _i3.Future<_i2.StreamedResponse>);
+        returnValueForMissingStub: null,
+      );
 
   @override
-  void close() => super.noSuchMethod(
+  void dispose() => super.noSuchMethod(
         Invocation.method(
-          #close,
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
           [],
         ),
         returnValueForMissingStub: null,
       );
 }
 
-/// A class which mocks [AccountLinkApiInterface].
+/// A class which mocks [AccountLinkServiceInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAccountLinkApiInterface extends _i1.Mock
-    implements _i7.AccountLinkApiInterface {
-  MockAccountLinkApiInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
+class MockAccountLinkServiceInterface extends _i1.Mock
+    implements _i10.AccountLinkServiceInterface {
   @override
-  _i3.Future<_i8.AccountLinkInfo?> startAccountLink(
-    String? userId,
-    _i9.AccountLinkType? accountLinkType,
-  ) =>
+  _i5.Future<_i2.AccountLinkInfo> startLink(
+          _i11.AccountLinkType? accountLinkType) =>
       (super.noSuchMethod(
         Invocation.method(
-          #startAccountLink,
-          [
-            userId,
-            accountLinkType,
-          ],
+          #startLink,
+          [accountLinkType],
         ),
-        returnValue: _i3.Future<_i8.AccountLinkInfo?>.value(),
-      ) as _i3.Future<_i8.AccountLinkInfo?>);
-}
-
-/// A class which mocks [ActivationApiInterface].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockActivationApiInterface extends _i1.Mock
-    implements _i10.ActivationApiInterface {
-  MockActivationApiInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i3.Future<String> requestActivationCode(String? userId) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #requestActivationCode,
-          [userId],
-        ),
-        returnValue: _i3.Future<String>.value(_i5.dummyValue<String>(
+        returnValue:
+            _i5.Future<_i2.AccountLinkInfo>.value(_FakeAccountLinkInfo_0(
           this,
           Invocation.method(
-            #requestActivationCode,
-            [userId],
+            #startLink,
+            [accountLinkType],
           ),
         )),
-      ) as _i3.Future<String>);
+        returnValueForMissingStub:
+            _i5.Future<_i2.AccountLinkInfo>.value(_FakeAccountLinkInfo_0(
+          this,
+          Invocation.method(
+            #startLink,
+            [accountLinkType],
+          ),
+        )),
+      ) as _i5.Future<_i2.AccountLinkInfo>);
 
   @override
-  _i3.Future<_i11.ActivateResponse?> requestAuthorizationActivationCode(
-    String? code,
-    String? userId,
-  ) =>
+  _i5.Future<_i2.AccountLinkInfo?> getAccountLinkInfoWithCode(String? code) =>
       (super.noSuchMethod(
         Invocation.method(
-          #requestAuthorizationActivationCode,
-          [
-            code,
-            userId,
-          ],
+          #getAccountLinkInfoWithCode,
+          [code],
         ),
-        returnValue: _i3.Future<_i11.ActivateResponse?>.value(),
-      ) as _i3.Future<_i11.ActivateResponse?>);
+        returnValue: _i5.Future<_i2.AccountLinkInfo?>.value(),
+        returnValueForMissingStub: _i5.Future<_i2.AccountLinkInfo?>.value(),
+      ) as _i5.Future<_i2.AccountLinkInfo?>);
+}
+
+/// A class which mocks [AppConfigProviderInterface].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAppConfigProviderInterface extends _i1.Mock
+    implements _i12.AppConfigProviderInterface {
+  @override
+  String get trashApiUrl => (super.noSuchMethod(
+        Invocation.getter(#trashApiUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#trashApiUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#trashApiUrl),
+        ),
+      ) as String);
+
+  @override
+  String get mobileApiUrl => (super.noSuchMethod(
+        Invocation.getter(#mobileApiUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#mobileApiUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#mobileApiUrl),
+        ),
+      ) as String);
+
+  @override
+  String get accountLinkErrorUrl => (super.noSuchMethod(
+        Invocation.getter(#accountLinkErrorUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#accountLinkErrorUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#accountLinkErrorUrl),
+        ),
+      ) as String);
+
+  @override
+  String get version => (super.noSuchMethod(
+        Invocation.getter(#version),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#version),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#version),
+        ),
+      ) as String);
+
+  @override
+  String get alarmApiUrl => (super.noSuchMethod(
+        Invocation.getter(#alarmApiUrl),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
+        ),
+      ) as String);
 }

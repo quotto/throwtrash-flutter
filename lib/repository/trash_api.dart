@@ -8,21 +8,40 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_response.dart';
 import 'package:throwtrash/models/trash_sync_result.dart';
 import 'package:throwtrash/models/trash_update_result.dart';
-import 'package:throwtrash/usecase/trash_api_interface.dart';
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/trash_api_interface.dart';
 
 import '../models/trash_data_response.dart';
 
 class TrashApi implements TrashApiInterface {
-  String _mobileApiEndpoint = "";
-  final _logger = Logger();
-  String _platform = "web";
+  final AppConfigProviderInterface _configProvider;
   final http.Client _httpClient;
-  TrashApi(this._mobileApiEndpoint, this._httpClient) {
+  final _logger = Logger();
+  late final String _mobileApiEndpoint;
+  String _platform = "web";
+  TrashApi._(this._configProvider, this._httpClient) {
     if(Platform.isAndroid) {
       _platform = "android";
     } else if(Platform.isIOS) {
       _platform = "ios";
     }
+    this._mobileApiEndpoint = this._configProvider.mobileApiUrl;
+  }
+
+  static TrashApi? _instance;
+
+  static initialize(AppConfigProviderInterface configProvider, http.Client httpClient) {
+    if(_instance != null) {
+      throw StateError("TrashApi is already initialized");
+    }
+    _instance = TrashApi._(configProvider, httpClient);
+  }
+
+  factory TrashApi() {
+    if(_instance == null) {
+      throw StateError("TrashApi is not initialized");
+    }
+    return _instance!;
   }
 
   @override

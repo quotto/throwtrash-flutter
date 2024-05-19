@@ -10,7 +10,8 @@ import 'dart:typed_data' as _i6;
 import 'package:http/http.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:throwtrash/usecase/config_interface.dart' as _i7;
+import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart'
+    as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -50,10 +51,6 @@ class _FakeStreamedResponse_1 extends _i1.SmartFake
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockClient extends _i1.Mock implements _i2.Client {
-  MockClient() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i3.Future<_i2.Response> head(
     Uri? url, {
@@ -66,6 +63,15 @@ class MockClient extends _i1.Mock implements _i2.Client {
           {#headers: headers},
         ),
         returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
+          this,
+          Invocation.method(
+            #head,
+            [url],
+            {#headers: headers},
+          ),
+        )),
+        returnValueForMissingStub:
+            _i3.Future<_i2.Response>.value(_FakeResponse_0(
           this,
           Invocation.method(
             #head,
@@ -94,6 +100,15 @@ class MockClient extends _i1.Mock implements _i2.Client {
             {#headers: headers},
           ),
         )),
+        returnValueForMissingStub:
+            _i3.Future<_i2.Response>.value(_FakeResponse_0(
+          this,
+          Invocation.method(
+            #get,
+            [url],
+            {#headers: headers},
+          ),
+        )),
       ) as _i3.Future<_i2.Response>);
 
   @override
@@ -114,6 +129,19 @@ class MockClient extends _i1.Mock implements _i2.Client {
           },
         ),
         returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
+          this,
+          Invocation.method(
+            #post,
+            [url],
+            {
+              #headers: headers,
+              #body: body,
+              #encoding: encoding,
+            },
+          ),
+        )),
+        returnValueForMissingStub:
+            _i3.Future<_i2.Response>.value(_FakeResponse_0(
           this,
           Invocation.method(
             #post,
@@ -156,6 +184,19 @@ class MockClient extends _i1.Mock implements _i2.Client {
             },
           ),
         )),
+        returnValueForMissingStub:
+            _i3.Future<_i2.Response>.value(_FakeResponse_0(
+          this,
+          Invocation.method(
+            #put,
+            [url],
+            {
+              #headers: headers,
+              #body: body,
+              #encoding: encoding,
+            },
+          ),
+        )),
       ) as _i3.Future<_i2.Response>);
 
   @override
@@ -176,6 +217,19 @@ class MockClient extends _i1.Mock implements _i2.Client {
           },
         ),
         returnValue: _i3.Future<_i2.Response>.value(_FakeResponse_0(
+          this,
+          Invocation.method(
+            #patch,
+            [url],
+            {
+              #headers: headers,
+              #body: body,
+              #encoding: encoding,
+            },
+          ),
+        )),
+        returnValueForMissingStub:
+            _i3.Future<_i2.Response>.value(_FakeResponse_0(
           this,
           Invocation.method(
             #patch,
@@ -218,6 +272,19 @@ class MockClient extends _i1.Mock implements _i2.Client {
             },
           ),
         )),
+        returnValueForMissingStub:
+            _i3.Future<_i2.Response>.value(_FakeResponse_0(
+          this,
+          Invocation.method(
+            #delete,
+            [url],
+            {
+              #headers: headers,
+              #body: body,
+              #encoding: encoding,
+            },
+          ),
+        )),
       ) as _i3.Future<_i2.Response>);
 
   @override
@@ -239,6 +306,15 @@ class MockClient extends _i1.Mock implements _i2.Client {
             {#headers: headers},
           ),
         )),
+        returnValueForMissingStub:
+            _i3.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #read,
+            [url],
+            {#headers: headers},
+          ),
+        )),
       ) as _i3.Future<String>);
 
   @override
@@ -253,6 +329,8 @@ class MockClient extends _i1.Mock implements _i2.Client {
           {#headers: headers},
         ),
         returnValue: _i3.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
+        returnValueForMissingStub:
+            _i3.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
       ) as _i3.Future<_i6.Uint8List>);
 
   @override
@@ -263,6 +341,14 @@ class MockClient extends _i1.Mock implements _i2.Client {
           [request],
         ),
         returnValue:
+            _i3.Future<_i2.StreamedResponse>.value(_FakeStreamedResponse_1(
+          this,
+          Invocation.method(
+            #send,
+            [request],
+          ),
+        )),
+        returnValueForMissingStub:
             _i3.Future<_i2.StreamedResponse>.value(_FakeStreamedResponse_1(
           this,
           Invocation.method(
@@ -282,38 +368,47 @@ class MockClient extends _i1.Mock implements _i2.Client {
       );
 }
 
-/// A class which mocks [ConfigInterface].
+/// A class which mocks [AppConfigProviderInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockConfigInterface extends _i1.Mock implements _i7.ConfigInterface {
-  MockConfigInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
+class MockAppConfigProviderInterface extends _i1.Mock
+    implements _i7.AppConfigProviderInterface {
   @override
-  String get apiEndpoint => (super.noSuchMethod(
-        Invocation.getter(#apiEndpoint),
+  String get trashApiUrl => (super.noSuchMethod(
+        Invocation.getter(#trashApiUrl),
         returnValue: _i5.dummyValue<String>(
           this,
-          Invocation.getter(#apiEndpoint),
+          Invocation.getter(#trashApiUrl),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#trashApiUrl),
         ),
       ) as String);
 
   @override
-  String get mobileApiEndpoint => (super.noSuchMethod(
-        Invocation.getter(#mobileApiEndpoint),
+  String get mobileApiUrl => (super.noSuchMethod(
+        Invocation.getter(#mobileApiUrl),
         returnValue: _i5.dummyValue<String>(
           this,
-          Invocation.getter(#mobileApiEndpoint),
+          Invocation.getter(#mobileApiUrl),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#mobileApiUrl),
         ),
       ) as String);
 
   @override
-  String get apiErrorUrl => (super.noSuchMethod(
-        Invocation.getter(#apiErrorUrl),
+  String get accountLinkErrorUrl => (super.noSuchMethod(
+        Invocation.getter(#accountLinkErrorUrl),
         returnValue: _i5.dummyValue<String>(
           this,
-          Invocation.getter(#apiErrorUrl),
+          Invocation.getter(#accountLinkErrorUrl),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#accountLinkErrorUrl),
         ),
       ) as String);
 
@@ -323,6 +418,23 @@ class MockConfigInterface extends _i1.Mock implements _i7.ConfigInterface {
         returnValue: _i5.dummyValue<String>(
           this,
           Invocation.getter(#version),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#version),
+        ),
+      ) as String);
+
+  @override
+  String get alarmApiUrl => (super.noSuchMethod(
+        Invocation.getter(#alarmApiUrl),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#alarmApiUrl),
         ),
       ) as String);
 }
