@@ -1,24 +1,5 @@
-# Stateless Hello World
+# 今日ゴミ出し（iOSアプリ）
 
-A new Flutter project created with [FlutLab](https://flutlab.io)
+iOS用のゴミ出しアプリです。Flutterで作成していますが訳あってiOSのみの対応です。
 
-### Getting Started: FlutLab - Flutter Online IDE
-
-- Watch Mini crash course "How to use Flutter Widgets" on [FlutLab Youtube Channel](https://www.youtube.com/channel/UC7ZOPQm4JFlvBc9WeynLX_g)
-- Discover a marketplace of ready-to-use Flutter projects [FlutLab Widget Bay](https://widgetbay.flutlab.io/)
-- Join the discussion and conversation on [FlutLab Facebook Group](https://www.facebook.com/groups/flutlab/)
-
-If you have some questions regarding FlutLab, you can ask on [FlutLab FAQ](https://faq.flutlab.io/)
-
-### Getting Started: Flutter
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+[AppStoreでアプリを公開しています。](https://apps.apple.com/jp/app/%E4%BB%8A%E6%97%A5%E3%81%AE%E3%82%B4%E3%83%9F%E5%87%BA%E3%81%97-%E3%82%B9%E3%83%9E%E3%83%BC%E3%83%88%E3%82%B9%E3%83%94%E3%83%BC%E3%82%AB%E3%83%BC%E9%80%A3%E6%90%BA/id6450391257)

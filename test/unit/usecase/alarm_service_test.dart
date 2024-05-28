@@ -192,11 +192,10 @@ void main() async {
         verifyNever(api.setAlarm(any, any, any));
       });
 
-      test('ユーザー情報が取得できない場合はエラーが発生する', () async {
+      test('ユーザー情報が取得できない場合は何もせず処理を終了する', () async {
         when(userRepository.readUser()).thenAnswer((_) async => null);
 
-        expect(() async => await alarmService.reRegisterAlarm(),
-            throwsException);
+        await alarmService.reRegisterAlarm();
         verifyNever(fcm.refreshDeviceToken());
         verifyNever(api.setAlarm(any, any, any));
         verifyNever(alarmRepository.saveAlarm(any));
