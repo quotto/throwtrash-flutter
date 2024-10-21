@@ -1,5 +1,5 @@
 {
-  "mobileApiEndpoint": "https://mobile.mythrowaway.net/82ff8989",
+  "mobileApiEndpoint": "https://mobile.mythrowaway.net/dev",
   "apiEndpoint": "https://backend.mythrowaway.net/dev",
   "apiErrorUrl": "https://backend.mythrowaway.net/dev/500.html",
   "alarmApiUrl": "https://ogenzfkwt2.execute-api.ap-northeast-1.amazonaws.com/dev"
