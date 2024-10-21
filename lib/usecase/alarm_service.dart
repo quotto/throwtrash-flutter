@@ -82,8 +82,8 @@ class AlarmService implements AlarmServiceInterface {
   Future<void> reRegisterAlarm() async {
     User? user  = await _userRepository.readUser();
     if(user == null) {
-      _logger.e('ユーザー情報が取得できませんでした');
-      throw Exception('ユーザー情報が取得できませんでした');
+      _logger.w('ユーザー情報が取得できませんでした');
+      return;
     }
 
     Alarm? alarm = await _alarmRepository.readAlarm();
