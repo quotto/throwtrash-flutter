@@ -43,6 +43,7 @@ ios/Pods
 ios/Flutter/Flutter.podspec
 ios/Flutter/flutter_export_environment.sh
 ios/Flutter/Generated.xcconfig
+ios/Flutter/Environment.xcconfig
 lib/generated_plugin_registrant.dart
 
 .fvm/flutter_sdk
