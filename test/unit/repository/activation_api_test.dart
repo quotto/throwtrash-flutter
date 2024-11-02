@@ -24,7 +24,10 @@ void main(){
   });
   group("startActivation", () {
     test("startActivationでActivationCodeが取得できること", () async {
-      when(mockClient.get(any)).thenAnswer((_) async {
+      when(mockClient.get(any,headers: {
+        "content-type": "application/json;charset=utf-8",
+        "Accept": "application/json"
+      })).thenAnswer((_) async {
         return Response('{"code": "test_code"}', 200);
       });
       // ConfigInterfaceをモック化する
@@ -36,7 +39,10 @@ void main(){
     });
     test("startActivationで200以外のレスポンスの場合はブランクが返ること", () async {
       // http.Clientをモック化する
-      when(mockClient.get(any)).thenAnswer((_) async {
+      when(mockClient.get(any,headers: {
+        "content-type": "application/json;charset=utf-8",
+        "Accept": "application/json"
+      })).thenAnswer((_) async {
         return Response('{"error": "error"}', 500);
       });
       // ConfigInterfaceをモック化する
@@ -47,7 +53,10 @@ void main(){
     });
     test("startActivationでレスポンスボディにcodeが存在しない場合はブランクが返ること", () async {
       // http.Clientをモック化する
-      when(mockClient.get(any)).thenAnswer((_) async {
+      when(mockClient.get(any,headers: {
+        "content-type": "application/json;charset=utf-8",
+        "Accept": "application/json"
+      })).thenAnswer((_) async {
         return Response('{"error": "error"}', 200);
       });
       // ConfigInterfaceをモック化する

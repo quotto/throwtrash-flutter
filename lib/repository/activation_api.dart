@@ -35,7 +35,11 @@ class ActivationApi implements ActivationApiInterface{
      Uri endpointUri = Uri.parse(
          this._config.mobileApiUrl + "/publish_activation_code?user_id=$userId");
      http.Response response = await this._httpClient.get(
-       endpointUri
+       endpointUri,
+       headers: {
+         "content-type": "application/json;charset=utf-8",
+         "Accept": "application/json"
+       }
      );
      if(response.statusCode == 200) {
        Map<String,dynamic> responseBody = jsonDecode(response.body);
