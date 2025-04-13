@@ -1,0 +1,32 @@
+{
+    "name": "Flutter Development",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dart-code.dart-code",
+                "dart-code.flutter",
+                "ryanluker.vscode-coverage-gutters",
+                "redhat.vscode-yaml"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.fixAll": true
+                },
+                "dart.flutterSdkPath": "/home/developer/fvm/default/bin",
+                "dart.lineLength": 100
+            }
+        }
+    },
+    "forwardPorts": [
+        8080
+    ],
+    "remoteUser": "developer",
+    "postCreateCommand": "/workspaces/throwtrash-flutter/.devcontainer/post-create.sh",
+    "features": {
+        "git": "latest"
+    }
+}

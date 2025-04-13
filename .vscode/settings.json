@@ -1,0 +1,34 @@
+{
+  "dart.flutterSdkPaths": [
+    ".fvm/flutter_sdk"
+  ],
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.rulers": [
+    100
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "dart.lineLength": 100,
+  "[dart]": {
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.suggestSelection": "first",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": true
+  },
+  "files.exclude": {
+    "**/*.g.dart": false,
+    "**/*.freezed.dart": false,
+    "**/.fvm/flutter_sdk": true
+  },
+  "search.exclude": {
+    "**/.fvm/flutter_sdk": true
+  },
+  "files.watcherExclude": {
+    "**/.fvm/flutter_sdk/**": true
+  },
+  "dart.flutterSdkPath": ".fvm/versions/3.24.3"
+}
