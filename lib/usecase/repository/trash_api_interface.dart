@@ -6,6 +6,6 @@ import '../../models/trash_sync_result.dart';
 
 abstract class TrashApiInterface {
   Future<RegisterResponse?> registerUserAndTrashData(List<TrashData> allTrashData);
-  Future<TrashUpdateResult> updateTrashData(String id, List<TrashData> localSchedule, int localTimestamp);
+  Future<TrashUpdateResult> updateTrashData(String userId, List<TrashData> localSchedule, int localTimestamp);
   Future<TrashSyncResult> syncTrashData(String userId);
 }

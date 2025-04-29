@@ -293,11 +293,6 @@ class TrashDataService implements TrashDataServiceInterface {
 
   Future<SyncResult> _syncTrashData() async {
     List<TrashData> localSchedule = await _trashRepository.readAllTrashData();
-    if (localSchedule.isEmpty) {
-      _logger.w('Not update local to remote because local schedule is nothing.');
-      return SyncResult.skipped;
-    }
-
     TrashSyncResult trashSyncResult = await _trashApiInterface
         .syncTrashData(_userService.user.id);
     if (trashSyncResult.syncResult == TrashApiSyncStatus.ERROR) {
@@ -309,9 +304,17 @@ class TrashDataService implements TrashDataServiceInterface {
     int localTimestamp = await _trashRepository.getLastUpdateTime();
     _logger.d('Local Timestamp=$localTimestamp');
 
+    SyncStatus currentSyncStatus = await _trashRepository.getSyncStatus();
     SyncResult syncResult = SyncResult.skipped;
-    if(trashSyncResult.timestamp == localTimestamp &&
-      await _trashRepository.getSyncStatus() == SyncStatus.SYNCING) {
+    if(trashSyncResult.timestamp != localTimestamp) {
+      _logger.d(
+          'Local timestamp $localTimestamp is not match remote timestamp ${trashSyncResult
+              .timestamp},try sync to local from remote');
+      await _syncRemoteToLocal(
+          trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
+      await refreshTrashData();
+      currentSyncStatus == SyncStatus.SYNCING ? syncResult = SyncResult.rollback : syncResult = SyncResult.pull;
+    } else if(currentSyncStatus == SyncStatus.SYNCING) {
       final response = await _trashApiInterface.updateTrashData(
           _userService.user.id, localSchedule, localTimestamp);
       switch (response.updateResult) {
@@ -320,6 +323,7 @@ class TrashDataService implements TrashDataServiceInterface {
           await _updateLocalTimestamp(response.timestamp);
           // 同期ステータスを同期済みにする
           await _trashRepository.setSyncStatus(SyncStatus.COMPLETE);
+          await refreshTrashData();
           syncResult = SyncResult.success;
           break;
         case UpdateResult.NO_MATCH:
@@ -339,16 +343,7 @@ class TrashDataService implements TrashDataServiceInterface {
           syncResult = SyncResult.failed;
           break;
       }
-    } else if(trashSyncResult.timestamp != localTimestamp) {
-      _logger.d(
-          'Local timestamp $localTimestamp is not match remote timestamp ${trashSyncResult.timestamp},try sync to local from remote');
-      await _syncRemoteToLocal(trashSyncResult.allTrashDataList, trashSyncResult.timestamp);
-      syncResult = SyncResult.rollback;
-    } else {
-      _logger.d('Local timestamp equal remote timestamp, skip update.');
-      syncResult = SyncResult.skipped;
     }
-    await refreshTrashData();
     return syncResult;
   }
 
@@ -358,8 +353,11 @@ class TrashDataService implements TrashDataServiceInterface {
     if(_userService.user.id.isEmpty) {
       _logger.d('User is empty, register new user');
       await _registerNewUserAndTrashDataList();
+      // ユーザー未登録状態でローカルのゴミ出し情報を登録していた場合やログアウト、アカウント削除を実行していた場合には
+      // _registerNewUserAndTrashDataList()が実行され、この処理の実行直後はリモート側と同期された状態であるため_syncTrashData()でキャッシュの更新が行われない。
+      // このため明示的にキャッシュを更新する
+      await refreshTrashData();
     }
-    _logger.d('Sync data');
     return await _syncTrashData();
   }
 }

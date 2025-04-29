@@ -380,7 +380,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                   MaterialPageRoute(
                                       builder: (context)  => UserInfo()
                                   )
-                              );
+                              ).then((_) {
+                                calendar.reload();
+                              });
                             },
                           ),
                           ListTile(

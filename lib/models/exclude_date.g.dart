@@ -7,8 +7,8 @@ part of 'exclude_date.dart';
 // **************************************************************************
 
 ExcludeDate _$ExcludeDateFromJson(Map<String, dynamic> json) => ExcludeDate(
-      json['month'] as int,
-      json['date'] as int,
+      (json['month'] as num).toInt(),
+      (json['date'] as num).toInt(),
     );
 
 Map<String, dynamic> _$ExcludeDateToJson(ExcludeDate instance) =>

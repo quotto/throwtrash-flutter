@@ -1,13 +1,11 @@
+import 'package:throwtrash/models/user_api_signin_response.dart';
+
+import '../../models/user.dart';
+
 abstract class UserApiInterface {
-  // APIから新規にユーザーIDの発行を受ける
-  Future<String> registerUser();
-
-  // Firebase Authentication のトークンをリフレッシュする
-  Future<bool> refreshDeviceToken(String userId, String deviceToken);
-
-  // Googleログインユーザーのサインアップ処理を行う
-  Future<bool> signupGoogleUser(String userId);
+  // Googleログインユーザーのサインイン処理を行う
+  Future<SigninResponse> signin();
 
   // アカウント削除処理を行う
-  Future<bool> deleteAccount();
+  Future<bool> deleteAccount(User user);
 }

@@ -65,13 +65,17 @@ class TrashApi implements TrashApiInterface {
   }
 
   @override
-  Future<TrashUpdateResult> updateTrashData(String id, List<TrashData> localSchedule, int timestamp) async{
+  Future<TrashUpdateResult> updateTrashData(String userId, List<TrashData> localSchedule, int timestamp) async{
     _logger.d("Update trash data");
     Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/update");
     http.Response response = await this._httpClient.post(
         endpointUri,
-        headers: {"content-type": "application/json;charset=utf-8", "Accept": "application/json"},
-        body: json.encode({"id": id, "description": jsonEncode(localSchedule), "platform": _platform, "timestamp": timestamp})
+        headers: {
+          "content-type": "application/json;charset=utf-8",
+          "Accept": "application/json",
+          "X-TRASH-USERID": userId
+        },
+        body: json.encode({"id": userId, "description": jsonEncode(localSchedule), "platform": _platform, "timestamp": timestamp})
     );
 
     if(response.statusCode == 200) {
@@ -89,7 +93,15 @@ class TrashApi implements TrashApiInterface {
   @override
   Future<TrashSyncResult> syncTrashData(String userId) async {
     Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/sync?user_id=$userId");
-    http.Response response = await this._httpClient.get(endpointUri, headers: {"content-type":"text/html;charset=utf8","Accept": "application/json"});
+    http.Response response =
+      await this._httpClient.get(
+          endpointUri,
+          headers: {
+            "content-type":"text/html;charset=utf8",
+            "Accept": "application/json",
+            "X-TRASH-USERID": userId
+        }
+      );
     if(response.statusCode == 200) {
       try {
         TrashApiSyncDataResponse trashResponse = TrashApiSyncDataResponse.fromJson(

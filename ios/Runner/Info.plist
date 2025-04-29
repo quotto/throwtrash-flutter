@@ -34,6 +34,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>throwtrash</string>
+				<string>com.googleusercontent.apps.248743628975-ita3vcgrbc5t5ro5bl87i94k54m5hlr7</string>
 			</array>
 		</dict>
 		<dict>
@@ -89,5 +90,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>GIDClientID</key>
+    <string>248743628975-ita3vcgrbc5t5ro5bl87i94k54m5hlr7.apps.googleusercontent.com</string>
 </dict>
 </plist>

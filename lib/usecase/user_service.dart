@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logger/logger.dart';
 import 'package:throwtrash/models/user.dart';
+import 'package:throwtrash/models/user_api_signin_response.dart';
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/user_api_interface.dart';
 import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
@@ -9,35 +12,38 @@ class UserService extends UserServiceInterface {
   User _user = User('');
   final UserRepositoryInterface _userRepository;
   final UserApiInterface _userApi;
+  final TrashRepositoryInterface _trashRepository;
   final auth.FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final Logger _logger = Logger();
 
   UserService(
     this._userRepository,
     this._userApi,
+    this._trashRepository,
   )   : _firebaseAuth = auth.FirebaseAuth.instance,
-        _googleSignIn = GoogleSignIn();
+        _googleSignIn = GoogleSignIn() {
+    refreshUser();
+  }
 
   @override
   User get user => _user;
 
+  @override  Future<void> initialize() async {
+    if(_firebaseAuth.currentUser == null) {
+      await _firebaseAuth.signInAnonymously();
+      _logger.i('Anonymous user signed in: ${_firebaseAuth.currentUser?.uid}');
+    }  else {
+      _logger.i('User already signed in: ${_firebaseAuth.currentUser?.uid}');
+    }
+    await refreshUser();
+  }
+
   @override
   Future<void> refreshUser() async {
-    User? savedUser = await _userRepository.readUser();
-
-    // Check if there's a Firebase user
-    auth.User? firebaseUser = _firebaseAuth.currentUser;
-
-    if (firebaseUser != null && savedUser != null) {
-      // If we have both Firebase user and saved user, create a merged user
-      _user = User.fromFirebaseUser(firebaseUser, existingUserId: savedUser.id);
-    } else if (firebaseUser != null) {
-      // If we only have Firebase user
-      _user = User.fromFirebaseUser(firebaseUser);
-    } else if (savedUser != null) {
-      // If we only have saved user
-      _user = savedUser;
-    }
+    await _userRepository.readUser().then((value) {
+      _user = value != null ? value : User('');
+    });
   }
 
   @override
@@ -51,64 +57,52 @@ class UserService extends UserServiceInterface {
   }
 
   @override
-  Future<bool> signInAnonymously() async {
-    try {
-      // Sign in anonymously with Firebase
-      final auth.UserCredential userCredential = await _firebaseAuth.signInAnonymously();
-      final auth.User? firebaseUser = userCredential.user;
-
-      if (firebaseUser == null) return false;
-
-      // Register the new user with our API
-      String userId = await _userApi.registerUser();
-      if (userId.isEmpty) return false;
-
-      // Save the user locally
-      await registerUser(userId);
-
-      return true;
-    } catch (e) {
-      print('Error signing in anonymously: $e');
-      return false;
-    }
-  }
-
-  @override
   Future<bool> signInWithGoogle() async {
     try {
-      // Begin Google sign in process
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return false;
+      if (googleUser == null) throw Exception('Google sign in aborted');
 
-      // Get authentication details from Google
+      _logger.i('Google user signed in: ${googleUser.email}');
+
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final auth.AuthCredential credential = auth.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Check if we have an anonymous user
       final auth.User? currentUser = _firebaseAuth.currentUser;
-      if (currentUser != null && currentUser.isAnonymous) {
-        // Link the Google account with the anonymous account
-        final auth.UserCredential userCredential = await currentUser.linkWithCredential(credential);
-
-        // If this is the first time linking with this Google account,
-        // inform the backend about the user signup
-        await _userApi.signupGoogleUser(_user.id);
-      } else {
-        // Sign in directly with Google
-        await _firebaseAuth.signInWithCredential(credential);
-
-        // Attempt to sign up the user if needed
-        await _userApi.signupGoogleUser(_user.id);
+      if (currentUser == null || await _userRepository.readUser() == null) {
+        throw Exception('User is not registered in or firebase user is null');
       }
 
-      // Refresh user data
-      await refreshUser();
+      if (currentUser.isAnonymous) {
+        try {
+          // 新たにGoogleアカウントにリンクされた場合はユーザーIDとFirebaseアカウントの紐付けが
+          // 既に完了している前提であるためAPIでのサインインは不要
+          await currentUser.linkWithCredential(credential);
+          _logger.d('Anonymous user linked with Google account.');
+        } on auth.FirebaseAuthException catch (_) {
+          // 既にリンク済みの場合もFirebaseAuthExceptionが発生するので、このCredentialを使ってサインインを試みる
+          _logger.w('This Google account is already linked. Try signing in with provider credential.');
+          await _firebaseAuth.signInWithCredential(credential);
+          _logger.d('Firebase user authorized as ${_firebaseAuth.currentUser?.uid}');
+          SigninResponse response = await _userApi.signin();
+          if (response.userId == null) {
+            throw Exception('Failed to sign in with Google: userId is null');
+          }
+          _user = User(response.userId!);
+          _logger.i('User signed in as ${_user.id}');
+        }
+        // サインイン情報をローカルに保存する
+        User updated_user = _user.signInWithGoogle(googleUser.email, googleUser.displayName != null ? googleUser.displayName! :"");
+        await _userRepository.writeUser(updated_user);
+        await refreshUser();
+
+        await _trashRepository.truncateAllTrashData();
+        await _trashRepository.updateLastUpdateTime(0);
+      }
       return true;
     } catch (e) {
-      print('Error signing in with Google: $e');
+      _logger.e('Error signing in with Google: $e');
       return false;
     }
   }
@@ -116,12 +110,14 @@ class UserService extends UserServiceInterface {
   @override
   Future<bool> signOut() async {
     try {
-      // Clear local data
-      // First, sign in anonymously to create a new anonymous user
-      final result = await signInAnonymously();
-      return result;
+      if(await _userRepository.deleteUser()) {
+        await _trashRepository.truncateAllTrashData();
+        await refreshUser();
+        return await _signInAnonymously();
+      }
+      throw Exception('Unknown error: Failed to delete user from repository');
     } catch (e) {
-      print('Error signing out: $e');
+      _logger.e('Error signing out: $e');
       return false;
     }
   }
@@ -129,20 +125,19 @@ class UserService extends UserServiceInterface {
   @override
   Future<bool> deleteAccount() async {
     try {
-      // Call the API endpoint to delete the account
-      final deleteSuccessful = await _userApi.deleteAccount();
-      if (!deleteSuccessful) return false;
-
-      // Delete the current Firebase user
-      final auth.User? currentUser = _firebaseAuth.currentUser;
-      if (currentUser != null) {
-        await currentUser.delete();
+      if(!await _userApi.deleteAccount(_user)) {
+        throw Exception('Unknown error: Failed to delete account from API');
       }
-
-      // Sign in anonymously to create a new account
-      return await signInAnonymously();
-    } catch (e) {
-      print('Error deleting account: $e');
+      if(!await _userRepository.deleteUser()) {
+        throw Exception('Unknown error: Failed to delete user from repository');
+      }
+      await _trashRepository.truncateAllTrashData();
+      await _firebaseAuth.signOut();
+      await refreshUser();
+      return await _signInAnonymously();
+    } catch (e, stackTrace) {
+      _logger.e(e);
+      _logger.e(stackTrace);
       return false;
     }
   }
@@ -159,4 +154,20 @@ class UserService extends UserServiceInterface {
       return null;
     }
   }
+
+  Future<bool> _signInAnonymously() async {
+    try {
+      final auth.UserCredential userCredential = await _firebaseAuth.signInAnonymously();
+      final auth.User? firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) throw Exception('Unknown error : Firebase user is null');
+      _logger.i('Anonymous user signed in: ${firebaseUser.uid}');
+
+      return true;
+    } catch (e) {
+      _logger.e('Error signing in anonymously: $e');
+      return false;
+    }
+  }
+
 }

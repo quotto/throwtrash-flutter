@@ -90,18 +90,10 @@ class _UserInfo extends State<UserInfo> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            userService.user.isAuthenticated ? "ログイン中" : "匿名ユーザー",
+                            userService.user.isAuthenticated ? userService.user.email : userService.user.displayName
                           ),
                         ],
                       ),
-
-                      // ログインユーザーの場合はユーザー情報を表示
-                      if (userService.user.isAuthenticated) ...[
-                        SizedBox(height: 16),
-                        if (userService.user.email != null) Text("メール: ${userService.user.email}"),
-                        if (userService.user.displayName != null)
-                          Text("名前: ${userService.user.displayName}"),
-                      ],
 
                       SizedBox(height: 16),
 
@@ -176,6 +168,7 @@ class _UserInfo extends State<UserInfo> {
                                       msg: "ログアウトしました",
                                       backgroundColor: Colors.blue,
                                     );
+                                    Navigator.of(context).pop();
                                   } else {
                                     Fluttertoast.showToast(
                                       msg: "ログアウトに失敗しました",

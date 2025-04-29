@@ -13,7 +13,7 @@ TrashApiSyncDataResponse _$TrashApiSyncDataResponseFromJson(
       json['description'] as String,
       json['platform'] as String,
       json['shared_id'] as String?,
-      json['timestamp'] as int,
+      (json['timestamp'] as num).toInt(),
     );
 
 Map<String, dynamic> _$TrashApiSyncDataResponseToJson(

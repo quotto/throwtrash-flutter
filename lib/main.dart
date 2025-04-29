@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -35,6 +35,7 @@ import 'package:throwtrash/usecase/change_theme_service_interface.dart';
 import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
 import 'package:throwtrash/usecase/repository/account_link_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/user_api_interface.dart';
 import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
@@ -86,10 +87,8 @@ Future<void> main() async {
   UserApiInterface userApi = UserApi();
   UserRepositoryInterface userRepository = UserRepository();
 
-  UserServiceInterface userService = UserService(userRepository, userApi);
-
-  // アプリ起動時にFirebase Authenticationの匿名ログインを実行
-  await userService.signInAnonymously();
+  UserServiceInterface userService = UserService(userRepository, userApi, TrashRepository());
+  await userService.initialize();
 
   TrashDataServiceInterface trashDataService =
       TrashDataService(userService, TrashRepository(), TrashApi(), CrashlyticsReport());
