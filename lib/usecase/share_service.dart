@@ -9,6 +9,8 @@ import 'package:throwtrash/usecase/repository/activation_api_interface.dart';
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 
+import '../models/calendar_model.dart';
+
 class ShareService implements ShareServiceInterface {
   final ActivationApiInterface _activationApi;
   final UserServiceInterface _userService;
@@ -39,6 +41,7 @@ class ShareService implements ShareServiceInterface {
           _logger.e("最終更新日時の更新に失敗しました。");
           _crashReport.reportCrash(Exception("最終更新日時の更新に失敗しました。"), fatal: true);
         }
+        await _trashRepository.setSyncStatus(SyncStatus.SYNCING);
         return updateResult;
       } on Exception catch (e) {
         _logger.e(e);

@@ -84,10 +84,7 @@ Future<void> main() async {
 
   await _initializeRepository();
 
-  UserApiInterface userApi = UserApi();
-  UserRepositoryInterface userRepository = UserRepository();
-
-  UserServiceInterface userService = UserService(userRepository, userApi, TrashRepository());
+  UserServiceInterface userService = UserService(UserRepository(), UserApi(), TrashRepository());
   await userService.initialize();
 
   TrashDataServiceInterface trashDataService =

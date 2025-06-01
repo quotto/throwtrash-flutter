@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:throwtrash/repository/app_config_provider.dart';
 import 'package:throwtrash/share.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
@@ -33,9 +31,16 @@ class CalendarWidget extends StatefulWidget {
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   Logger _logger = Logger();
+  final _pullSnackBar = SnackBar(
+    backgroundColor: Colors.blue,
+    content: Text('最新のゴミ出しスケジュールを取り込みました。', style: TextStyle(color: Colors.white)),
+    duration: Duration(
+        seconds: 1
+    ),
+  );
   final _rollbackSnackBar = SnackBar(
     backgroundColor: Colors.amber,
-    content: Text('他の端末でスケジュールが更新されました。', style: TextStyle(color: Colors.white)),
+    content: Text('他の端末でスケジュールが更新されたため、ローカルで更新した情報は破棄しました。', style: TextStyle(color: Colors.white)),
     duration: Duration(
         seconds: 1
     ),
@@ -100,12 +105,21 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     Provider.of<CalendarModel>(context, listen: false);
     calendarModel.addListener(() async {
       if(!calendarModel.isLoading()) {
-        if (calendarModel.syncResult == SyncResult.failed) {
-          ScaffoldMessenger.of(context).showSnackBar(_failedSnackBar);
-          await Future.delayed(Duration(milliseconds: 1000));
-        } else if (calendarModel.syncResult == SyncResult.rollback) {
-          ScaffoldMessenger.of(context).showSnackBar(_rollbackSnackBar);
-          await Future.delayed(Duration(milliseconds: 1000));
+        switch (calendarModel.syncResult) {
+          case SyncResult.pull:
+            ScaffoldMessenger.of(context).showSnackBar(_pullSnackBar);
+            await Future.delayed(Duration(milliseconds: 3000));
+            break;
+          case SyncResult.rollback:
+            ScaffoldMessenger.of(context).showSnackBar(_rollbackSnackBar);
+            await Future.delayed(Duration(milliseconds: 3000));
+            break;
+          case SyncResult.failed:
+            ScaffoldMessenger.of(context).showSnackBar(_failedSnackBar);
+            await Future.delayed(Duration(milliseconds: 3000));
+            break;
+          default:
+            break;
         }
       }
     });

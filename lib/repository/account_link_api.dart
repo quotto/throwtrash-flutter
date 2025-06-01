@@ -34,6 +34,10 @@ class AccountLinkApi implements AccountLinkApiInterface {
   Future<AccountLinkInfo?> startAccountLink(String userId, AccountLinkType accountLinkType) async {
     Uri endpointUri = Uri.parse("${this._configProvider.mobileApiUrl}/start_link?user_id=$userId&platform=${accountLinkType.toStringValue()}");
     http.Response response = await this._httpClient.get(
+      headers: {
+        "content-type": "application/json;charset=utf-8",
+        "X-TRASH-USERID": userId,
+      },
       endpointUri
     );
     if(response.statusCode == 200) {

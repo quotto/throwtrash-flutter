@@ -38,7 +38,8 @@ class ActivationApi implements ActivationApiInterface{
        endpointUri,
        headers: {
          "content-type": "application/json;charset=utf-8",
-         "Accept": "application/json"
+         "Accept": "application/json",
+         "X-TRASH-USERID": userId,
        }
      );
      if(response.statusCode == 200) {
@@ -56,7 +57,14 @@ class ActivationApi implements ActivationApiInterface{
     Uri endpointUri = Uri.parse(
       this._config.mobileApiUrl + "/activate?code=$code&user_id=$userId"
     );
-    http.Response response = await this._httpClient.get(endpointUri);
+    http.Response response = await this._httpClient.get(
+      headers: {
+        "content-type": "application/json;charset=utf-8",
+        "Accept": "application/json",
+        "X-TRASH-USERID": userId,
+      },
+      endpointUri
+    );
     if(response.statusCode == 200) {
       ActivateResponse activateResponse = ActivateResponse.fromJson(jsonDecode(response.body));
       return activateResponse;
