@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:throwtrash/models/user_api_signin_response.dart';
 import 'package:throwtrash/usecase/repository/user_api_interface.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 
 import '../models/user.dart';
 import 'app_config_provider.dart';
@@ -40,6 +41,27 @@ class UserApi extends UserApiInterface {
     return response.statusCode == 200
         ? SigninResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)))
         : throw new Exception('Signin api response error: ${response.statusCode}');
+  }
+
+  @override
+  Future<SigninResponse> signup(String userId) async {
+    final idToken = await auth.FirebaseAuth.instance.currentUser?.getIdToken();
+    if (idToken == null) {
+      throw Exception('Firebase ID token is null. User must be authenticated.');
+    }
+
+    final response = await _httpClient.post(
+        Uri.parse('${_appConfigProvider.mobileApiUrl}/signup'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+          'X-TRASH-USERID': userId
+        }
+    );
+
+    return response.statusCode == 200
+        ? SigninResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)))
+        : throw new Exception('Signup api response error: ${response.statusCode}');
   }
 
   @override

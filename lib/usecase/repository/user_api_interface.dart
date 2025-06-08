@@ -8,4 +8,7 @@ abstract class UserApiInterface {
 
   // アカウント削除処理を行う
   Future<bool> deleteAccount(User user);
+
+  // ユーザーIDとFirebase認証情報を使用してサインアップ処理を行う
+  Future<SigninResponse> signup(String userId);
 }

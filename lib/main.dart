@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/firebase_options.dart';
+import 'package:throwtrash/models/user.dart';
 import 'package:throwtrash/repository/account_link_api.dart';
 import 'package:throwtrash/repository/account_link_repository.dart';
 import 'package:throwtrash/repository/activation_api.dart';
@@ -20,6 +21,7 @@ import 'package:throwtrash/repository/config_repository.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/repository/fcm_service.dart';
+import 'package:throwtrash/repository/firebase_auth_migration.dart';
 import 'package:throwtrash/repository/trash_api.dart';
 import 'package:throwtrash/repository/trash_repository.dart';
 import 'package:throwtrash/repository/user_api.dart';
@@ -31,6 +33,8 @@ import 'package:throwtrash/usecase/alarm_service_interface.dart';
 import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:throwtrash/usecase/change_theme_service.dart';
 import 'package:throwtrash/usecase/change_theme_service_interface.dart';
+import 'package:throwtrash/usecase/migration_service.dart';
+import 'package:throwtrash/usecase/migration_service_interface.dart';
 import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
 import 'package:throwtrash/usecase/repository/account_link_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
@@ -67,6 +71,34 @@ Future<void> _initializeRepository() async {
   UserApi.initialize(AppConfigProvider(), httpClient);
 }
 
+Future<void> _runMigrations(UserServiceInterface userService) async {
+  // マイグレーションサービスを初期化
+  MigrationServiceInterface migrationService = MigrationService();
+
+  // Firebase認証マイグレーションを登録（必要な依存関係は直接マイグレーションに注入）
+  migrationService.registerMigration(
+    FirebaseAuthMigration(
+      UserApi(),
+      UserRepository(),
+      userService
+    )
+  );
+
+  // 今後必要になる他のマイグレーションも同様に登録できる
+  // migrationService.registerMigration(新しいマイグレーション);
+
+  // マイグレーションを実行
+  await migrationService.executeAll(
+    onMigrationCompleted: (name, success) {
+      if (success) {
+        print('マイグレーション "$name" が正常に完了しました');
+      } else {
+        print('マイグレーション "$name" の実行中にエラーが発生しました');
+      }
+    }
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -84,6 +116,9 @@ Future<void> main() async {
 
   UserServiceInterface userService = UserService(UserRepository(), UserApi(), TrashRepository());
   await userService.initialize();
+
+  // マイグレーションサービスの初期化と実行
+  await _runMigrations(userService);
 
   TrashDataServiceInterface trashDataService =
       TrashDataService(userService, TrashRepository(), TrashApi(), CrashlyticsReport());
