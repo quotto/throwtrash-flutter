@@ -51,7 +51,7 @@ class UserApi extends UserApiInterface {
     }
 
     final response = await _httpClient.post(
-        Uri.parse('${_appConfigProvider.mobileApiUrl}/signup'),
+        Uri.parse('${_appConfigProvider.mobileApiUrl}/migration/signup'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $idToken',

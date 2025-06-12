@@ -208,7 +208,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
 
   @override
   _i7.Future<_i2.TrashUpdateResult> updateTrashData(
-    String? id,
+    String? userId,
     List<_i8.TrashData>? localSchedule,
     int? localTimestamp,
   ) =>
@@ -216,7 +216,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
         Invocation.method(
           #updateTrashData,
           [
-            id,
+            userId,
             localSchedule,
             localTimestamp,
           ],
@@ -227,7 +227,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
           Invocation.method(
             #updateTrashData,
             [
-              id,
+              userId,
               localSchedule,
               localTimestamp,
             ],
@@ -239,7 +239,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
           Invocation.method(
             #updateTrashData,
             [
-              id,
+              userId,
               localSchedule,
               localTimestamp,
             ],

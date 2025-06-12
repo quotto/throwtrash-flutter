@@ -28,7 +28,6 @@ abstract class UserMigrationInterface extends MigrationInterface {
   set user(User? value);
 }
 
-/// データベース��イグレーション用のインターフェース
 ///
 /// データベーススキーマの更新などのマイグレーション処理を実装する
 abstract class DatabaseMigrationInterface extends MigrationInterface {

@@ -21,8 +21,9 @@ class UserService extends UserServiceInterface {
     this._userRepository,
     this._userApi,
     this._trashRepository,
-  )   : _firebaseAuth = auth.FirebaseAuth.instance,
-        _googleSignIn = GoogleSignIn() {
+    {auth.FirebaseAuth? firebaseAuth, GoogleSignIn? googleSignIn}
+  )   : _firebaseAuth = firebaseAuth ?? auth.FirebaseAuth.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn() {
     refreshUser();
   }
 

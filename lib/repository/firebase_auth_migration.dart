@@ -1,7 +1,10 @@
 // filepath: /Users/takah/project/throwtrash-flutter/lib/repository/firebase_auth_migration.dart
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:logger/logger.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/models/user.dart';
+import 'package:throwtrash/repository/user_repository.dart';
 import 'package:throwtrash/usecase/repository/migration_interface.dart';
 import 'package:throwtrash/usecase/repository/user_api_interface.dart';
 import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
@@ -17,11 +20,13 @@ class FirebaseAuthMigration implements MigrationInterface {
   final UserRepositoryInterface _userRepository;
   final UserServiceInterface _userService;
   final Logger _logger = Logger();
+  // マイグレーションを実行する最大バージョン (1.3)
+  final double _maxVersionForMigration = 1.3;
 
   /// Firebase認証マイグレーションを作成
   ///
   /// [_userApi] FirebaseIDトークンとユーザーIDを送信するAPI
-  /// [_userRepository] 更新されたユーザー情報を保存するためのリポジトリ
+  /// [_userRepository] 更新されたユーザー情報を��存するためのリポジトリ
   /// [_userService] ユーザー情報の管理を行うサービス
   FirebaseAuthMigration(this._userApi, this._userRepository, this._userService)
       : _firebaseAuth = auth.FirebaseAuth.instance;
@@ -32,19 +37,87 @@ class FirebaseAuthMigration implements MigrationInterface {
   @override
   int get version => 1;
 
+  /// アプリのバージョンを取得し、マイグレーションが必要かどうかを判断する
+  ///
+  /// アプリのバージョンが1.3以下の場合にマイグレーションを実行する
+  Future<bool> _shouldMigrateBasedOnVersion() async {
+    try {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      String version = packageInfo.version;
+
+      // バージョン文字列をパースして比較（x.y.z形式を想定）
+      List<String> versionParts = version.split('.');
+      double majorMinor = double.parse('${versionParts[0]}.${versionParts[1]}');
+
+      _logger.d('アプリのバージョン: $version (比較値: $majorMinor)');
+
+      // 1.3以下のバージョンであればマイグレーションを実行
+      return majorMinor <= _maxVersionForMigration;
+    } catch (e) {
+      _logger.e('バージョン情報の取得中にエラーが発生しました: $e');
+      // エラーが発生した場合は安全のためマイグレーションを実行
+      return true;
+    }
+  }
+
+  /// ユーザーIDが直接文字列として保存されている可能性があるかをチェック
+  Future<bool> _checkForLegacyUserId() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? rawUserId = prefs.getString(UserRepository.USER_ID_KEY);
+
+      if (rawUserId == null) return false;
+
+      // ユーザーIDが単なる文字列として保存されているか確認
+      // JSON形式でない場合はマイグレーションが必要
+      if (!rawUserId.startsWith('{') && rawUserId.isNotEmpty) {
+        _logger.d('レガシー形式のユーザーIDを検出: $rawUserId');
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      _logger.e('レガシーユーザーID確認中にエラーが発生しました: $e');
+      // エラーが発生した場合は安全のためマイグレーションを実行
+      return true;
+    }
+  }
+
   @override
   Future<bool> execute() async {
-    // 現在のユーザー情報を取得
-    final user = _userService.user;
-
-    // ユーザー情報がない場合または既に認証済みの場合はマイグレーション不要
-    if (user == null || user.id.isEmpty || user.isAuthenticated) {
-      _logger.d('Firebase認証マイグレーション: ユーザーが未登録または既に認証済みのため、マイグレーションをスキップします');
-      return true; // マイグレーションは不要だが正常に完了したとみなす
-    }
-
     try {
-      _logger.i('Firebase認証マイグレーション: マイグレーションを開始します');
+      // アプリバージョンによるマイグレーション判定
+      bool shouldMigrateVersion = await _shouldMigrateBasedOnVersion();
+      bool hasLegacyUserId = await _checkForLegacyUserId();
+
+      if (!shouldMigrateVersion && !hasLegacyUserId) {
+        _logger.i('Firebase認証マイグレーション: アプリバージョンが新しいためスキップします');
+        return true; // マイグレーションは不要だが正常に完了したとみなす
+      }
+
+      _logger.i('Firebase認証マイグレーション: マイグレーションを開始します (バージョン条件: $shouldMigrateVersion, レガシーID検出: $hasLegacyUserId)');
+
+      // レガシーユーザーIDがある場合は取得して新形式に変換
+      User? user;
+      if (hasLegacyUserId) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String? legacyUserId = prefs.getString(UserRepository.USER_ID_KEY);
+
+        if (legacyUserId != null && legacyUserId.isNotEmpty) {
+          // レガシーIDからユーザーオブジェクトを作成
+          user = User(legacyUserId);
+          _logger.i('レガシーユーザーIDからユーザーオブジェクトを作成: $legacyUserId');
+        }
+      } else {
+        // 通常のユーザー取得
+        user = _userService.user;
+      }
+
+      // ユーザー情報がない場合または既に��証済みの場合はマイグレーション不要
+      if (user == null || user.id.isEmpty || user.isAuthenticated) {
+        _logger.d('Firebase認証マイグレーション: ユーザーが未登録または既に認証済みのため、マイグレーション処理をスキップします');
+        return true; // マイグレーションは不要だが正常に完了したとみなす
+      }
 
       // 既にFirebase認証済みの場合はサインインしない
       if (_firebaseAuth.currentUser == null) {
@@ -58,12 +131,12 @@ class FirebaseAuthMigration implements MigrationInterface {
       // APIにサインアップリクエストを送信
       await _signupToRemote(user);
 
-      // マイグレーション後のユーザー情報を更新（認証済みフラグをtrueに設定）
+      // マイグレーション後のユーザー情���を更新（認証済みフラグをtrueに設定）
       User updatedUser = User(
         user.id,
         isAuthenticated: true,
         email: user.email,
-        displayName: user.displayName
+        displayName: user.displayName,
       );
 
       // 更新したユーザー情報を保存
