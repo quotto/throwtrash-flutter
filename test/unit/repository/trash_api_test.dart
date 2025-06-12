@@ -154,7 +154,7 @@ void main() {
       final captured = verify(httpClient.post(captureAny, body: captureAnyNamed("body"), headers: captureAnyNamed("headers"))).captured;
       expect(captured[0], Uri.parse("https://example.com/update"));
       expect(captured[1], jsonEncode({"id": "test_user_id", "description": jsonEncode(trashData), "platform": "web", "timestamp": 12345678}));
-      expect(captured[2], {"content-type": "application/json;charset=utf-8", "Accept": "application/json"});
+      expect(captured[2], {"content-type": "application/json;charset=utf-8", "Accept": "application/json", "X-TRASH-USERID": "test_user_id"});
     });
     test("updateTrashDataでレスポンスのステータスコードが200でレスポンスボディにtimestampが無い場合,TrashUpdateResultのタイムスタンプが-1,UpdateResultがERRORであること", () async {
       when(httpClient.post(any, body: anyNamed("body"), headers: anyNamed("headers"))).thenAnswer((request) async {
@@ -250,7 +250,7 @@ void main() {
 
       final captured = verify(httpClient.get(captureAny, headers: captureAnyNamed("headers"))).captured;
       expect(captured[0], Uri.parse("https://example.com/sync?user_id=test_user_id"));
-      expect(captured[1], {"content-type":"text/html;charset=utf8","Accept": "application/json"});
+      expect(captured[1], {"content-type":"text/html;charset=utf8","Accept": "application/json", "X-TRASH-USERID": "test_user_id"});
     });
     test(
         "syncTrashDataでレスポンスのステータスコードが200以外の場合、TrashSyncResultのallTrashDataListが空、タイムスタンプが-1、SyncResultがERRORであること", () async {

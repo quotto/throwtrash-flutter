@@ -47,10 +47,6 @@ class _FakeUser_0 extends _i1.SmartFake implements _i2.User {
 /// See the documentation for Mockito's code generation for more information.
 class MockActivationApiInterface extends _i1.Mock
     implements _i3.ActivationApiInterface {
-  MockActivationApiInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i4.Future<String> requestActivationCode(String? userId) =>
       (super.noSuchMethod(
@@ -59,6 +55,14 @@ class MockActivationApiInterface extends _i1.Mock
           [userId],
         ),
         returnValue: _i4.Future<String>.value(_i5.dummyValue<String>(
+          this,
+          Invocation.method(
+            #requestActivationCode,
+            [userId],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i4.Future<String>.value(_i5.dummyValue<String>(
           this,
           Invocation.method(
             #requestActivationCode,
@@ -81,6 +85,7 @@ class MockActivationApiInterface extends _i1.Mock
           ],
         ),
         returnValue: _i4.Future<_i6.ActivateResponse?>.value(),
+        returnValueForMissingStub: _i4.Future<_i6.ActivateResponse?>.value(),
       ) as _i4.Future<_i6.ActivateResponse?>);
 }
 
@@ -89,14 +94,14 @@ class MockActivationApiInterface extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockUserServiceInterface extends _i1.Mock
     implements _i7.UserServiceInterface {
-  MockUserServiceInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i2.User get user => (super.noSuchMethod(
         Invocation.getter(#user),
         returnValue: _FakeUser_0(
+          this,
+          Invocation.getter(#user),
+        ),
+        returnValueForMissingStub: _FakeUser_0(
           this,
           Invocation.getter(#user),
         ),
@@ -109,6 +114,7 @@ class MockUserServiceInterface extends _i1.Mock
           [id],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -138,6 +144,7 @@ class MockUserServiceInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -147,6 +154,7 @@ class MockUserServiceInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -156,6 +164,7 @@ class MockUserServiceInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -165,6 +174,7 @@ class MockUserServiceInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<String?>.value(),
+        returnValueForMissingStub: _i4.Future<String?>.value(),
       ) as _i4.Future<String?>);
 }
 
@@ -173,10 +183,6 @@ class MockUserServiceInterface extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockTrashRepositoryInterface extends _i1.Mock
     implements _i8.TrashRepositoryInterface {
-  MockTrashRepositoryInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i4.Future<bool> updateTrashData(_i9.TrashData? trashData) =>
       (super.noSuchMethod(
@@ -185,6 +191,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [trashData],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -195,6 +202,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [trashData],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -204,6 +212,8 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<List<_i9.TrashData>>.value(<_i9.TrashData>[]),
+        returnValueForMissingStub:
+            _i4.Future<List<_i9.TrashData>>.value(<_i9.TrashData>[]),
       ) as _i4.Future<List<_i9.TrashData>>);
 
   @override
@@ -213,6 +223,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [id],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -223,6 +234,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [updateTimestamp],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -232,6 +244,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<int>.value(0),
+        returnValueForMissingStub: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
 
   @override
@@ -241,6 +254,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 
   @override
@@ -250,6 +264,8 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [],
         ),
         returnValue: _i4.Future<_i10.SyncStatus>.value(_i10.SyncStatus.NOT_YET),
+        returnValueForMissingStub:
+            _i4.Future<_i10.SyncStatus>.value(_i10.SyncStatus.NOT_YET),
       ) as _i4.Future<_i10.SyncStatus>);
 
   @override
@@ -260,6 +276,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           [syncStatus],
         ),
         returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
       ) as _i4.Future<bool>);
 }
 
@@ -268,10 +285,6 @@ class MockTrashRepositoryInterface extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockCrashReportInterface extends _i1.Mock
     implements _i11.CrashReportInterface {
-  MockCrashReportInterface() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   void reportCrash(
     dynamic exception, {

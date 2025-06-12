@@ -20,13 +20,14 @@ void main () {
   late AccountLinkApi accountLinkApi;
   mock.MockClient httpClient = mock.MockClient();
   mock.MockAppConfigProviderInterface appConfigProvider = mock.MockAppConfigProviderInterface();
-  setUpAll(() => {
-    AccountLinkApi.initialize(appConfigProvider, httpClient)
+  setUpAll(() {
+    when(appConfigProvider.mobileApiUrl).thenReturn("https://api.example.com"); // mobileApiUrlのスタブ設定を追加
+    AccountLinkApi.initialize(appConfigProvider, httpClient);
   });
   group("startAccountLink", () {
     test("AccountLinkType=WebでstartAccountLinkでAccountLinkInfoが取得できること", () async {
       // http.Clientをモック化する
-      when(httpClient.get(any)).thenAnswer((_) async {
+      when(httpClient.get(any, headers: anyNamed('headers'))).thenAnswer((_) async { // headers引数を考慮するように修正
         return Response('{"url": "https://example.com", "token": "test_token"}', 200);
       });
 
@@ -38,7 +39,7 @@ void main () {
     });
     test("startAccountLinkでエラーが発生した場合はnullが返ること", () async {
       // http.Clientをモック化する
-      when(httpClient.get(any)).thenAnswer((_) async {
+      when(httpClient.get(any, headers: anyNamed('headers'))).thenAnswer((_) async { // headers引数を考慮するように修正
         return Response('{"error": "error"}', 500);
       });
 
@@ -48,7 +49,7 @@ void main () {
     });
     test("startAccountLinkでレスポンスが不正な場合はnullが返ること", () async {
       // http.Clientをモック化する
-      when(httpClient.get(any)).thenAnswer((_) async {
+      when(httpClient.get(any, headers: anyNamed('headers'))).thenAnswer((_) async { // headers引数を考慮するように修正
         return Response('{"error": "error"}', 200);
       });
 

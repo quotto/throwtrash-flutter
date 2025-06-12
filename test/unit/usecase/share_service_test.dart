@@ -12,7 +12,7 @@ import 'package:throwtrash/usecase/user_service_interface.dart';
 
 import 'share_service_test.mocks.dart';
 
-@GenerateMocks([ActivationApiInterface,UserServiceInterface,TrashRepositoryInterface,CrashReportInterface])
+@GenerateNiceMocks([MockSpec<ActivationApiInterface>(),MockSpec<UserServiceInterface>(),MockSpec<TrashRepositoryInterface>(),MockSpec<CrashReportInterface>()])
 void main() {
   group('ShareService', () {
     late MockActivationApiInterface activationApi;

@@ -26,7 +26,8 @@ void main(){
     test("startActivationでActivationCodeが取得できること", () async {
       when(mockClient.get(any,headers: {
         "content-type": "application/json;charset=utf-8",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "X-TRASH-USERID": "test_user_id"
       })).thenAnswer((_) async {
         return Response('{"code": "test_code"}', 200);
       });
@@ -41,7 +42,8 @@ void main(){
       // http.Clientをモック化する
       when(mockClient.get(any,headers: {
         "content-type": "application/json;charset=utf-8",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "X-TRASH-USERID": "test_user_id"
       })).thenAnswer((_) async {
         return Response('{"error": "error"}', 500);
       });
@@ -55,7 +57,8 @@ void main(){
       // http.Clientをモック化する
       when(mockClient.get(any,headers: {
         "content-type": "application/json;charset=utf-8",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "X-TRASH-USERID": "test_user_id"
       })).thenAnswer((_) async {
         return Response('{"error": "error"}', 200);
       });
