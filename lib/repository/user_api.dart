@@ -44,7 +44,7 @@ class UserApi extends UserApiInterface {
   }
 
   @override
-  Future<SigninResponse> signup(String userId) async {
+  Future<bool> signup(String userId) async {
     final idToken = await auth.FirebaseAuth.instance.currentUser?.getIdToken();
     if (idToken == null) {
       throw Exception('Firebase ID token is null. User must be authenticated.');
@@ -54,13 +54,15 @@ class UserApi extends UserApiInterface {
         Uri.parse('${_appConfigProvider.mobileApiUrl}/migration/signup'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $idToken',
-          'X-TRASH-USERID': userId
-        }
+          'Authorization': 'Bearer $idToken'
+        },
+        body: jsonEncode({
+          'user_id': userId,
+        })
     );
 
     return response.statusCode == 200
-        ? SigninResponse.fromJson(jsonDecode(utf8.decode(response.bodyBytes)))
+        ? true
         : throw new Exception('Signup api response error: ${response.statusCode}');
   }
 

@@ -72,7 +72,7 @@ Future<void> _initializeRepository() async {
   UserApi.initialize(AppConfigProvider(), httpClient);
 }
 
-Future<void> _runMigrations(UserServiceInterface userService) async {
+Future<void> _runMigrations() async {
   AppVersionRepositoryInterface appVersionRepository = AppVersionRepository();
   // マイグレーションサービスを初期化
   MigrationServiceInterface migrationService = MigrationService(appVersionRepository);
@@ -81,9 +81,8 @@ Future<void> _runMigrations(UserServiceInterface userService) async {
   migrationService.registerMigration(
     FirebaseAuthMigration(
       UserApi(),
-      UserRepository(),
-      userService,
-      appVersionRepository
+      appVersionRepository,
+      UserRepository()
     )
   );
 
@@ -117,11 +116,11 @@ Future<void> main() async {
 
   await _initializeRepository();
 
+  // マイグレーションサービスの初期化と実行
+  await _runMigrations();
+
   UserServiceInterface userService = UserService(UserRepository(), UserApi(), TrashRepository());
   await userService.initialize();
-
-  // マイグレーションサービスの初期化と実行
-  await _runMigrations(userService);
 
   TrashDataServiceInterface trashDataService =
       TrashDataService(userService, TrashRepository(), TrashApi(), CrashlyticsReport());

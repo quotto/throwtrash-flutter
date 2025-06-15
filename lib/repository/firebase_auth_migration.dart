@@ -3,23 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/models/user.dart';
-import 'package:throwtrash/repository/user_repository.dart';
+import 'package:throwtrash/repository/user_repository.dart'; // Keep for USER_ID_KEY
 import 'package:throwtrash/usecase/repository/app_version_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/migration_interface.dart';
 import 'package:throwtrash/usecase/repository/user_api_interface.dart';
-import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
-import 'package:throwtrash/usecase/user_service_interface.dart';
 
 /// Firebase認証マイグレーション
 ///
-/// ユーザーIDのみを持つユーザーに対してFirebase匿名認証を行い、
 /// リモートAPIにFirebase認証情報を紐づけるマイグレーション
 class FirebaseAuthMigration implements MigrationInterface {
   final auth.FirebaseAuth _firebaseAuth;
   final UserApiInterface _userApi;
-  final UserRepositoryInterface _userRepository;
-  final UserServiceInterface _userService;
   final AppVersionRepositoryInterface _appVersionRepository;
+  final UserRepository _userRepository;
   final Logger _logger = Logger();
   // マイグレーションを実行する最大バージョン (1.3)
   final double _maxVersionForMigration = 1.3;
@@ -27,10 +23,8 @@ class FirebaseAuthMigration implements MigrationInterface {
   /// Firebase認証マイグレーションを作成
   ///
   /// [_userApi] FirebaseIDトークンとユーザーIDを送信するAPI
-  /// [_userRepository] 更新されたユーザー情報を保存するためのリポジトリ
-  /// [_userService] ユーザー情報の管理を行うサービス
   /// [_appVersionRepository] アプリバージョンの永続化を行うリポジトリ
-  FirebaseAuthMigration(this._userApi, this._userRepository, this._userService, this._appVersionRepository)
+  FirebaseAuthMigration(this._userApi, this._appVersionRepository, this._userRepository)
       : _firebaseAuth = auth.FirebaseAuth.instance;
 
   @override
@@ -69,6 +63,8 @@ class FirebaseAuthMigration implements MigrationInterface {
   Future<bool> _checkForLegacyUserId() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      // UserRepositoryはUserモデルを前提としているため、マイグレーション処理中は直接利用できない。
+      // そのため、SharedPreferencesを直接参照してレガシーなユーザーIDの存在を確認する。
       String? rawUserId = prefs.getString(UserRepository.USER_ID_KEY);
 
       if (rawUserId == null) return false;
@@ -108,8 +104,8 @@ class FirebaseAuthMigration implements MigrationInterface {
 
       // レガシーユーザーIDがある場合は取得して新形式に変換
       User? user;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
       if (hasLegacyUserId) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
         String? legacyUserId = prefs.getString(UserRepository.USER_ID_KEY);
 
         if (legacyUserId != null && legacyUserId.isNotEmpty) {
@@ -117,9 +113,6 @@ class FirebaseAuthMigration implements MigrationInterface {
           user = User(legacyUserId);
           _logger.i('レガシーユーザーIDからユーザーオブジェクトを作成: $legacyUserId');
         }
-      } else {
-        // 通常のユーザー取得
-        user = _userService.user;
       }
 
       // ユーザー情報がない場合または既に認証済みの場合はマイグレーション不要
@@ -140,21 +133,10 @@ class FirebaseAuthMigration implements MigrationInterface {
       // APIにサインアップリクエストを送信
       await _signupToRemote(user);
 
-      // マイグレーション後のユーザー情報を更新（認証済みフラグをtrueに設定）
-      User updatedUser = User(
-        user.id,
-        isAuthenticated: true,
-        email: user.email,
-        displayName: user.displayName,
-      );
-
-      // 更新したユーザー情報を保存
-      await _userRepository.writeUser(updatedUser);
-
-      // ユーザーサービスの情報も更新
-      await _userService.refreshUser();
+      this._userRepository.writeUser(user);
 
       return true;
+
     } catch (e) {
       _logger.e('Firebase認証マイグレーション中にエラーが発生しました: $e');
       return false;
