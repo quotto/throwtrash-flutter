@@ -55,3 +55,6 @@ android/app/google-services.json
 /.idea/copilot/chatSessions/00000000000.xd
 /.idea/copilot/chatSessions/blobs/version
 /.idea/copilot/chatSessions/xd.lck
+/.idea/deviceManager.xml
+/ios/Flutter/ephemeral/flutter_lldb_helper.py
+/ios/Flutter/ephemeral/flutter_lldbinit

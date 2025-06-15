@@ -10,7 +10,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "# Flutter3.19&#x4ee5;&#x964d;&#x3067;--dart-define-from,--dart-define&#x306e;&#x30d1;&#x30e9;&#x30e1;&#x30fc;&#x30bf;&#x5024;&#x304c;&#x5f15;&#x304d;&#x7d99;&#x304c;&#x308c;&#x306a;&#x304f;&#x306a;&#x3063;&#x305f;&#x3053;&#x3068;&#x306b;&#x3088;&#x308b;&#x5bfe;&#x5fdc;&#10;# Generated.xcconfig&#x5185;&#x306b;DART_DEFINES&#x3068;&#x3057;&#x3066;key=value&#x5f62;&#x5f0f;&#x3067;Base64&#x306b;&#x30a8;&#x30f3;&#x30b3;&#x30fc;&#x30c9;&#x3055;&#x308c;&#x305f;&#x5024;&#x304c;&#x30ab;&#x30f3;&#x30de;&#x533a;&#x5207;&#x308a;&#x3067;&#x683c;&#x7d0d;&#x3055;&#x308c;&#x308b;&#x305f;&#x3081;&#x3001;1&#x4ef6;&#x305a;&#x3064;&#x30c7;&#x30b3;&#x30fc;&#x30c9;&#x3057;&#x3066;Environment.xcconfig&#x306b;&#x4fdd;&#x5b58;&#x3059;&#x308b;&#10;&#10;function entry_decode() { echo &quot;${*}&quot; | base64 --decode; }&#10;&#10;IFS=&apos;,&apos; read -r -a define_items &lt;&lt;&lt; &quot;$DART_DEFINES&quot;&#10;&#10;for index in &quot;${!define_items[@]}&quot;&#10;do&#10;    define_items[$index]=$(entry_decode &quot;${define_items[$index]}&quot;);&#10;done&#10;&#10;# &#x6700;&#x7d42;&#x884c;&#x306b;flutter.inspector.structuredErrors=false&#x3068;&#x3044;&#x3046;&#x5024;&#x304c;&#x52dd;&#x624b;&#x306b;&#x633f;&#x5165;&#x3055;&#x308c;&#x308b;&#x304c;&#x3001;key&#x306b;.&#x304c;&#x3064;&#x3044;&#x3066;&#x3044;&#x308b;&#x305f;&#x3081;Environment.xcconfig&#x306e;include&#x3067;&#x30a8;&#x30e9;&#x30fc;&#x306b;&#x306a;&#x308b;&#x3002;&#10;# &#x3053;&#x306e;&#x305f;&#x3081;&#x6700;&#x7d42;&#x884c;&#x3060;&#x3051;&#x9664;&#x5916;&#x3059;&#x308b;&#x3002;&#10;for ((i=0; i&lt;${#define_items[@]}-1; i++))&#10;do&#10;    echo &quot;${define_items[$i]}&quot;&#10;done &gt; &quot;${SRCROOT}/Flutter/Environment.xcconfig&quot;&#10;">
+               scriptText = "# Flutter3.19&#x4ee5;&#x964d;&#x3067;--dart-define-from,--dart-define&#x306e;&#x30d1;&#x30e9;&#x30e1;&#x30fc;&#x30bf;&#x5024;&#x304c;&#x5f15;&#x304d;&#x7d99;&#x304c;&#x308c;&#x306a;&#x304f;&#x306a;&#x3063;&#x305f;&#x3053;&#x3068;&#x306b;&#x3088;&#x308b;&#x5bfe;&#x5fdc;&#10;# Generated.xcconfig&#x5185;&#x306b;DART_DEFINES&#x3068;&#x3057;&#x3066;key=value&#x5f62;&#x5f0f;&#x3067;Base64&#x306b;&#x30a8;&#x30f3;&#x30b3;&#x30fc;&#x30c9;&#x3055;&#x308c;&#x305f;&#x5024;&#x304c;&#x30ab;&#x30f3;&#x30de;&#x533a;&#x5207;&#x308a;&#x3067;&#x683c;&#x7d0d;&#x3055;&#x308c;&#x308b;&#x305f;&#x3081;&#x3001;1&#x4ef6;&#x305a;&#x3064;&#x30c7;&#x30b3;&#x30fc;&#x30c9;&#x3057;&#x3066;Environment.xcconfig&#x306b;&#x4fdd;&#x5b58;&#x3059;&#x308b;&#10;&#10;function entry_decode() { echo &quot;${*}&quot; | base64 --decode; }&#10;&#10;IFS=&apos;,&apos; read -r -a define_items &lt;&lt;&lt; &quot;$DART_DEFINES&quot;&#10;&#10;for index in &quot;${!define_items[@]}&quot;&#10;do&#10;    define_items[$index]=$(entry_decode &quot;${define_items[$index]}&quot;);&#10;done&#10;&#10;# flutter.inspector.structuredErrors=false&#x3068;&#x3044;&#x3046;&#x5024;&#x304c;&#x52dd;&#x624b;&#x306b;&#x633f;&#x5165;&#x3055;&#x308c;&#x308b;&#x304c;&#x3001;key&#x306b;.&#x304c;&#x3064;&#x3044;&#x3066;&#x3044;&#x308b;&#x305f;&#x3081;Environment.xcconfig&#x306e;include&#x3067;&#x30a8;&#x30e9;&#x30fc;&#x306b;&#x306a;&#x308b;&#x3002;&#10;# &#x3053;&#x306e;&#x305f;&#x3081;&#x3053;&#x306e;&#x884c;&#x3060;&#x3051;&#x9664;&#x5916;&#x3059;&#x308b;&#10;for ((i=0; i&lt;${#define_items[@]}-1; i++))&#10;do&#10;    echo &quot;${define_items[$i]}&quot;&#x3000;| grep -q -F &apos;flutter.inspector.structuredErrors=&apos; &amp;&amp; continue&#10;    echo &quot;${define_items[$i]}&quot;&#10;done &gt; &quot;${SRCROOT}/Flutter/Environment.xcconfig&quot;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"
@@ -44,6 +44,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      customLLDBInitFile = "$(SRCROOT)/Flutter/ephemeral/flutter_lldbinit"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <MacroExpansion>
          <BuildableReference
@@ -61,11 +62,13 @@
       buildConfiguration = "Debug-development"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      customLLDBInitFile = "$(SRCROOT)/Flutter/ephemeral/flutter_lldbinit"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
+      enableGPUValidationMode = "1"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">

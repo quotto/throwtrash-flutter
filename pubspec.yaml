@@ -3,8 +3,8 @@ description: 今日のゴミ出し
 
 version: 1.0.0+1
 environment:
-  sdk: ">=2.17.0 <=3.5.3"
-  flutter: "^3.24.3"
+  sdk: ">=3.8.1 <=4.0.0"
+  flutter: "^3.32.4"
 
 dependencies:
   flutter:
@@ -44,6 +44,9 @@ dev_dependencies:
   analyzer: ^6.2.0
   code_builder: ^4.0.0
 
+  firebase_messaging_platform_interface: any
+  firebase_auth_platform_interface: any
+  google_sign_in_platform_interface: any
 flutter:
   uses-material-design: true
 

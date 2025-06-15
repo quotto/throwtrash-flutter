@@ -205,7 +205,7 @@ class _EditItemMainState extends State<EditItemMain> {
         decoration: BoxDecoration(
             color: (scheduleNumber + 1) % 2 == 0
                 ? Theme.of(context).colorScheme.primaryContainer
-                : Theme.of(context).colorScheme.background),
+                : Theme.of(context).colorScheme.surface),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,

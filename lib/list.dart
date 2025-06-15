@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:throwtrash/edit.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
