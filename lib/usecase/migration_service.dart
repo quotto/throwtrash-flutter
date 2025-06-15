@@ -1,6 +1,8 @@
 // filepath: /Users/takah/project/throwtrash-flutter/lib/usecase/migration_service.dart
 import 'package:logger/logger.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:throwtrash/usecase/migration_service_interface.dart';
+import 'package:throwtrash/usecase/repository/app_version_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/migration_interface.dart';
 
 /// マイグレーションサービス
@@ -9,9 +11,10 @@ import 'package:throwtrash/usecase/repository/migration_interface.dart';
 class MigrationService implements MigrationServiceInterface {
   final List<MigrationInterface> _migrations = [];
   final Logger _logger = Logger();
+  final AppVersionRepositoryInterface _appVersionRepository;
 
   /// マイグレーションサービスを作成
-  MigrationService();
+  MigrationService(this._appVersionRepository);
 
   @override
   List<MigrationInterface> get migrations => List.unmodifiable(_migrations);
@@ -55,6 +58,18 @@ class MigrationService implements MigrationServiceInterface {
     }
 
     _logger.i('すべてのマイグレーション処理が完了しました: ${allSuccess ? "すべて成功" : "一部失敗あり"}');
+
+    // すべてのマイグレーションが完了した後、現在のアプリバージョンを保存
+    if (allSuccess) {
+      try {
+        PackageInfo packageInfo = await PackageInfo.fromPlatform();
+        await _appVersionRepository.saveAppVersion(packageInfo.version);
+        _logger.i('現在のアプリバージョンを保存しました: ${packageInfo.version}');
+      } catch (e) {
+        _logger.e('アプリバージョンの保存中にエラーが発生しました: $e');
+        // バージョン保存のエラーはマイグレーション全体の成否に影響させない
+      }
+    }
     return allSuccess;
   }
 }

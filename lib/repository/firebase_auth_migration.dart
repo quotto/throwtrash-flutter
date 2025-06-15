@@ -1,10 +1,10 @@
 // filepath: /Users/takah/project/throwtrash-flutter/lib/repository/firebase_auth_migration.dart
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:logger/logger.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/models/user.dart';
 import 'package:throwtrash/repository/user_repository.dart';
+import 'package:throwtrash/usecase/repository/app_version_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/migration_interface.dart';
 import 'package:throwtrash/usecase/repository/user_api_interface.dart';
 import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
@@ -19,6 +19,7 @@ class FirebaseAuthMigration implements MigrationInterface {
   final UserApiInterface _userApi;
   final UserRepositoryInterface _userRepository;
   final UserServiceInterface _userService;
+  final AppVersionRepositoryInterface _appVersionRepository;
   final Logger _logger = Logger();
   // マイグレーションを実行する最大バージョン (1.3)
   final double _maxVersionForMigration = 1.3;
@@ -26,9 +27,10 @@ class FirebaseAuthMigration implements MigrationInterface {
   /// Firebase認証マイグレーションを作成
   ///
   /// [_userApi] FirebaseIDトークンとユーザーIDを送信するAPI
-  /// [_userRepository] 更新されたユーザー情報を��存するためのリポジトリ
+  /// [_userRepository] 更新されたユーザー情報を保存するためのリポジトリ
   /// [_userService] ユーザー情報の管理を行うサービス
-  FirebaseAuthMigration(this._userApi, this._userRepository, this._userService)
+  /// [_appVersionRepository] アプリバージョンの永続化を行うリポジトリ
+  FirebaseAuthMigration(this._userApi, this._userRepository, this._userService, this._appVersionRepository)
       : _firebaseAuth = auth.FirebaseAuth.instance;
 
   @override
@@ -39,22 +41,25 @@ class FirebaseAuthMigration implements MigrationInterface {
 
   /// アプリのバージョンを取得し、マイグレーションが必要かどうかを判断する
   ///
-  /// アプリのバージョンが1.3以下の場合にマイグレーションを実行する
+  /// 保存されたアプリのバージョンが1.3以下の場合にマイグレーションを実行する
   Future<bool> _shouldMigrateBasedOnVersion() async {
     try {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      String version = packageInfo.version;
+      String? savedVersion = await _appVersionRepository.getSavedAppVersion();
+      if (savedVersion == null) {
+        _logger.d('保存されたアプリバージョンが見つかりません。マイグレーションを実行します。');
+        return true; // 保存されたバージョンがない場合は初回起動とみなし、マイグレーションを実行
+      }
 
       // バージョン文字列をパースして比較（x.y.z形式を想定）
-      List<String> versionParts = version.split('.');
+      List<String> versionParts = savedVersion.split('.');
       double majorMinor = double.parse('${versionParts[0]}.${versionParts[1]}');
 
-      _logger.d('アプリのバージョン: $version (比較値: $majorMinor)');
+      _logger.d('保存されたアプリのバージョン: $savedVersion (比較値: $majorMinor)');
 
       // 1.3以下のバージョンであればマイグレーションを実行
       return majorMinor <= _maxVersionForMigration;
     } catch (e) {
-      _logger.e('バージョン情報の取得中にエラーが発生しました: $e');
+      _logger.e('保存されたバージョン情報の取得またはパース中にエラーが発生しました: $e');
       // エラーが発生した場合は安全のためマイグレーションを実行
       return true;
     }
@@ -90,8 +95,12 @@ class FirebaseAuthMigration implements MigrationInterface {
       bool shouldMigrateVersion = await _shouldMigrateBasedOnVersion();
       bool hasLegacyUserId = await _checkForLegacyUserId();
 
-      if (!shouldMigrateVersion && !hasLegacyUserId) {
+      if (!shouldMigrateVersion) {
         _logger.i('Firebase認証マイグレーション: アプリバージョンが新しいためスキップします');
+        return true; // マイグレーションは不要だが正常に完了したとみなす
+      }
+      if (!hasLegacyUserId) {
+        _logger.i('Firebase認証マイグレーション: レガシーユーザーIDが検出されません。マイグレーションは不要です');
         return true; // マイグレーションは不要だが正常に完了したとみなす
       }
 
@@ -113,7 +122,7 @@ class FirebaseAuthMigration implements MigrationInterface {
         user = _userService.user;
       }
 
-      // ユーザー情報がない場合または既に��証済みの場合はマイグレーション不要
+      // ユーザー情報がない場合または既に認証済みの場合はマイグレーション不要
       if (user == null || user.id.isEmpty || user.isAuthenticated) {
         _logger.d('Firebase認証マイグレーション: ユーザーが未登録または既に認証済みのため、マイグレーション処理をスキップします');
         return true; // マイグレーションは不要だが正常に完了したとみなす
@@ -131,7 +140,7 @@ class FirebaseAuthMigration implements MigrationInterface {
       // APIにサインアップリクエストを送信
       await _signupToRemote(user);
 
-      // マイグレーション後のユーザー情���を更新（認証済みフラグをtrueに設定）
+      // マイグレーション後のユーザー情報を更新（認証済みフラグをtrueに設定）
       User updatedUser = User(
         user.id,
         isAuthenticated: true,
@@ -145,7 +154,6 @@ class FirebaseAuthMigration implements MigrationInterface {
       // ユーザーサービスの情報も更新
       await _userService.refreshUser();
 
-      _logger.i('Firebase認証マイグレーション: マイグレーションが成功しました');
       return true;
     } catch (e) {
       _logger.e('Firebase認証マイグレーション中にエラーが発生しました: $e');

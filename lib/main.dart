@@ -9,13 +9,13 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/firebase_options.dart';
-import 'package:throwtrash/models/user.dart';
 import 'package:throwtrash/repository/account_link_api.dart';
 import 'package:throwtrash/repository/account_link_repository.dart';
 import 'package:throwtrash/repository/activation_api.dart';
 import 'package:throwtrash/repository/alarm_api.dart';
 import 'package:throwtrash/repository/alarm_repository.dart';
 import 'package:throwtrash/repository/app_config_provider.dart';
+import 'package:throwtrash/repository/app_version_repository.dart';
 import 'package:throwtrash/repository/auth_interceptor.dart';
 import 'package:throwtrash/repository/config_repository.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
@@ -38,6 +38,7 @@ import 'package:throwtrash/usecase/migration_service_interface.dart';
 import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
 import 'package:throwtrash/usecase/repository/account_link_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
+import 'package:throwtrash/usecase/repository/app_version_repository_interface.dart';
 import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:throwtrash/usecase/share_service.dart';
 import 'package:throwtrash/usecase/share_service_interface.dart';
@@ -72,15 +73,17 @@ Future<void> _initializeRepository() async {
 }
 
 Future<void> _runMigrations(UserServiceInterface userService) async {
+  AppVersionRepositoryInterface appVersionRepository = AppVersionRepository();
   // マイグレーションサービスを初期化
-  MigrationServiceInterface migrationService = MigrationService();
+  MigrationServiceInterface migrationService = MigrationService(appVersionRepository);
 
   // Firebase認証マイグレーションを登録（必要な依存関係は直接マイグレーションに注入）
   migrationService.registerMigration(
     FirebaseAuthMigration(
       UserApi(),
       UserRepository(),
-      userService
+      userService,
+      appVersionRepository
     )
   );
 

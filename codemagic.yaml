@@ -14,7 +14,7 @@ workflows:
         MINOR: "4"
         BUNDLE_ID: "net.mythrowaway.dev"
       flutter: fvm
-      xcode: 15.4
+      xcode: 16.3
       cocoapods: 1.14.3
       ruby: 3.2.1
     cache:
