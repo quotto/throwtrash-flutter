@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 import 'package:throwtrash/usecase/repository/environment_provider_interface.dart';
 
@@ -34,9 +35,10 @@ class AppConfigProvider implements AppConfigProviderInterface {
 
     // package_info_plusを使ってバージョン情報を取得してインスタンス変数に格納
     // flavorがdevの場合はサフィックスを付与する
-    String version = environmentProvider.versionName;
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String version = packageInfo.version;
     if(environmentProvider.flavor!="production") {
-      version = "$version${environmentProvider.appNameSuffix}";
+      version = "${version}-dev";
     }
     _instance!._version = version;
   }

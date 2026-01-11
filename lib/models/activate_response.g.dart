@@ -9,7 +9,7 @@ part of 'activate_response.dart';
 ActivateResponse _$ActivateResponseFromJson(Map<String, dynamic> json) =>
     ActivateResponse(
       json['description'] as String,
-      json['timestamp'] as int,
+      (json['timestamp'] as num).toInt(),
     );
 
 Map<String, dynamic> _$ActivateResponseToJson(ActivateResponse instance) =>

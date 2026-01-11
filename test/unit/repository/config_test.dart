@@ -22,7 +22,8 @@ void main(){
     });
 
     setUp(() {
-      ServicesBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
+      // ユニットテストでrootBundle.loadString()が使えないため、メッセージハンドラをモック化して返す値を指定する
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
         'flutter/assets',
             (ByteData? message) async {
           return ByteData.sublistView(
@@ -32,6 +33,18 @@ void main(){
           );
         },
       );
+      // ユニットテストではPackageInfo.fromPlatform()が使えないため、MethodChannelをモック化して返す値を指定する
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'),  (MethodCall methodCall) async {
+        if (methodCall.method == 'getAll') {
+          return <String, dynamic>{
+            'appName': 'net.mythrowaway',
+            'packageName': 'net.mythrowaway',
+            'version': '1.0.0',
+            'buildNumber': '1',
+          };
+        }
+        return null;
+      });
     });
     tearDown(() {
       AppConfigProvider.reset();
@@ -39,9 +52,6 @@ void main(){
     });
     test("複数回コンストラクタを実行した場合は同じインスタンスが返ること", () async {
       when(environmentProvider.flavor).thenReturn("development");
-      when(environmentProvider.versionName).thenReturn("1.0.0");
-      when(environmentProvider.appNameSuffix).thenReturn("-dev");
-      when(environmentProvider.appIdSuffix).thenReturn("-dev");
       when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
       await AppConfigProvider.initialize(environmentProvider);
       AppConfigProviderInterface config1 = AppConfigProvider();
@@ -49,64 +59,14 @@ void main(){
       expect(config1, config2);
     });
     test("flavorがproductionの場合はバージョンにサフィックスが付与されないこと",() async{
-      // Create a fake rootBundle
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
-        'flutter/assets',
-            (ByteData? message) async {
-          return ByteData.sublistView(
-              Uint8List.fromList(
-                  '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com"}'.codeUnits
-              )
-          );
-        },
-      );
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'),  (MethodCall methodCall) async {
-        if (methodCall.method == 'getAll') {
-          return <String, dynamic>{
-            'appName': 'net.mythrowaway',
-            'packageName': 'net.mythrowaway',
-            'version': '1.0.0',
-            'buildNumber': '1',
-          };
-        }
-        return null;
-      });
       when(environmentProvider.flavor).thenReturn("production");
-      when(environmentProvider.versionName).thenReturn("1.0.0");
-      when(environmentProvider.appNameSuffix).thenReturn(".prod");
-      when(environmentProvider.appIdSuffix).thenReturn(".prod");
       when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
       await AppConfigProvider.initialize(environmentProvider);
       AppConfigProvider config = AppConfigProvider();
       expect(config.version, "1.0.0");
     });
-    test("flavorがdevelopmentの場合はバージョンにサフィックスが付与されること",() async{
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
-        'flutter/assets',
-            (ByteData? message) async {
-          return ByteData.sublistView(
-              Uint8List.fromList(
-                  '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com"}'.codeUnits
-              )
-          );
-        },
-      );
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'),  (MethodCall methodCall) async {
-        if (methodCall.method == 'getAll') {
-          return <String, dynamic>{
-            'appName': 'net.mythrowaway',
-            'packageName': 'net.mythrowaway',
-            'version': '1.0.0',
-            'buildNumber': '1',
-          };
-        }
-        return null;
-      });
-
+    test("flavorがdevelopmentの場合はバージョン表示にサフィックスが付与されること",() async{
       when(environmentProvider.flavor).thenReturn("development");
-      when(environmentProvider.versionName).thenReturn("1.0.0");
-      when(environmentProvider.appNameSuffix).thenReturn("-dev");
-      when(environmentProvider.appIdSuffix).thenReturn("-dev");
       when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
       await AppConfigProvider.initialize(environmentProvider);
       AppConfigProviderInterface config = AppConfigProvider();
