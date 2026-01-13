@@ -26,8 +26,6 @@ extension SyncStatusHelper on SyncStatus {
         return 1;
       case SyncStatus.COMPLETE:
         return 2;
-      default:
-        return 0;
     }
   }
 }

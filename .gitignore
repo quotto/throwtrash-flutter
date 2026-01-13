@@ -60,5 +60,6 @@ android/app/google-services.json
 /.idea/copilot/chatSessions/blobs/version
 /.idea/copilot/chatSessions/xd.lck
 /.idea/copilot.*.xml
+/.idea/deviceManager.xml
 
 work/

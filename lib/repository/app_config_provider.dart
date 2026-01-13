@@ -12,6 +12,7 @@ class AppConfigProvider implements AppConfigProviderInterface {
   String _accountLinkErrorUrl="";
   String _version="";
   String _alarmApiUrl = "";
+  String test = "";
 
   factory AppConfigProvider() {
     if(_instance==null) {

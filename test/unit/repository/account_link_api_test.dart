@@ -3,7 +3,6 @@ AccountLinkApiのテスト
  */
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
-import 'package:http/testing.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/account_link_info.dart';
@@ -17,7 +16,6 @@ import 'account_link_api_test.mocks.dart' as mock;
 
 @GenerateNiceMocks([MockSpec<http.Client>(), MockSpec<AppConfigProviderInterface>()])
 void main () {
-  late AccountLinkApi accountLinkApi;
   mock.MockClient httpClient = mock.MockClient();
   mock.MockAppConfigProviderInterface appConfigProvider = mock.MockAppConfigProviderInterface();
   setUpAll(() => {
