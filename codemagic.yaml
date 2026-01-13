@@ -64,10 +64,6 @@ workflows:
         script: xcode-project use-profiles
       - name: Install dependencies
         script: flutter pub get
-      - name: Generate AppEnvironment.xcconfig
-        script: |
-          chmod +x ios/Flutter/generate_app_environment_xcconfig.sh
-          ios/Flutter/generate_app_environment_xcconfig.sh
       - name: Run linter
         script: flutter analyze
       - name: Install pods
@@ -162,10 +158,6 @@ workflows:
         script: xcode-project use-profiles
       - name: Install dependencies
         script: flutter pub get
-      - name: Generate AppEnvironment.xcconfig
-        script: |
-          chmod +x ios/Flutter/generate_app_environment_xcconfig.sh
-          ios/Flutter/generate_app_environment_xcconfig.sh
       - name: Install pods
         script: |
            find . -name "Podfile" -execdir pod install \;
