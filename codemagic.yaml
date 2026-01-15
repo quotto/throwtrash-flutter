@@ -13,6 +13,7 @@ workflows:
         MAJOR: "1"
         MINOR: "3"
         BUNDLE_ID: "net.mythrowaway.dev"
+        FLAVOR: "development"
       flutter: fvm
       xcode: 26.2
       cocoapods: 1.14.3
@@ -45,7 +46,7 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/development/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
-          echo -n ${FIREBASE_APPLICATION_ID} >> ios/.env
+          echo -n ${FIREBASE_APP_ID} >> ios/.env
           echo -n ${FLAVOR} >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
@@ -112,6 +113,7 @@ workflows:
         MAJOR: "1"
         MINOR: "3"
         BUNDLE_ID: "net.mythrowaway"
+        FLAVOR: "production"
       flutter: fvm
       xcode: 26.2
       cocoapods: 1.14.3
@@ -138,7 +140,7 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/production/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
-          echo -n ${FIREBASE_APPLICATION_ID} >> ios/.env
+          echo -n ${FIREBASE_APP_ID} >> ios/.env
           echo -n ${FLAVOR} >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
