@@ -13,7 +13,6 @@ workflows:
         MAJOR: "1"
         MINOR: "3"
         BUNDLE_ID: "net.mythrowaway.dev"
-        APP_FLAVOR: "development"
       flutter: fvm
       xcode: 26.2
       cocoapods: 1.14.3
@@ -113,7 +112,6 @@ workflows:
         MAJOR: "1"
         MINOR: "3"
         BUNDLE_ID: "net.mythrowaway"
-        APP_FLAVOR: "production"
       flutter: fvm
       xcode: 26.2
       cocoapods: 1.14.3
