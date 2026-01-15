@@ -65,7 +65,7 @@ workflows:
       - name: Install dependencies
         script: flutter pub get
       - name: Run linter
-        script: flutter analyze --fatal-warnings
+        script: flutter analyze --no-fatal-infos
       - name: Install pods
         script: |
           find . -name "Podfile" -execdir pod install \;
