@@ -60,4 +60,5 @@ android/app/google-services.json
 /.idea/copilot.*.xml
 /.idea/deviceManager.xml
 
+coverage/
 work/
