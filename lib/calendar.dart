@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:throwtrash/repository/app_config_provider.dart';
 import 'package:throwtrash/share.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';

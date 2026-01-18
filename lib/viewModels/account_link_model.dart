@@ -14,8 +14,6 @@ extension AccountLinkTypeExtension on AccountLinkType {
         return "ios";
       case AccountLinkType.Web:
         return "web";
-      default:
-        return "ios";
     }
   }
 }

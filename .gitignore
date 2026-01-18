@@ -21,7 +21,7 @@ projectFilesBackup*/
 .packages
 ### Xcode ###
 ## User settings
-ios/xcuserdata/
+ios/**/xcuserdata/
 ios/.symlinks
 
 ## Xcode 8 and earlier
@@ -29,9 +29,7 @@ ios/*.xcscmblueprint
 ios/*.xccheckout
 
 ### Xcode Patch ###
-ios/*.xcodeproj/*
 ios/!*.xcodeproj/project.pbxproj
-ios/!*.xcodeproj/xcshareddata/
 ios/!*.xcworkspace/contents.xcworkspacedata
 ios//*.gcno
 *.xcuserstate
@@ -45,8 +43,12 @@ ios/Flutter/flutter_export_environment.sh
 ios/Flutter/Generated.xcconfig
 ios/Flutter/Environment.xcconfig
 lib/generated_plugin_registrant.dart
+ios/Flutter/ephemeral/flutter_lldbinit
+ios/Flutter/ephemeral/flutter_lldb_helper.py
 
 .fvm/flutter_sdk
+.fvm/
+ios/.env
 GoogleService-Info.plist
 firebase.json
 firebase_options.dart
@@ -55,3 +57,8 @@ android/app/google-services.json
 /.idea/copilot/chatSessions/00000000000.xd
 /.idea/copilot/chatSessions/blobs/version
 /.idea/copilot/chatSessions/xd.lck
+/.idea/copilot.*.xml
+/.idea/deviceManager.xml
+
+coverage/
+work/
