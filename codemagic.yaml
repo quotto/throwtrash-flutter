@@ -46,8 +46,8 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/development/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
-          echo -n ${FIREBASE_APP_ID} >> ios/.env
-          echo -n ${FLAVOR} >> ios/.env
+          echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
+          echo "FLAVOR=${FLAVOR}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
@@ -140,8 +140,8 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/production/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
-          echo -n ${FIREBASE_APP_ID} >> ios/.env
-          echo -n ${FLAVOR} >> ios/.env
+          echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
+          echo "FLAVOR=${FLAVOR}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
