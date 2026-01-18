@@ -124,11 +124,11 @@ workflows:
         - ~/Library/Caches/CocoaPods
     triggering:
       events:
-        - push
+        - pull_request
       branch_patterns:
         - pattern: 'release'
           include: true
-          source: true
+          source: false
       cancel_previous_builds: false
     scripts:
       # Firebaseに必要な設定ファイルを環境変数から復元する。
@@ -182,7 +182,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - MyInternalGroup
+          - MyInternalTestTeam
       slack:
         channel: '#cicd'
         notify_on_build_start: false
