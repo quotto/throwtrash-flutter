@@ -1,5 +1,8 @@
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/repository/crash_report_interface.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
@@ -84,6 +87,33 @@ void main(){
       model.changeTrashType('other');
       model.changeTrashName('段ボール');
       expect(model.trash.trashVal, '段ボール');
+    });
+  });
+  group('loadModel', () {
+    test('取得したデータで編集対象が更新される', () {
+      TrashData trashData = TrashData(
+          id: '001',
+          type: 'other',
+          trashVal: '家電',
+          schedules: [TrashSchedule('weekday', '0')],
+          excludes: []);
+      when(_trashDataService.getTrashDataById('001')).thenReturn(trashData);
+
+      EditModel model = EditModel(_trashDataService);
+      bool result = model.loadModel('001');
+
+      expect(result, true);
+      expect(model.trash.type, 'other');
+      expect(model.trash.trashVal, '家電');
+    });
+
+    test('データが存在しない場合はfalseを返す', () {
+      when(_trashDataService.getTrashDataById('404')).thenReturn(null);
+
+      EditModel model = EditModel(_trashDataService);
+      bool result = model.loadModel('404');
+
+      expect(result, false);
     });
   });
 }

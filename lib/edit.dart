@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:throwtrash/viewModels/exclude_date_model.dart';
 
 class EditItemMain extends StatefulWidget {
-  String _id = "";
-  EditItemMain();
+  final String _id;
+  EditItemMain() : _id = "";
   EditItemMain.update(this._id);
 
   @override
@@ -20,6 +20,10 @@ class EditItemMain extends StatefulWidget {
 
 class _EditItemMainState extends State<EditItemMain> {
   final String _id;
+  final TextEditingController _otherTrashNameController = TextEditingController();
+  bool _isModelLoaded = false;
+  bool _isOtherTrashNameInitialized = false;
+  bool _loadFailed = false;
 
   _EditItemMainState(this._id);
 
@@ -61,6 +65,39 @@ class _EditItemMainState extends State<EditItemMain> {
   ];
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isModelLoaded) {
+      return;
+    }
+    if (_id.isNotEmpty) {
+      EditModel model = Provider.of<EditModel>(context, listen: false);
+      if (!model.loadModel(_id)) {
+        _loadFailed = true;
+      }
+    }
+    _syncOtherTrashNameFromModel();
+    _isModelLoaded = true;
+  }
+
+  @override
+  void dispose() {
+    _otherTrashNameController.dispose();
+    super.dispose();
+  }
+
+  void _syncOtherTrashNameFromModel() {
+    if (_isOtherTrashNameInitialized) {
+      return;
+    }
+    EditModel model = Provider.of<EditModel>(context, listen: false);
+    if (model.trash.type == 'other') {
+      _otherTrashNameController.text = model.trash.trashVal;
+    }
+    _isOtherTrashNameInitialized = true;
+  }
 
   Widget _scheduleInput(int scheduleNumber, TrashSchedule schedule) {
     EditModel model = Provider.of<EditModel>(context);
@@ -280,14 +317,11 @@ class _EditItemMainState extends State<EditItemMain> {
 
   @override
   Widget build(BuildContext context) {
-    EditModel model = Provider.of<EditModel>(context, listen: false);
     print('edit Id: $_id');
-    if(_id.isNotEmpty) {
-      if(!model.loadModel(_id)) {
-        return Center(
-            child: Text('データの読み込みに失敗しました')
-        );
-      }
+    if (_loadFailed) {
+      return Center(
+          child: Text('データの読み込みに失敗しました')
+      );
     }
     return Scaffold(
         appBar: AppBar(
@@ -308,6 +342,9 @@ class _EditItemMainState extends State<EditItemMain> {
                         onChanged: (newValue) {
                           if (newValue != null) {
                             editModel.changeTrashType(newValue);
+                            if (newValue != 'other') {
+                              _otherTrashNameController.text = '';
+                            }
                           }
                         },
                         items: TrashDataService.trashNameMap.keys
@@ -331,6 +368,7 @@ class _EditItemMainState extends State<EditItemMain> {
                           child: Container(
                               height: 100,
                               child: TextFormField(
+                                controller: _otherTrashNameController,
                                 maxLength: 20,
                                 maxLines: 1,
                                 decoration: InputDecoration(

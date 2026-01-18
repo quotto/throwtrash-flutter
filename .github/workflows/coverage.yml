@@ -1,0 +1,53 @@
+name: Unit Test Coverage
+
+on:
+  pull_request:
+    branches:
+      - release
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.1'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests with coverage
+        run: flutter test test/unit --coverage
+
+      - name: Calculate coverage
+        id: coverage
+        shell: bash
+        run: |
+          if [ ! -f coverage/lcov.info ]; then
+            echo "coverage/lcov.info not found" >&2
+            exit 1
+          fi
+          total=$(awk -F: '/^LF:/ {lf+=$2} /^LH:/ {lh+=$2} END { if (lf>0) printf "%.2f", (lh/lf)*100; else print "0.00"; }' coverage/lcov.info)
+          echo "total=${total}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment coverage on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const total = '${{ steps.coverage.outputs.total }}';
+            const body = `ユニットテストカバレッジ: ${total}%\n\n- workflow: ${process.env.GITHUB_WORKFLOW}\n- run: ${process.env.GITHUB_RUN_ID}\n- sha: ${process.env.GITHUB_SHA}\n- created: ${new Date().toISOString()}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

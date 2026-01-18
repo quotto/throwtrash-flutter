@@ -7,7 +7,6 @@ class UserApi extends UserApiInterface {
 
   UserApi(this._firebaseFirestore);
 
-  @override
   Future<bool> refreshDeviceToken(String userId, String deviceToken) async {
     return await _firebaseFirestore.collection('devices').doc(deviceToken).set({
       'userId': userId,
