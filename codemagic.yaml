@@ -50,13 +50,6 @@ workflows:
           echo "FLAVOR=${FLAVOR}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
-      # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
-      # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
-      # このため事前にbundle identifierをnet.mythrowaway.devに置換する
-      - name: Replace bundle identifier
-        script: |
-          #!/bin/bash
-          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway.dev;/g'
       # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
       - name: Install xcodeproj
         script: gem install xcodeproj cocoapods
