@@ -47,7 +47,6 @@ workflows:
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
           echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
-          echo "FLAVOR=${FLAVOR}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
       # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
@@ -72,7 +71,7 @@ workflows:
           flutter build ipa --release \
             --flavor development \
             --dart-define=alarmApiKey=${ALARM_API_KEY} \
-            --dart-define=FLAVOR=development \
+            --dart-define=flavor=development \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
@@ -134,7 +133,6 @@ workflows:
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
           echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
-          echo "FLAVOR=${FLAVOR}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
@@ -163,7 +161,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --flavor production \
-            --dart-define=FLAVOR=production \
+            --dart-define=flavor=production \
             --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
