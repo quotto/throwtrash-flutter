@@ -16,8 +16,8 @@ workflows:
         FLAVOR: "development"
       flutter: fvm
       xcode: 26.2
-      cocoapods: 1.14.3
-      ruby: 3.2.1
+      cocoapods: 1.16.2
+      ruby: 3.4.7
     cache:
       cache_paths:
         - ~/.pub-cache
