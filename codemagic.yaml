@@ -16,8 +16,8 @@ workflows:
         FLAVOR: "development"
       flutter: fvm
       xcode: 26.2
-      cocoapods: 1.14.3
-      ruby: 3.2.1
+      cocoapods: 1.16.2
+      ruby: 3.4.7
     cache:
       cache_paths:
         - ~/.pub-cache
@@ -46,17 +46,9 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/development/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/development/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
-          echo -n ${FIREBASE_APP_ID} >> ios/.env
-          echo -n ${FLAVOR} >> ios/.env
+          echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
-      # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
-      # bundle identifierはnet.mythrowaway${appIdSuffix}の形式で記載されており一致しないと判断され、次のステップでエラーが発生する。
-      # このため事前にbundle identifierをnet.mythrowaway.devに置換する
-      - name: Replace bundle identifier
-        script: |
-          #!/bin/bash
-          find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway.dev;/g'
       # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
       - name: Install xcodeproj
         script: gem install xcodeproj cocoapods
@@ -79,7 +71,7 @@ workflows:
           flutter build ipa --release \
             --flavor development \
             --dart-define=alarmApiKey=${ALARM_API_KEY} \
-            --dart-define=FLAVOR=development \
+            --dart-define=flavor=development \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
@@ -116,19 +108,19 @@ workflows:
         FLAVOR: "production"
       flutter: fvm
       xcode: 26.2
-      cocoapods: 1.14.3
-      ruby: 3.2.1
+      cocoapods: 1.16.2
+      ruby: 3.4.7
     cache:
       cache_paths:
         - ~/.pub-cache
         - ~/Library/Caches/CocoaPods
     triggering:
       events:
-        - push
+        - pull_request
       branch_patterns:
         - pattern: 'release'
           include: true
-          source: true
+          source: false
       cancel_previous_builds: false
     scripts:
       # Firebaseに必要な設定ファイルを環境変数から復元する。
@@ -140,8 +132,7 @@ workflows:
           echo -n ${FIREBASE_INFO} >> ./ios/production/firebase.json
           echo -n ${GOOGLE_SERVICE_INFO_PLIST} | base64 -d >> ios/production/GoogleService-Info.plist
           echo -n ${FIREBASE_OPTIONS} | base64 -d >> lib/firebase_options.dart
-          echo -n ${FIREBASE_APP_ID} >> ios/.env
-          echo -n ${FLAVOR} >> ios/.env
+          echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
       # Codemagicではxcode-project use-profilesでproject.pbxproj内のbundle identifierに一致する証明書とプロビジョニングファイルを取得する
@@ -170,7 +161,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --flavor production \
-            --dart-define=FLAVOR=production \
+            --dart-define=flavor=production \
             --dart-define=alarmApiKey=${ALARM_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
@@ -182,7 +173,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - MyInternalGroup
+          - MyInternalTestTeam
       slack:
         channel: '#cicd'
         notify_on_build_start: false
