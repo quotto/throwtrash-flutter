@@ -42,6 +42,7 @@ ios/Flutter/Flutter.podspec
 ios/Flutter/flutter_export_environment.sh
 ios/Flutter/Generated.xcconfig
 ios/Flutter/Environment.xcconfig
+lib/generated_plugin_registrant.dart
 ios/Flutter/ephemeral/flutter_lldbinit
 ios/Flutter/ephemeral/flutter_lldb_helper.py
 
