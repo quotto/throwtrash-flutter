@@ -3,12 +3,13 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:throwtrash/models/exclude_date.dart' as _i4;
 import 'package:throwtrash/models/trash_data.dart' as _i3;
-import 'package:throwtrash/usecase/sync_result.dart' as _i6;
+import 'package:throwtrash/usecase/sync_result.dart' as _i7;
 import 'package:throwtrash/usecase/trash_data_service.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -43,12 +44,20 @@ class MockTrashDataService extends _i1.Mock implements _i2.TrashDataService {
           as List<_i3.TrashData>);
 
   @override
-  _i4.Future<bool> refreshTrashData() =>
+  List<_i4.ExcludeDate> get globalExcludeDates =>
+      (super.noSuchMethod(
+            Invocation.getter(#globalExcludeDates),
+            returnValue: <_i4.ExcludeDate>[],
+          )
+          as List<_i4.ExcludeDate>);
+
+  @override
+  _i5.Future<bool> refreshTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#refreshTrashData, []),
-            returnValue: _i4.Future<bool>.value(false),
+            returnValue: _i5.Future<bool>.value(false),
           )
-          as _i4.Future<bool>);
+          as _i5.Future<bool>);
 
   @override
   String getTrashName({String? type = '', String? trashVal = ''}) =>
@@ -57,7 +66,7 @@ class MockTrashDataService extends _i1.Mock implements _i2.TrashDataService {
               #type: type,
               #trashVal: trashVal,
             }),
-            returnValue: _i5.dummyValue<String>(
+            returnValue: _i6.dummyValue<String>(
               this,
               Invocation.method(#getTrashName, [], {
                 #type: type,
@@ -81,28 +90,38 @@ class MockTrashDataService extends _i1.Mock implements _i2.TrashDataService {
           as _i3.TrashData?);
 
   @override
-  _i4.Future<bool> addTrashData(_i3.TrashData? trashData) =>
+  _i5.Future<bool> addTrashData(_i3.TrashData? trashData) =>
       (super.noSuchMethod(
             Invocation.method(#addTrashData, [trashData]),
-            returnValue: _i4.Future<bool>.value(false),
+            returnValue: _i5.Future<bool>.value(false),
           )
-          as _i4.Future<bool>);
+          as _i5.Future<bool>);
 
   @override
-  _i4.Future<bool> updateTrashData(_i3.TrashData? trashData) =>
+  _i5.Future<bool> updateTrashData(_i3.TrashData? trashData) =>
       (super.noSuchMethod(
             Invocation.method(#updateTrashData, [trashData]),
-            returnValue: _i4.Future<bool>.value(false),
+            returnValue: _i5.Future<bool>.value(false),
           )
-          as _i4.Future<bool>);
+          as _i5.Future<bool>);
 
   @override
-  _i4.Future<bool> deleteTrashData(String? id) =>
+  _i5.Future<bool> updateGlobalExcludeDates(
+    List<_i4.ExcludeDate>? excludeDates,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateGlobalExcludeDates, [excludeDates]),
+            returnValue: _i5.Future<bool>.value(false),
+          )
+          as _i5.Future<bool>);
+
+  @override
+  _i5.Future<bool> deleteTrashData(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteTrashData, [id]),
-            returnValue: _i4.Future<bool>.value(false),
+            returnValue: _i5.Future<bool>.value(false),
           )
-          as _i4.Future<bool>);
+          as _i5.Future<bool>);
 
   @override
   List<List<_i3.TrashData>> getEnableTrashList({
@@ -137,12 +156,12 @@ class MockTrashDataService extends _i1.Mock implements _i2.TrashDataService {
           as List<_i3.TrashData>);
 
   @override
-  _i4.Future<_i6.SyncResult> syncTrashData() =>
+  _i5.Future<_i7.SyncResult> syncTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#syncTrashData, []),
-            returnValue: _i4.Future<_i6.SyncResult>.value(
-              _i6.SyncResult.skipped,
+            returnValue: _i5.Future<_i7.SyncResult>.value(
+              _i7.SyncResult.skipped,
             ),
           )
-          as _i4.Future<_i6.SyncResult>);
+          as _i5.Future<_i7.SyncResult>);
 }

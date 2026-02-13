@@ -6,13 +6,14 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 import 'package:throwtrash/main.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
+import 'package:throwtrash/exclude_date.dart';
+import 'package:throwtrash/viewModels/exclude_date_model.dart';
 import 'package:throwtrash/viewModels/change_theme_model.dart';
 
 import 'widget_test.mocks.dart';
@@ -32,11 +33,14 @@ void main() {
   };
 
   // アプリのmain関数で初期化される変数をテスト実行前に初期化する。
-  setUpAll(() async{
+  setUpAll(() async {
     WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences.setMockInitialValues({});
 
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'), ((MethodCall methodCall) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+            MethodChannel('dev.fluttercommunity.plus/package_info'),
+            ((MethodCall methodCall) async {
       if (methodCall.method == 'getAll') {
         return <String, dynamic>{
           'appName': '今日のゴミ出し',
@@ -49,45 +53,46 @@ void main() {
     }));
   });
   setUp(() async {
-    when(trashDataService.syncTrashData()).thenAnswer((realInvocation) => Future.value(SyncResult.success));
-    when(trashDataService.getTrashName(type: anyNamed("type"), trashVal: anyNamed("trashVal"))).thenAnswer(
-            (realInvocation) {
-              return mockTrashNameMap[realInvocation.namedArguments[Symbol("type")]!]!;
-            }
-    );
+    when(trashDataService.syncTrashData())
+        .thenAnswer((realInvocation) => Future.value(SyncResult.success));
+    when(trashDataService.globalExcludeDates).thenReturn([]);
+    when(trashDataService.getTrashName(
+            type: anyNamed("type"), trashVal: anyNamed("trashVal")))
+        .thenAnswer((realInvocation) {
+      return mockTrashNameMap[realInvocation.namedArguments[Symbol("type")]!]!;
+    });
   });
   testWidgets('アプリ起動後のカレンダー画面の確認テスト', (WidgetTester tester) async {
     // モックの作成
     // 5 * 7 列のカレンダーを表示するため、5週間分のデータを返す
-    final result = List<List<TrashData>>.generate(35, (index) => [], growable: false);
+    final result =
+        List<List<TrashData>>.generate(35, (index) => [], growable: false);
     result[0].add(TrashData(id: "01", type: "burn", trashVal: ""));
     result[0].add(TrashData(id: "02", type: "unburn", trashVal: ""));
     result[34].add(TrashData(id: "03", type: "other", trashVal: "その他"));
-    when(trashDataService.getEnableTrashList(year: anyNamed("year"), month: anyNamed("month"),targetDateList: anyNamed("targetDateList"))).thenAnswer((realInvocation) => result);
+    when(trashDataService.getEnableTrashList(
+            year: anyNamed("year"),
+            month: anyNamed("month"),
+            targetDateList: anyNamed("targetDateList")))
+        .thenAnswer((realInvocation) => result);
 
     final accountLinkService = MockAccountLinkServiceInterface();
     final changeThemeModel = MockChangeThemeModel();
     final appConfigProvider = MockAppConfigProviderInterface();
     when(appConfigProvider.version).thenReturn("1.0.0");
-    await tester.pumpWidget(
-        MultiProvider(
-            providers: [
-              Provider<TrashDataServiceInterface>(
-                create: (context) => trashDataService,
-              ),
-              Provider<AccountLinkServiceInterface>(
-                  create: (context)=> accountLinkService
-              ),
-              Provider<AppConfigProviderInterface>(
-                  create: (context)=> appConfigProvider
-              ),
-              ChangeNotifierProvider<ChangeThemeModel>(
-                  create: (context)=> changeThemeModel
-              )],
-            child: MyApp()
+    await tester.pumpWidget(MultiProvider(providers: [
+      Provider<TrashDataServiceInterface>(
+        create: (context) => trashDataService,
+      ),
+      Provider<AccountLinkServiceInterface>(
+          create: (context) => accountLinkService),
+      Provider<AppConfigProviderInterface>(
+          create: (context) => appConfigProvider),
+      ChangeNotifierProvider<ChangeThemeModel>(
+          create: (context) => changeThemeModel)
+    ], child: MyApp()
         // MyApp()
-      )
-    );
+        ));
 
     // インジケーターが表示されることを確認
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -103,43 +108,38 @@ void main() {
     // key=weekday_labelのコンポーネントの子要素が7つあること
     // またテキストが順番に日月火水木金土であること
     final weekdayTexts = ['日', '月', '火', '水', '木', '金', '土'];
-    final childrenExpanded = find.descendant(of: find.byKey(Key('weekday_label_0')), matching: find.byType(Expanded));
-    expect(
-      childrenExpanded,
-      findsNWidgets(7)
-    );
-    int i=0;
+    final childrenExpanded = find.descendant(
+        of: find.byKey(Key('weekday_label_0')),
+        matching: find.byType(Expanded));
+    expect(childrenExpanded, findsNWidgets(7));
+    int i = 0;
     childrenExpanded.evaluate().forEach((element) {
       expect(
-        find.descendant(of: find.byWidget(element.widget), matching: find.text(weekdayTexts[i])),
-        findsOneWidget
-      );
+          find.descendant(
+              of: find.byWidget(element.widget),
+              matching: find.text(weekdayTexts[i])),
+          findsOneWidget);
       i++;
     });
 
     // key=calendar_columnのコンポーネントの子要素が6つあること
-    final childrenColumn = find.descendant(of: find.byKey(Key('calendar_column_0')), matching: find.byType(Flexible));
-    expect(
-      childrenColumn,
-      findsNWidgets(6)
-    );
+    final childrenColumn = find.descendant(
+        of: find.byKey(Key('calendar_column_0')),
+        matching: find.byType(Flexible));
+    expect(childrenColumn, findsNWidgets(6));
     // key=calendar_columnの2番目以降の子コンポーネントの子要素が7つあること
     // またそれぞれのテキストが数字であること
-    i=0;
+    i = 0;
     childrenColumn.evaluate().forEach((element) {
-      if(i>0){
-        final childrenExpanded = find.descendant(of: find.byWidget(element.widget), matching: find.byType(Expanded));
-        expect(
-          childrenExpanded,
-          findsNWidgets(7)
-        );
+      if (i > 0) {
+        final childrenExpanded = find.descendant(
+            of: find.byWidget(element.widget), matching: find.byType(Expanded));
+        expect(childrenExpanded, findsNWidgets(7));
         childrenExpanded.evaluate().forEach((element) {
-          final childrenTexts = find.descendant(of: find.byWidget(element.widget), matching: find.byType(Text));
+          final childrenTexts = find.descendant(
+              of: find.byWidget(element.widget), matching: find.byType(Text));
           final dateText = childrenTexts.first.evaluate().single.widget as Text;
-          expect(
-            int.tryParse(dateText.data!),
-            isNotNull
-          );
+          expect(int.tryParse(dateText.data!), isNotNull);
         });
       }
       i++;
@@ -147,33 +147,102 @@ void main() {
 
     // カレンダーの最初の日のゴミ出し情報が表示されていること
     final secondColumn = childrenColumn.at(1).evaluate().single.widget;
-    final secondColumnExpanded = find.descendant(of: find.byWidget(secondColumn), matching: find.byType(Expanded));
-    final secondColumnExpandedTexts = find.descendant(of: find.byWidget(secondColumnExpanded.first.evaluate().single.widget), matching: find.byType(Text));
+    final secondColumnExpanded = find.descendant(
+        of: find.byWidget(secondColumn), matching: find.byType(Expanded));
+    final secondColumnExpandedTexts = find.descendant(
+        of: find.byWidget(secondColumnExpanded.first.evaluate().single.widget),
+        matching: find.byType(Text));
+    expect(secondColumnExpandedTexts, findsNWidgets(3));
     expect(
-      secondColumnExpandedTexts,
-      findsNWidgets(3)
-    );
+        (secondColumnExpandedTexts.at(1).evaluate().single.widget as Text).data,
+        "燃えるゴミ");
     expect(
-      (secondColumnExpandedTexts.at(1).evaluate().single.widget as Text).data,
-      "燃えるゴミ"
-    );
-    expect(
-      (secondColumnExpandedTexts.at(2).evaluate().single.widget as Text).data,
-      "燃えないゴミ"
-    );
+        (secondColumnExpandedTexts.at(2).evaluate().single.widget as Text).data,
+        "燃えないゴミ");
 
     // カレンダーの最後の日のゴミ出し情報が表示されていること
     final lastColumn = childrenColumn.at(5).evaluate().single.widget;
-    final lastColumnExpanded = find.descendant(of: find.byWidget(lastColumn), matching: find.byType(Expanded));
-    final lastColumnExpandedTexts = find.descendant(of: find.byWidget(lastColumnExpanded.last.evaluate().single.widget), matching: find.byType(Text));
+    final lastColumnExpanded = find.descendant(
+        of: find.byWidget(lastColumn), matching: find.byType(Expanded));
+    final lastColumnExpandedTexts = find.descendant(
+        of: find.byWidget(lastColumnExpanded.last.evaluate().single.widget),
+        matching: find.byType(Text));
+    expect(lastColumnExpandedTexts, findsNWidgets(2));
     expect(
-      lastColumnExpandedTexts,
-      findsNWidgets(2)
-    );
-    expect(
-      (lastColumnExpandedTexts.at(1).evaluate().single.widget as Text).data,
-      "その他"
-    );
+        (lastColumnExpandedTexts.at(1).evaluate().single.widget as Text).data,
+        "その他");
+  });
 
+  testWidgets('ドロワーメニューの例外日が編集の直下に表示される', (WidgetTester tester) async {
+    final result =
+        List<List<TrashData>>.generate(35, (index) => [], growable: false);
+    when(
+      trashDataService.getEnableTrashList(
+        year: anyNamed("year"),
+        month: anyNamed("month"),
+        targetDateList: anyNamed("targetDateList"),
+      ),
+    ).thenAnswer((_) => result);
+
+    final accountLinkService = MockAccountLinkServiceInterface();
+    final changeThemeModel = MockChangeThemeModel();
+    final appConfigProvider = MockAppConfigProviderInterface();
+    when(appConfigProvider.version).thenReturn("1.0.0");
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<TrashDataServiceInterface>(
+              create: (context) => trashDataService),
+          Provider<AccountLinkServiceInterface>(
+              create: (context) => accountLinkService),
+          Provider<AppConfigProviderInterface>(
+              create: (context) => appConfigProvider),
+          ChangeNotifierProvider<ChangeThemeModel>(
+              create: (context) => changeThemeModel),
+        ],
+        child: MyApp(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    final scaffoldState = tester.state<ScaffoldState>(find.byType(Scaffold));
+    scaffoldState.openDrawer();
+    await tester.pumpAndSettle();
+
+    final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
+    int editIndex = -1;
+    int globalExcludeIndex = -1;
+    for (int i = 0; i < tiles.length; i++) {
+      final title = tiles[i].title;
+      if (title is Text && title.data == '編集') {
+        editIndex = i;
+      }
+      if (title is Text && title.data == '例外日') {
+        globalExcludeIndex = i;
+      }
+    }
+
+    expect(editIndex, isNonNegative);
+    expect(globalExcludeIndex, isNonNegative);
+    expect(globalExcludeIndex, editIndex + 1);
+  });
+
+  testWidgets('共通例外日画面で説明文が表示される', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChangeNotifierProvider<ExcludeViewModel>(
+          create: (_) => ExcludeViewModel.load([]),
+          child: ExcludeDateView(showGlobalDescription: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+          'この画面で設定した例外日は登録される全てのゴミの種類に適用されます。\n個別の例外日を設定する場合は各ゴミの登録画面から設定してください。'),
+      findsOneWidget,
+    );
   });
 }
