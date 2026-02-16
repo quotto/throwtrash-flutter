@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:throwtrash/main.dart';
+import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
@@ -244,5 +245,45 @@ void main() {
           'この画面で設定した例外日は登録される全てのゴミの種類に適用されます。\n個別の例外日を設定する場合は各ゴミの登録画面から設定してください。'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('個別例外日画面の日付テキスト色はテーマカラーに従う', (WidgetTester tester) async {
+    final theme = ThemeData(
+      brightness: Brightness.dark,
+      colorSchemeSeed: Colors.teal,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme,
+        home: ChangeNotifierProvider<ExcludeViewModel>(
+          create: (_) => ExcludeViewModel.load([ExcludeDate(1, 1)]),
+          child: ExcludeDateView(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final text = tester.widget<Text>(find.text('1月1日'));
+    expect(text.style?.color, theme.colorScheme.primary);
+  });
+
+  testWidgets('共通例外日画面の日付テキスト色はテーマカラーに従う', (WidgetTester tester) async {
+    final theme = ThemeData(
+      brightness: Brightness.dark,
+      colorSchemeSeed: Colors.teal,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme,
+        home: ChangeNotifierProvider<ExcludeViewModel>(
+          create: (_) => ExcludeViewModel.load([ExcludeDate(1, 1)]),
+          child: ExcludeDateView(showGlobalDescription: true),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final text = tester.widget<Text>(find.text('1月1日'));
+    expect(text.style?.color, theme.colorScheme.primary);
   });
 }

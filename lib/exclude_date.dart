@@ -121,10 +121,13 @@ class _ExcludeDateState extends State<ExcludeDateView> {
                               });
                             });
                       },
-                      child: Text('${pair[0]}月${pair[1]}日',
-                          style: TextStyle(
-                              fontSize: 32,
-                              color: Theme.of(context).primaryColor)),
+                      child: Text(
+                        '${pair[0]}月${pair[1]}日',
+                        style: TextStyle(
+                          fontSize: 32,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
                     ),
                     Padding(
                         padding: EdgeInsets.only(right: 16.0),
