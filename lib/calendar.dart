@@ -300,7 +300,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           title: Text("例外日"),
                           leading: Padding(
                               padding: const EdgeInsets.all(1.0),
-                              child: Icon(Icons.event_busy)),
+                              child: Icon(Icons.error)),
                           onTap: () {
                             Navigator.of(context).pop();
                             final trashDataService =
@@ -337,7 +337,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           title: Text("通知設定"),
                           leading: Padding(
                               padding: const EdgeInsets.all(1.0),
-                              child: Icon(Icons.alarm)),
+                              child: Icon(Icons.notifications_active)),
                           onTap: () {
                             Navigator.of(context).pop();
                             Navigator.push(
@@ -421,7 +421,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         title: Text("ライセンス"),
                         leading: Padding(
                             padding: const EdgeInsets.all(1.0),
-                            child: Icon(Icons.info)),
+                            child: Icon(Icons.lightbulb)),
                         onTap: () {
                           showLicensePage(
                               context: context,
