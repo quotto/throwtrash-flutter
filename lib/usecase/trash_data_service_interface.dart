@@ -1,13 +1,15 @@
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 
 abstract class TrashDataServiceInterface {
-  static Map<String, String> get trashNameMap=> {};
+  static Map<String, String> get trashNameMap => {};
 
   Future<bool> refreshTrashData();
 
   List<TrashData> get allTrashList;
-  String getTrashName({String type='', String trashVal=''});
+  List<ExcludeDate> get globalExcludeDates;
+  String getTrashName({String type = '', String trashVal = ''});
 
   /// 登録スケジュールの件数を返す
   int getScheduleCount();
@@ -17,6 +19,7 @@ abstract class TrashDataServiceInterface {
   Future<bool> deleteTrashData(String id);
   TrashData? getTrashDataById(String id);
   Future<bool> updateTrashData(TrashData trashData);
+  Future<bool> updateGlobalExcludeDates(List<ExcludeDate> excludeDates);
   Future<SyncResult> syncTrashData();
 
   /// 5週間分全てのゴミを返す
@@ -26,8 +29,10 @@ abstract class TrashDataServiceInterface {
   ///
   /// @return カレンダーのポジションごとのゴミ捨てリスト
   List<List<TrashData>> getEnableTrashList(
-      {required int year, required int month, required List<int> targetDateList
-      });
+      {required int year,
+      required int month,
+      required List<int> targetDateList});
 
-  List<TrashData> getTrashOfToday({required int year, required int month, required int date});
+  List<TrashData> getTrashOfToday(
+      {required int year, required int month, required int date});
 }

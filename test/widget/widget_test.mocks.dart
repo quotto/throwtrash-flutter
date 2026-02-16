@@ -3,20 +3,21 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
-import 'dart:ui' as _i9;
+import 'dart:async' as _i6;
+import 'dart:ui' as _i10;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:throwtrash/models/account_link_info.dart' as _i2;
+import 'package:throwtrash/models/exclude_date.dart' as _i5;
 import 'package:throwtrash/models/trash_data.dart' as _i4;
-import 'package:throwtrash/usecase/account_link_service_interface.dart' as _i10;
+import 'package:throwtrash/usecase/account_link_service_interface.dart' as _i11;
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart'
-    as _i12;
-import 'package:throwtrash/usecase/sync_result.dart' as _i7;
+    as _i13;
+import 'package:throwtrash/usecase/sync_result.dart' as _i8;
 import 'package:throwtrash/usecase/trash_data_service_interface.dart' as _i3;
-import 'package:throwtrash/viewModels/account_link_model.dart' as _i11;
-import 'package:throwtrash/viewModels/change_theme_model.dart' as _i8;
+import 'package:throwtrash/viewModels/account_link_model.dart' as _i12;
+import 'package:throwtrash/viewModels/change_theme_model.dart' as _i9;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -54,13 +55,22 @@ class MockTrashDataServiceInterface extends _i1.Mock
           as List<_i4.TrashData>);
 
   @override
-  _i5.Future<bool> refreshTrashData() =>
+  List<_i5.ExcludeDate> get globalExcludeDates =>
+      (super.noSuchMethod(
+            Invocation.getter(#globalExcludeDates),
+            returnValue: <_i5.ExcludeDate>[],
+            returnValueForMissingStub: <_i5.ExcludeDate>[],
+          )
+          as List<_i5.ExcludeDate>);
+
+  @override
+  _i6.Future<bool> refreshTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#refreshTrashData, []),
-            returnValue: _i5.Future<bool>.value(false),
-            returnValueForMissingStub: _i5.Future<bool>.value(false),
+            returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
-          as _i5.Future<bool>);
+          as _i6.Future<bool>);
 
   @override
   String getTrashName({String? type = '', String? trashVal = ''}) =>
@@ -69,14 +79,14 @@ class MockTrashDataServiceInterface extends _i1.Mock
               #type: type,
               #trashVal: trashVal,
             }),
-            returnValue: _i6.dummyValue<String>(
+            returnValue: _i7.dummyValue<String>(
               this,
               Invocation.method(#getTrashName, [], {
                 #type: type,
                 #trashVal: trashVal,
               }),
             ),
-            returnValueForMissingStub: _i6.dummyValue<String>(
+            returnValueForMissingStub: _i7.dummyValue<String>(
               this,
               Invocation.method(#getTrashName, [], {
                 #type: type,
@@ -96,22 +106,22 @@ class MockTrashDataServiceInterface extends _i1.Mock
           as int);
 
   @override
-  _i5.Future<bool> addTrashData(_i4.TrashData? trashData) =>
+  _i6.Future<bool> addTrashData(_i4.TrashData? trashData) =>
       (super.noSuchMethod(
             Invocation.method(#addTrashData, [trashData]),
-            returnValue: _i5.Future<bool>.value(false),
-            returnValueForMissingStub: _i5.Future<bool>.value(false),
+            returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
-          as _i5.Future<bool>);
+          as _i6.Future<bool>);
 
   @override
-  _i5.Future<bool> deleteTrashData(String? id) =>
+  _i6.Future<bool> deleteTrashData(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteTrashData, [id]),
-            returnValue: _i5.Future<bool>.value(false),
-            returnValueForMissingStub: _i5.Future<bool>.value(false),
+            returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
-          as _i5.Future<bool>);
+          as _i6.Future<bool>);
 
   @override
   _i4.TrashData? getTrashDataById(String? id) =>
@@ -122,26 +132,37 @@ class MockTrashDataServiceInterface extends _i1.Mock
           as _i4.TrashData?);
 
   @override
-  _i5.Future<bool> updateTrashData(_i4.TrashData? trashData) =>
+  _i6.Future<bool> updateTrashData(_i4.TrashData? trashData) =>
       (super.noSuchMethod(
             Invocation.method(#updateTrashData, [trashData]),
-            returnValue: _i5.Future<bool>.value(false),
-            returnValueForMissingStub: _i5.Future<bool>.value(false),
+            returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
-          as _i5.Future<bool>);
+          as _i6.Future<bool>);
 
   @override
-  _i5.Future<_i7.SyncResult> syncTrashData() =>
+  _i6.Future<bool> updateGlobalExcludeDates(
+    List<_i5.ExcludeDate>? excludeDates,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateGlobalExcludeDates, [excludeDates]),
+            returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  _i6.Future<_i8.SyncResult> syncTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#syncTrashData, []),
-            returnValue: _i5.Future<_i7.SyncResult>.value(
-              _i7.SyncResult.skipped,
+            returnValue: _i6.Future<_i8.SyncResult>.value(
+              _i8.SyncResult.skipped,
             ),
-            returnValueForMissingStub: _i5.Future<_i7.SyncResult>.value(
-              _i7.SyncResult.skipped,
+            returnValueForMissingStub: _i6.Future<_i8.SyncResult>.value(
+              _i8.SyncResult.skipped,
             ),
           )
-          as _i5.Future<_i7.SyncResult>);
+          as _i6.Future<_i8.SyncResult>);
 
   @override
   List<List<_i4.TrashData>> getEnableTrashList({
@@ -181,7 +202,7 @@ class MockTrashDataServiceInterface extends _i1.Mock
 /// A class which mocks [ChangeThemeModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockChangeThemeModel extends _i1.Mock implements _i8.ChangeThemeModel {
+class MockChangeThemeModel extends _i1.Mock implements _i9.ChangeThemeModel {
   @override
   bool get darkMode =>
       (super.noSuchMethod(
@@ -201,31 +222,31 @@ class MockChangeThemeModel extends _i1.Mock implements _i8.ChangeThemeModel {
           as bool);
 
   @override
-  _i5.Future<void> init() =>
+  _i6.Future<void> init() =>
       (super.noSuchMethod(
             Invocation.method(#init, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i5.Future<void> switchDarkMode() =>
+  _i6.Future<void> switchDarkMode() =>
       (super.noSuchMethod(
             Invocation.method(#switchDarkMode, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i10.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i10.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
     returnValueForMissingStub: null,
   );
@@ -247,52 +268,52 @@ class MockChangeThemeModel extends _i1.Mock implements _i8.ChangeThemeModel {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAccountLinkServiceInterface extends _i1.Mock
-    implements _i10.AccountLinkServiceInterface {
+    implements _i11.AccountLinkServiceInterface {
   @override
-  _i5.Future<_i2.AccountLinkInfo> startLink(
-    _i11.AccountLinkType? accountLinkType,
+  _i6.Future<_i2.AccountLinkInfo> startLink(
+    _i12.AccountLinkType? accountLinkType,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#startLink, [accountLinkType]),
-            returnValue: _i5.Future<_i2.AccountLinkInfo>.value(
+            returnValue: _i6.Future<_i2.AccountLinkInfo>.value(
               _FakeAccountLinkInfo_0(
                 this,
                 Invocation.method(#startLink, [accountLinkType]),
               ),
             ),
-            returnValueForMissingStub: _i5.Future<_i2.AccountLinkInfo>.value(
+            returnValueForMissingStub: _i6.Future<_i2.AccountLinkInfo>.value(
               _FakeAccountLinkInfo_0(
                 this,
                 Invocation.method(#startLink, [accountLinkType]),
               ),
             ),
           )
-          as _i5.Future<_i2.AccountLinkInfo>);
+          as _i6.Future<_i2.AccountLinkInfo>);
 
   @override
-  _i5.Future<_i2.AccountLinkInfo?> getAccountLinkInfoWithCode(String? code) =>
+  _i6.Future<_i2.AccountLinkInfo?> getAccountLinkInfoWithCode(String? code) =>
       (super.noSuchMethod(
             Invocation.method(#getAccountLinkInfoWithCode, [code]),
-            returnValue: _i5.Future<_i2.AccountLinkInfo?>.value(),
-            returnValueForMissingStub: _i5.Future<_i2.AccountLinkInfo?>.value(),
+            returnValue: _i6.Future<_i2.AccountLinkInfo?>.value(),
+            returnValueForMissingStub: _i6.Future<_i2.AccountLinkInfo?>.value(),
           )
-          as _i5.Future<_i2.AccountLinkInfo?>);
+          as _i6.Future<_i2.AccountLinkInfo?>);
 }
 
 /// A class which mocks [AppConfigProviderInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAppConfigProviderInterface extends _i1.Mock
-    implements _i12.AppConfigProviderInterface {
+    implements _i13.AppConfigProviderInterface {
   @override
   String get trashApiUrl =>
       (super.noSuchMethod(
             Invocation.getter(#trashApiUrl),
-            returnValue: _i6.dummyValue<String>(
+            returnValue: _i7.dummyValue<String>(
               this,
               Invocation.getter(#trashApiUrl),
             ),
-            returnValueForMissingStub: _i6.dummyValue<String>(
+            returnValueForMissingStub: _i7.dummyValue<String>(
               this,
               Invocation.getter(#trashApiUrl),
             ),
@@ -303,11 +324,11 @@ class MockAppConfigProviderInterface extends _i1.Mock
   String get mobileApiUrl =>
       (super.noSuchMethod(
             Invocation.getter(#mobileApiUrl),
-            returnValue: _i6.dummyValue<String>(
+            returnValue: _i7.dummyValue<String>(
               this,
               Invocation.getter(#mobileApiUrl),
             ),
-            returnValueForMissingStub: _i6.dummyValue<String>(
+            returnValueForMissingStub: _i7.dummyValue<String>(
               this,
               Invocation.getter(#mobileApiUrl),
             ),
@@ -318,11 +339,11 @@ class MockAppConfigProviderInterface extends _i1.Mock
   String get accountLinkErrorUrl =>
       (super.noSuchMethod(
             Invocation.getter(#accountLinkErrorUrl),
-            returnValue: _i6.dummyValue<String>(
+            returnValue: _i7.dummyValue<String>(
               this,
               Invocation.getter(#accountLinkErrorUrl),
             ),
-            returnValueForMissingStub: _i6.dummyValue<String>(
+            returnValueForMissingStub: _i7.dummyValue<String>(
               this,
               Invocation.getter(#accountLinkErrorUrl),
             ),
@@ -333,11 +354,11 @@ class MockAppConfigProviderInterface extends _i1.Mock
   String get version =>
       (super.noSuchMethod(
             Invocation.getter(#version),
-            returnValue: _i6.dummyValue<String>(
+            returnValue: _i7.dummyValue<String>(
               this,
               Invocation.getter(#version),
             ),
-            returnValueForMissingStub: _i6.dummyValue<String>(
+            returnValueForMissingStub: _i7.dummyValue<String>(
               this,
               Invocation.getter(#version),
             ),
@@ -348,11 +369,11 @@ class MockAppConfigProviderInterface extends _i1.Mock
   String get alarmApiUrl =>
       (super.noSuchMethod(
             Invocation.getter(#alarmApiUrl),
-            returnValue: _i6.dummyValue<String>(
+            returnValue: _i7.dummyValue<String>(
               this,
               Invocation.getter(#alarmApiUrl),
             ),
-            returnValueForMissingStub: _i6.dummyValue<String>(
+            returnValueForMissingStub: _i7.dummyValue<String>(
               this,
               Invocation.getter(#alarmApiUrl),
             ),

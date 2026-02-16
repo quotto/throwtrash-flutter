@@ -9,12 +9,13 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:throwtrash/models/activate_response.dart' as _i6;
 import 'package:throwtrash/models/calendar_model.dart' as _i10;
+import 'package:throwtrash/models/exclude_date.dart' as _i11;
 import 'package:throwtrash/models/trash_data.dart' as _i9;
 import 'package:throwtrash/models/user.dart' as _i2;
 import 'package:throwtrash/usecase/repository/activation_api_interface.dart'
     as _i3;
 import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
-    as _i11;
+    as _i12;
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
     as _i8;
 import 'package:throwtrash/usecase/user_service_interface.dart' as _i7;
@@ -195,13 +196,33 @@ class MockTrashRepositoryInterface extends _i1.Mock
             returnValue: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
+
+  @override
+  _i4.Future<List<_i11.ExcludeDate>> readGlobalExcludeDates() =>
+      (super.noSuchMethod(
+            Invocation.method(#readGlobalExcludeDates, []),
+            returnValue: _i4.Future<List<_i11.ExcludeDate>>.value(
+              <_i11.ExcludeDate>[],
+            ),
+          )
+          as _i4.Future<List<_i11.ExcludeDate>>);
+
+  @override
+  _i4.Future<bool> writeGlobalExcludeDates(
+    List<_i11.ExcludeDate>? excludeDates,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#writeGlobalExcludeDates, [excludeDates]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
 }
 
 /// A class which mocks [CrashReportInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCrashReportInterface extends _i1.Mock
-    implements _i11.CrashReportInterface {
+    implements _i12.CrashReportInterface {
   MockCrashReportInterface() {
     _i1.throwOnMissingStub(this);
   }

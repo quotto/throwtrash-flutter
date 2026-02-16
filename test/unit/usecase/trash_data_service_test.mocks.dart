@@ -7,17 +7,18 @@ import 'dart:async' as _i7;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:throwtrash/models/calendar_model.dart' as _i9;
-import 'package:throwtrash/models/trash_api_register_response.dart' as _i11;
+import 'package:throwtrash/models/exclude_date.dart' as _i10;
+import 'package:throwtrash/models/trash_api_register_response.dart' as _i12;
 import 'package:throwtrash/models/trash_data.dart' as _i8;
 import 'package:throwtrash/models/trash_sync_result.dart' as _i3;
 import 'package:throwtrash/models/trash_update_result.dart' as _i2;
 import 'package:throwtrash/models/user.dart' as _i4;
 import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
     as _i5;
-import 'package:throwtrash/usecase/repository/trash_api_interface.dart' as _i10;
+import 'package:throwtrash/usecase/repository/trash_api_interface.dart' as _i11;
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
     as _i6;
-import 'package:throwtrash/usecase/user_service_interface.dart' as _i12;
+import 'package:throwtrash/usecase/user_service_interface.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -161,34 +162,60 @@ class MockTrashRepositoryInterface extends _i1.Mock
             returnValueForMissingStub: _i7.Future<bool>.value(false),
           )
           as _i7.Future<bool>);
+
+  @override
+  _i7.Future<List<_i10.ExcludeDate>> readGlobalExcludeDates() =>
+      (super.noSuchMethod(
+            Invocation.method(#readGlobalExcludeDates, []),
+            returnValue: _i7.Future<List<_i10.ExcludeDate>>.value(
+              <_i10.ExcludeDate>[],
+            ),
+            returnValueForMissingStub: _i7.Future<List<_i10.ExcludeDate>>.value(
+              <_i10.ExcludeDate>[],
+            ),
+          )
+          as _i7.Future<List<_i10.ExcludeDate>>);
+
+  @override
+  _i7.Future<bool> writeGlobalExcludeDates(
+    List<_i10.ExcludeDate>? excludeDates,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#writeGlobalExcludeDates, [excludeDates]),
+            returnValue: _i7.Future<bool>.value(false),
+            returnValueForMissingStub: _i7.Future<bool>.value(false),
+          )
+          as _i7.Future<bool>);
 }
 
 /// A class which mocks [TrashApiInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
+class MockTrashApiInterface extends _i1.Mock implements _i11.TrashApiInterface {
   @override
-  _i7.Future<_i11.RegisterResponse?> registerUserAndTrashData(
+  _i7.Future<_i12.RegisterResponse?> registerUserAndTrashData(
     List<_i8.TrashData>? allTrashData,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#registerUserAndTrashData, [allTrashData]),
-            returnValue: _i7.Future<_i11.RegisterResponse?>.value(),
+            returnValue: _i7.Future<_i12.RegisterResponse?>.value(),
             returnValueForMissingStub:
-                _i7.Future<_i11.RegisterResponse?>.value(),
+                _i7.Future<_i12.RegisterResponse?>.value(),
           )
-          as _i7.Future<_i11.RegisterResponse?>);
+          as _i7.Future<_i12.RegisterResponse?>);
 
   @override
   _i7.Future<_i2.TrashUpdateResult> updateTrashData(
     String? id,
     List<_i8.TrashData>? localSchedule,
+    List<_i10.ExcludeDate>? globalExcludes,
     int? localTimestamp,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateTrashData, [
               id,
               localSchedule,
+              globalExcludes,
               localTimestamp,
             ]),
             returnValue: _i7.Future<_i2.TrashUpdateResult>.value(
@@ -197,6 +224,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
                 Invocation.method(#updateTrashData, [
                   id,
                   localSchedule,
+                  globalExcludes,
                   localTimestamp,
                 ]),
               ),
@@ -207,6 +235,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
                 Invocation.method(#updateTrashData, [
                   id,
                   localSchedule,
+                  globalExcludes,
                   localTimestamp,
                 ]),
               ),
@@ -238,7 +267,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i10.TrashApiInterface {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockUserServiceInterface extends _i1.Mock
-    implements _i12.UserServiceInterface {
+    implements _i13.UserServiceInterface {
   @override
   _i4.User get user =>
       (super.noSuchMethod(

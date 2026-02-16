@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/calendar_model.dart';
+import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,17 +11,20 @@ class TrashRepository implements TrashRepositoryInterface {
   static const TRASH_DATA_KEY = 'TRASH_DATA';
   static const LAST_UPDATE_TIME_KEY = 'LAST_UPDATE_TIME';
   static const SYNC_STATUS_KEY = 'SYNC_STATUS_KEY';
+  static const GLOBAL_EXCLUDES_KEY = 'GLOBAL_EXCLUDES';
   final _logger = Logger();
   late final SharedPreferences _preferences;
 
   static TrashRepository? _instance;
   TrashRepository._(this._preferences);
   static void initialize(SharedPreferences _preferences) {
-    if(_instance != null) throw StateError('TrashRepository is already initialized');
+    if (_instance != null)
+      throw StateError('TrashRepository is already initialized');
     _instance = TrashRepository._(_preferences);
   }
+
   factory TrashRepository() {
-    if(_instance == null) {
+    if (_instance == null) {
       throw StateError('TrashRepository is not initialized');
     }
     return _instance!;
@@ -30,7 +34,7 @@ class TrashRepository implements TrashRepositoryInterface {
   Future<List<TrashData>> readAllTrashData() async {
     List<String>? rawList = this._preferences.getStringList(TRASH_DATA_KEY);
 
-    if(rawList != null && rawList.isNotEmpty) {
+    if (rawList != null && rawList.isNotEmpty) {
       _logger.d("Read all trash data: " + rawList.join("\n"));
       return rawList.map<TrashData>((element) {
         return TrashData.fromJson(jsonDecode(element));
@@ -44,14 +48,16 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<bool> insertTrashData(TrashData trashData) async {
     _logger.d("Insert trash data: " + json.encode(trashData.toJson()));
-    List<String>? allTrashData  = this._preferences.getStringList(TRASH_DATA_KEY);
-    if(allTrashData != null && allTrashData.isNotEmpty) {
+    List<String>? allTrashData =
+        this._preferences.getStringList(TRASH_DATA_KEY);
+    if (allTrashData != null && allTrashData.isNotEmpty) {
       bool check = allTrashData.every((element) {
-        TrashData data  = TrashData.fromJson(jsonDecode(element));
+        TrashData data = TrashData.fromJson(jsonDecode(element));
         return data.id != trashData.id;
       });
-      if(!check) {
-        _logger.e("Failed insert trash data, trash data exist: " + trashData.id);
+      if (!check) {
+        _logger
+            .e("Failed insert trash data, trash data exist: " + trashData.id);
         return false;
       }
       allTrashData.add(jsonEncode(trashData.toJson()));
@@ -65,31 +71,36 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<bool> updateTrashData(TrashData trashData) async {
     _logger.d("Update trash data: " + json.encode(trashData.toJson()));
-    List<String>? allTrashData  = this._preferences.getStringList(TRASH_DATA_KEY);
-    if(allTrashData != null && allTrashData.isNotEmpty) {
-      for(int index=0; index < allTrashData.length; index++) {
-        TrashData data  = TrashData.fromJson(jsonDecode(allTrashData[index]));
-        if(data.id == trashData.id) {
+    List<String>? allTrashData =
+        this._preferences.getStringList(TRASH_DATA_KEY);
+    if (allTrashData != null && allTrashData.isNotEmpty) {
+      for (int index = 0; index < allTrashData.length; index++) {
+        TrashData data = TrashData.fromJson(jsonDecode(allTrashData[index]));
+        if (data.id == trashData.id) {
           allTrashData[index] = jsonEncode(trashData.toJson());
           return this._preferences.setStringList(TRASH_DATA_KEY, allTrashData);
         }
       }
     }
-    _logger.e("Failed update trash data, trash data not exists: " + trashData.id);
+    _logger
+        .e("Failed update trash data, trash data not exists: " + trashData.id);
     return false;
   }
 
   @override
   Future<bool> deleteTrashData(String id) async {
     _logger.d("Delete trash data: $id");
-    List<String>? allTrashData  = this._preferences.getStringList(TRASH_DATA_KEY);
-    if(allTrashData != null && allTrashData.length > 0) {
+    List<String>? allTrashData =
+        this._preferences.getStringList(TRASH_DATA_KEY);
+    if (allTrashData != null && allTrashData.length > 0) {
       for (int index = 0; index < allTrashData.length; index++) {
-        TrashData trashData = TrashData.fromJson(
-            jsonDecode(allTrashData[index]));
-        if(trashData.id == id) {
+        TrashData trashData =
+            TrashData.fromJson(jsonDecode(allTrashData[index]));
+        if (trashData.id == id) {
           allTrashData.removeAt(index);
-          return await this._preferences.setStringList(TRASH_DATA_KEY, allTrashData);
+          return await this
+              ._preferences
+              .setStringList(TRASH_DATA_KEY, allTrashData);
         }
       }
     }
@@ -108,11 +119,13 @@ class TrashRepository implements TrashRepositoryInterface {
   @override
   Future<bool> updateLastUpdateTime(int updateTimestamp) async {
     _logger.d("Update lastUpdateTime: $updateTimestamp");
-    return await this._preferences.setInt(LAST_UPDATE_TIME_KEY, updateTimestamp);
+    return await this
+        ._preferences
+        .setInt(LAST_UPDATE_TIME_KEY, updateTimestamp);
   }
 
   @override
-  Future<bool> truncateAllTrashData() async{
+  Future<bool> truncateAllTrashData() async {
     _logger.d("truncate trash data");
     return await this._preferences.remove(TRASH_DATA_KEY);
   }
@@ -121,7 +134,7 @@ class TrashRepository implements TrashRepositoryInterface {
   Future<SyncStatus> getSyncStatus() async {
     _logger.d("get sync status");
     int? value = this._preferences.getInt(SYNC_STATUS_KEY);
-    if(value == null) {
+    if (value == null) {
       return SyncStatus.SYNCING;
     } else {
       return SyncStatusHelper.toSyncStatus(value);
@@ -134,4 +147,22 @@ class TrashRepository implements TrashRepositoryInterface {
     return preferences.setInt(SYNC_STATUS_KEY, syncStatus.toInt());
   }
 
+  @override
+  Future<List<ExcludeDate>> readGlobalExcludeDates() async {
+    List<String>? rawList = _preferences.getStringList(GLOBAL_EXCLUDES_KEY);
+    if (rawList == null || rawList.isEmpty) {
+      return [];
+    }
+    return rawList.map((element) {
+      return ExcludeDate.fromJson(jsonDecode(element));
+    }).toList();
+  }
+
+  @override
+  Future<bool> writeGlobalExcludeDates(List<ExcludeDate> excludeDates) async {
+    final rawList = excludeDates.map((element) {
+      return jsonEncode(element.toJson());
+    }).toList();
+    return _preferences.setStringList(GLOBAL_EXCLUDES_KEY, rawList);
+  }
 }
