@@ -14,6 +14,10 @@ TrashApiSyncDataResponse _$TrashApiSyncDataResponseFromJson(
   json['platform'] as String,
   json['shared_id'] as String?,
   (json['timestamp'] as num).toInt(),
+  (json['globalExcludes'] as List<dynamic>?)
+          ?.map((e) => ExcludeDate.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [],
 );
 
 Map<String, dynamic> _$TrashApiSyncDataResponseToJson(
@@ -24,4 +28,5 @@ Map<String, dynamic> _$TrashApiSyncDataResponseToJson(
   'timestamp': instance.timestamp,
   'platform': instance.platform,
   'shared_id': instance.sharedId,
+  'globalExcludes': instance.globalExcludes,
 };

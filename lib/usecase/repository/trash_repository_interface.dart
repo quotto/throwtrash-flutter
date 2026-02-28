@@ -1,4 +1,5 @@
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/exclude_date.dart';
 
 import '../../models/calendar_model.dart';
 
@@ -12,4 +13,6 @@ abstract class TrashRepositoryInterface {
   Future<bool> truncateAllTrashData();
   Future<SyncStatus> getSyncStatus();
   Future<bool> setSyncStatus(SyncStatus syncStatus);
+  Future<List<ExcludeDate>> readGlobalExcludeDates();
+  Future<bool> writeGlobalExcludeDates(List<ExcludeDate> excludeDates);
 }
