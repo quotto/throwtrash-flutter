@@ -41,6 +41,7 @@ class AlarmApi implements AlarmApiInterface {
   @override
   Future<bool> setAlarm(Alarm alarm, String deviceToken ,User user) async {
     Uri endpointUri = Uri.parse("${this._alarmApiUrl}/create");
+    _logger.d("nextDayNotificationEnabled: ${alarm.nextDayNotificationEnabled}");
     try {
       http.Response response = await this._httpClient.post(
           endpointUri,
@@ -51,7 +52,8 @@ class AlarmApi implements AlarmApiInterface {
               "minute": alarm.minute
             },
             "user_id": user.id,
-            "platform": "ios"
+            "platform": "ios",
+            "next_day_notification_enabled": alarm.nextDayNotificationEnabled
           }),
           headers: {
             "Content-Type": "application/json",
@@ -105,7 +107,6 @@ class AlarmApi implements AlarmApiInterface {
   @override
   Future<bool> changeAlarm(Alarm alarm, String deviceToken) async {
     Uri endpointUri = Uri.parse("${this._alarmApiUrl}/update");
-
     try {
       http.Response response = await this._httpClient.put(
           endpointUri,
@@ -114,7 +115,8 @@ class AlarmApi implements AlarmApiInterface {
             "alarm_time": {
               "hour": alarm.hour,
               "minute": alarm.minute
-            }
+            },
+            "next_day_notification_enabled": alarm.nextDayNotificationEnabled
           }),
           headers: {
             "Content-Type": "application/json",

@@ -49,6 +49,13 @@ class _AlarmPage extends State<AlarmPage> {
                     _alarmModel.toggleAlarmEnabled();
                   },
                 ),
+                SwitchListTile(
+                  title: Text('翌日のゴミ出しを通知する'),
+                  value: _alarmModel.nextDayNotificationEnabled,
+                  onChanged: (value) {
+                    _alarmModel.toggleNextDayNotificationEnabled();
+                  },
+                ),
                 ListTile(
                   title: Text('通知時刻'),
                   trailing: Text('${_alarmModel.hourString}:${_alarmModel.minuteString}'),
