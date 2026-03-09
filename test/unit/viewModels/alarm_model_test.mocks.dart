@@ -44,18 +44,28 @@ class MockAlarmServiceInterface extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  _i4.Future<bool> enableAlarm({required int? hour, required int? minute}) =>
+  _i4.Future<bool> enableAlarm({
+    required int? hour,
+    required int? minute,
+    required bool? nextDayNotificationEnabled,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#enableAlarm, [], {#hour: hour, #minute: minute}),
+            Invocation.method(#enableAlarm, [], {
+              #hour: hour,
+              #minute: minute,
+              #nextDayNotificationEnabled: nextDayNotificationEnabled,
+            }),
             returnValue: _i4.Future<bool>.value(false),
             returnValueForMissingStub: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
 
   @override
-  _i4.Future<bool> cancelAlarm() =>
+  _i4.Future<bool> cancelAlarm({bool? nextDayNotificationEnabled}) =>
       (super.noSuchMethod(
-            Invocation.method(#cancelAlarm, []),
+            Invocation.method(#cancelAlarm, [], {
+              #nextDayNotificationEnabled: nextDayNotificationEnabled,
+            }),
             returnValue: _i4.Future<bool>.value(false),
             returnValueForMissingStub: _i4.Future<bool>.value(false),
           )
@@ -65,11 +75,13 @@ class MockAlarmServiceInterface extends _i1.Mock
   _i4.Future<bool> changeAlarmTime({
     required int? hour,
     required int? minute,
+    required bool? nextDayNotificationEnabled,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#changeAlarmTime, [], {
               #hour: hour,
               #minute: minute,
+              #nextDayNotificationEnabled: nextDayNotificationEnabled,
             }),
             returnValue: _i4.Future<bool>.value(false),
             returnValueForMissingStub: _i4.Future<bool>.value(false),

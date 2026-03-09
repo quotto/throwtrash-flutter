@@ -27,7 +27,7 @@ void main() {
   });
   group("setAlarm", () {
     test("setAlarmでアラーム情報が更新されること", () async {
-      final testAlarm = Alarm(12, 30, true);
+      final testAlarm = Alarm(12, 30, true, true);
       when(httpClient.post(any, body: anyNamed("body"), headers: anyNamed("headers"))).thenAnswer((_) async {
         return Response('{"hour": 12, "minute": 30, "isEnable": true}', 200, headers: {"Content-Type": "application/json"}, request: http.Request("POST", Uri.parse("https://example.com/create")));
       });
@@ -44,7 +44,8 @@ void main() {
           "minute": 30
         },
         "user_id": "test_id",
-        "platform": "ios"
+        "platform": "ios",
+        "next_day_notification_enabled": true
       }));
       expect(captured[2], {
         "Content-Type": "application/json",
@@ -67,6 +68,28 @@ void main() {
       expect(alarmApi.setAlarm(Alarm(12, 30, true), "test_token", user), throwsException);
     });
   });
+
+  group("changeAlarm", () {
+    test("changeAlarmで更新APIに翌日通知フラグが送信されること", () async {
+      when(httpClient.put(any, body: anyNamed("body"), headers: anyNamed("headers"))).thenAnswer((_) async {
+        return Response('{"result": "success"}', 200, headers: {"Content-Type": "application/json"}, request: http.Request("PUT", Uri.parse("https://example.com/update")));
+      });
+
+      bool result = await alarmApi.changeAlarm(Alarm(8, 15, true, true), "device_token");
+      expect(result, true);
+      final captured = verify(httpClient.put(captureAny, body: captureAnyNamed("body"), headers: captureAnyNamed("headers"))).captured;
+      expect(captured[0], Uri.parse("https://example.com/update"));
+      expect(captured[1], jsonEncode({
+        "device_token": "device_token",
+        "alarm_time": {
+          "hour": 8,
+          "minute": 15
+        },
+        "next_day_notification_enabled": true
+      }));
+    });
+  });
+
   group("cancelAlarm",() {
     test("cancelAlarmでアラーム情報が削除されること", () async {
       when(httpClient.delete(any, body: anyNamed("body"), headers: anyNamed("headers"))).thenAnswer((_) async {

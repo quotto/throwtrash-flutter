@@ -11,6 +11,7 @@ enum AlarmSubmitState {
 class AlarmModel extends ChangeNotifier {
   bool _lastAlarmState = false;
   bool _isAlarmEnabled = false;
+  bool _nextDayNotificationEnabled = false;
   int _hour = 0;
   int _minute = 0;
   AlarmSubmitState _submitState = AlarmSubmitState.INIT;
@@ -25,12 +26,14 @@ class AlarmModel extends ChangeNotifier {
       _lastAlarmState = alarm.isEnable;
       _hour = alarm.hour;
       _minute = alarm.minute;
+      _nextDayNotificationEnabled = alarm.nextDayNotificationEnabled;
       _logger.d("initialize alarm-> $_hour:$_minute, enable:$_isAlarmEnabled");
       notifyListeners();
     });
   }
 
   bool get isAlarmEnabled => _isAlarmEnabled;
+  bool get nextDayNotificationEnabled => _nextDayNotificationEnabled;
   int get hour => _hour;
   int get minute => _minute;
   String get hourString =>  _hour.toString().padLeft(2, '0');
@@ -50,8 +53,14 @@ class AlarmModel extends ChangeNotifier {
     _logger.d("set alarm time-> $_hour:$_minute");
   }
 
+  void toggleNextDayNotificationEnabled() {
+    _nextDayNotificationEnabled = !_nextDayNotificationEnabled;
+    notifyListeners();
+    _logger.d("toggle next day notification-> $_nextDayNotificationEnabled");
+  }
+
   Future<void> submitAlarmTime() async {
-    _logger.d("submit alarm time-> $_hour:$_minute");
+    _logger.d("submit alarm time-> $_hour:$_minute, nextDayNotificationEnabled:$_nextDayNotificationEnabled");
     if(_submitState == AlarmSubmitState.SUBMITTING) {
       return;
     }
@@ -60,11 +69,21 @@ class AlarmModel extends ChangeNotifier {
 
     bool result = false;
     if(isAlarmEnabled && ! _lastAlarmState) {
-      result = await _alarmService.enableAlarm(hour: _hour, minute: _minute);
+      result = await _alarmService.enableAlarm(
+        hour: _hour,
+        minute: _minute,
+        nextDayNotificationEnabled: _nextDayNotificationEnabled,
+      );
     } else if(!isAlarmEnabled) {
-      result = await _alarmService.cancelAlarm();
+      result = await _alarmService.cancelAlarm(
+        nextDayNotificationEnabled: _nextDayNotificationEnabled,
+      );
     } else if(isAlarmEnabled && _lastAlarmState){
-      result = await _alarmService.changeAlarmTime(hour: _hour, minute: _minute);
+      result = await _alarmService.changeAlarmTime(
+        hour: _hour,
+        minute: _minute,
+        nextDayNotificationEnabled: _nextDayNotificationEnabled,
+      );
     }
     _submitState = result ? AlarmSubmitState.COMPLETE : AlarmSubmitState.ERROR;
     notifyListeners();

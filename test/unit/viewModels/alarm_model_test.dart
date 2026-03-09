@@ -15,144 +15,75 @@ import 'alarm_model_test.mocks.dart';
 void main() {
   final MockAlarmServiceInterface alarmService = MockAlarmServiceInterface();
 
-  setUp(() {
-  });
-
   group('initialize', () {
     test('初期化のテスト', () async {
-      when(alarmService.getAlarm())
-        .thenAnswer((_) async => Alarm(12, 30, true));
+      when(alarmService.getAlarm()).thenAnswer((_) async => Alarm(12, 30, true, true));
 
       final AlarmModel alarmModel = AlarmModel(alarmService);
       await _waitFor((){alarmModel.initialize();}, alarmModel);
       expect(alarmModel.hour, 12);
       expect(alarmModel.minute, 30);
       expect(alarmModel.isAlarmEnabled, true);
+      expect(alarmModel.nextDayNotificationEnabled, true);
     });
   });
-  group('toggleAlarmEnabled', () {
-    test('アラームの有効無効を切り替える-初期状態が有効', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(12, 30, true));
 
+  group('toggleNextDayNotificationEnabled', () {
+    test('翌日通知の有効無効を切り替える', () async {
+      when(alarmService.getAlarm()).thenAnswer((_) async => Alarm(12, 30, true, false));
       final AlarmModel alarmModel = AlarmModel(alarmService);
       await _waitFor((){alarmModel.initialize();}, alarmModel);
 
-      await _waitFor(()=>alarmModel.toggleAlarmEnabled(), alarmModel);
-      expect(alarmModel.isAlarmEnabled, false);
+      await _waitFor(() => alarmModel.toggleNextDayNotificationEnabled(), alarmModel);
+      expect(alarmModel.nextDayNotificationEnabled, true);
 
-      await _waitFor(()=>alarmModel.toggleAlarmEnabled(), alarmModel);
-      expect(alarmModel.isAlarmEnabled, true);
-    });
-    test('アラームの有効無効を切り替える-初期状態が無効', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(12, 30, false));
-
-      final AlarmModel alarmModel = AlarmModel(alarmService);
-      await _waitFor((){alarmModel.initialize();}, alarmModel);
-
-      await _waitFor(()=>alarmModel.toggleAlarmEnabled(), alarmModel);
-      expect(alarmModel.isAlarmEnabled, true);
-
-      await _waitFor(()=>alarmModel.toggleAlarmEnabled(), alarmModel);
-      expect(alarmModel.isAlarmEnabled, false);
+      await _waitFor(() => alarmModel.toggleNextDayNotificationEnabled(), alarmModel);
+      expect(alarmModel.nextDayNotificationEnabled, false);
     });
   });
-  group('setAlarmTime', () {
-    test('アラームの時間を設定する', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(0, 0, false));
 
-      final AlarmModel alarmModel = AlarmModel(alarmService);
-      await _waitFor((){alarmModel.initialize();}, alarmModel);
-
-      await _waitFor(()=>alarmModel.setAlarmTime(12, 30), alarmModel);
-      expect(alarmModel.hour, 12);
-      expect(alarmModel.minute, 30);
-    });
-  });
   group('submitAlarmTime', () {
-    test('新規有効化', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(0, 0, false));
-      when(alarmService.enableAlarm(hour: 0, minute: 0))
+    test('新規有効化時に翌日通知フラグを渡す', () async {
+      when(alarmService.getAlarm()).thenAnswer((_) async => Alarm(0, 0, false, false));
+      when(alarmService.enableAlarm(hour: 0, minute: 0, nextDayNotificationEnabled: true))
           .thenAnswer((_) async => true);
 
       final AlarmModel alarmModel = AlarmModel(alarmService);
       await _waitFor((){alarmModel.initialize();}, alarmModel);
-
-      await _waitFor((){alarmModel.toggleAlarmEnabled();}, alarmModel);
-      expect(alarmModel.isAlarmEnabled, true);
-
-      await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
-      verify(alarmService.enableAlarm(hour: 0, minute: 0));
-      expect(alarmModel.submitState, AlarmSubmitState.INIT);
-    });
-    test('有効から無効に変更', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(0, 0, true));
-      when(alarmService.cancelAlarm())
-          .thenAnswer((_) async => true);
-
-      final AlarmModel alarmModel = AlarmModel(alarmService);
-      await _waitFor((){alarmModel.initialize();}, alarmModel);
-
-      await _waitFor((){alarmModel.toggleAlarmEnabled();}, alarmModel);
+      await _waitFor(() => alarmModel.toggleAlarmEnabled(), alarmModel);
+      await _waitFor(() => alarmModel.toggleNextDayNotificationEnabled(), alarmModel);
 
       await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
-      verify(alarmService.cancelAlarm());
+      verify(alarmService.enableAlarm(hour: 0, minute: 0, nextDayNotificationEnabled: true));
       expect(alarmModel.submitState, AlarmSubmitState.INIT);
     });
-    test('無効から有効に変更', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(0, 0, false));
-      when(alarmService.enableAlarm(hour: 0, minute: 0))
-          .thenAnswer((_) async => true);
 
-      late AlarmModel alarmModel = AlarmModel(alarmService);
-      await _waitFor((){alarmModel.initialize();}, alarmModel);
-
-      await _waitFor(()=>alarmModel.toggleAlarmEnabled(), alarmModel);
-
-      await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
-      verify(alarmService.enableAlarm(hour: 0, minute: 0));
-      expect(alarmModel.submitState, AlarmSubmitState.INIT);
-    });
-    test('有効状態で時間を変更', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(0, 0, true));
-      when(alarmService.changeAlarmTime(hour: 12, minute: 30))
+    test('有効状態で更新時に翌日通知フラグを渡す', () async {
+      when(alarmService.getAlarm()).thenAnswer((_) async => Alarm(0, 0, true, false));
+      when(alarmService.changeAlarmTime(hour: 12, minute: 30, nextDayNotificationEnabled: true))
           .thenAnswer((_) async => true);
 
       final AlarmModel alarmModel = AlarmModel(alarmService);
       await _waitFor((){alarmModel.initialize();}, alarmModel);
       await _waitFor(()=>alarmModel.setAlarmTime(12, 30), alarmModel);
+      await _waitFor(() => alarmModel.toggleNextDayNotificationEnabled(), alarmModel);
+
       await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
-      verify(alarmService.changeAlarmTime(hour: 12, minute: 30));
+      verify(alarmService.changeAlarmTime(hour: 12, minute: 30, nextDayNotificationEnabled: true));
       expect(alarmModel.submitState, AlarmSubmitState.INIT);
     });
-    test('有効状態で何も変更しない',() async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(12, 30, true));
+
+    test('無効化時に翌日通知フラグを渡す', () async {
+      when(alarmService.getAlarm()).thenAnswer((_) async => Alarm(0, 0, true, false));
+      when(alarmService.cancelAlarm(nextDayNotificationEnabled: true)).thenAnswer((_) async => true);
 
       final AlarmModel alarmModel = AlarmModel(alarmService);
       await _waitFor((){alarmModel.initialize();}, alarmModel);
-      await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
-      verify(alarmService.changeAlarmTime(hour: 12, minute: 30));
-      expect(alarmModel.submitState, AlarmSubmitState.INIT);
-    });
-    test('無効状態で時間を変更', () async {
-      when(alarmService.getAlarm())
-          .thenAnswer((_) async => Alarm(0, 0, false));
-      when(alarmService.changeAlarmTime(hour: 12, minute: 30))
-          .thenAnswer((_) async => true);
+      await _waitFor(() => alarmModel.toggleAlarmEnabled(), alarmModel);
+      await _waitFor(() => alarmModel.toggleNextDayNotificationEnabled(), alarmModel);
 
-      final AlarmModel alarmModel = AlarmModel(alarmService);
-      await _waitFor((){alarmModel.initialize();}, alarmModel);
-      await _waitFor(()=>alarmModel.setAlarmTime(12, 30), alarmModel);
       await _waitFor(()=>alarmModel.submitAlarmTime(), alarmModel, count: 2);
-      verifyNever(alarmService.changeAlarmTime(hour: 12, minute: 30));
-      verify(alarmService.cancelAlarm());
+      verify(alarmService.cancelAlarm(nextDayNotificationEnabled: true));
       expect(alarmModel.submitState, AlarmSubmitState.INIT);
     });
   });

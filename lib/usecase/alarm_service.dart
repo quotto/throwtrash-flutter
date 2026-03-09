@@ -27,7 +27,7 @@ class AlarmService implements AlarmServiceInterface {
   }
 
   @override
-  Future<bool> changeAlarmTime({required int hour, required int minute}) async {
+  Future<bool> changeAlarmTime({required int hour, required int minute, required bool nextDayNotificationEnabled}) async {
     final alarm = await _alarmRepository.readAlarm();
     if(alarm == null || !alarm.isEnable) {
       final errMessage = 'アラームが設定されていないか無効です。';
@@ -35,7 +35,7 @@ class AlarmService implements AlarmServiceInterface {
       throw Exception(errMessage);
     }
 
-    final newAlarm = Alarm(hour, minute, alarm.isEnable);
+    final newAlarm = Alarm(hour, minute, alarm.isEnable, nextDayNotificationEnabled);
     final deviceToken = await _fcm.refreshDeviceToken();
     return await _api.changeAlarm(newAlarm, deviceToken).then((result) async {
         return result && await _alarmRepository.saveAlarm(newAlarm);
@@ -43,7 +43,7 @@ class AlarmService implements AlarmServiceInterface {
   }
 
   @override
-  Future<bool> cancelAlarm() async {
+  Future<bool> cancelAlarm({bool? nextDayNotificationEnabled}) async {
     // アラームのキャンセルはリモートに登録済みのデバイストークンに対するキャンセルであるため、
     // トークンのリフレッシュは行わずにローカルに保存済みのデバイストークンを取得する
     final deviceToken = await _configRepository.getDeviceToken();
@@ -55,16 +55,19 @@ class AlarmService implements AlarmServiceInterface {
     }
 
     final currentAlarm = await _alarmRepository.readAlarm();
-    // アラームが設定されていない場合は成功として扱う
+    // アラームが未設定でも翌日通知の状態はローカルに保存する
     if (currentAlarm == null) {
-      _logger.w('アラームが設定されていないため処理を終了します');
-      return true;
+      _logger.w('アラームが設定されていないためデフォルト値で保存します');
+      return await _alarmRepository.saveAlarm(Alarm(0, 0, false, nextDayNotificationEnabled ?? false));
     }
-    return await _alarmRepository.saveAlarm(currentAlarm.changeEnable(false));
+    final nextDayEnabled = nextDayNotificationEnabled ?? currentAlarm.nextDayNotificationEnabled;
+    return await _alarmRepository.saveAlarm(
+      currentAlarm.changeEnable(false).changeNextDayNotificationEnabled(nextDayEnabled),
+    );
   }
 
   @override
-  Future<bool> enableAlarm({required int hour, required int minute}) async {
+  Future<bool> enableAlarm({required int hour, required int minute, required bool nextDayNotificationEnabled}) async {
     User? user = await _userRepository.readUser();
     if(user == null) {
       throw Exception('ユーザー情報が取得できませんでした');
@@ -72,8 +75,8 @@ class AlarmService implements AlarmServiceInterface {
 
     final deviceToken = await _fcm.refreshDeviceToken();
 
-    final alarm = Alarm(hour, minute, true);
-    return await _api.setAlarm(Alarm(hour, minute, true), deviceToken, user).then((result) async {
+    final alarm = Alarm(hour, minute, true, nextDayNotificationEnabled);
+    return await _api.setAlarm(alarm, deviceToken, user).then((result) async {
       return result && await _alarmRepository.saveAlarm(alarm);
     });
   }

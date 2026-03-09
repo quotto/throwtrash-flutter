@@ -20,16 +20,28 @@ void main() {
       when(preferences.getInt(AlarmRepository.ALARM_HOUR_KEY)).thenReturn(12);
       when(preferences.getInt(AlarmRepository.ALARM_MINUTE_KEY)).thenReturn(10);
       when(preferences.getBool(AlarmRepository.ALARM_ENABLED_KEY)).thenReturn(true);
+      when(preferences.getBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY)).thenReturn(true);
       Alarm? result = await alarmRepository.readAlarm();
       expect(result, isNotNull);
       expect(result!.hour, 12);
       expect(result.minute, 10);
       expect(result.isEnable, true);
+      expect(result.nextDayNotificationEnabled, true);
+    });
+    test("翌日通知キー未設定時はfalseが返ること", () async {
+      when(preferences.getInt(AlarmRepository.ALARM_HOUR_KEY)).thenReturn(12);
+      when(preferences.getInt(AlarmRepository.ALARM_MINUTE_KEY)).thenReturn(10);
+      when(preferences.getBool(AlarmRepository.ALARM_ENABLED_KEY)).thenReturn(true);
+      when(preferences.getBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY)).thenReturn(null);
+      Alarm? result = await alarmRepository.readAlarm();
+      expect(result, isNotNull);
+      expect(result!.nextDayNotificationEnabled, false);
     });
     test("enabledがfalseの場合はAlarmのenabledがfalseであること", () async {
       when(preferences.getInt(AlarmRepository.ALARM_HOUR_KEY)).thenReturn(12);
       when(preferences.getInt(AlarmRepository.ALARM_MINUTE_KEY)).thenReturn(10);
       when(preferences.getBool(AlarmRepository.ALARM_ENABLED_KEY)).thenReturn(false);
+      when(preferences.getBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY)).thenReturn(false);
       Alarm? result = await alarmRepository.readAlarm();
       expect(result, isNotNull);
       expect(result!.hour, 12);
@@ -67,53 +79,51 @@ void main() {
   });
   group("saveAlarm", () {
     test("enabledがtrueの場合にAlarmが保存できること", () async {
-      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((
-          _) async => true);
-      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10))
-          .thenAnswer((_) async => true);
-      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true))
-          .thenAnswer((_) async => true);
-      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true));
+      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((_) async => true);
+      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true, true));
       expect(result, isTrue);
     });
     test("enabledがfalseの場合にAlarmが保存できること", () async {
-      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((
-          _) async => true);
-      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10))
-          .thenAnswer((_) async => true);
-      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, false))
-          .thenAnswer((_) async => true);
-      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, false));
+      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((_) async => true);
+      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, false)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, false)).thenAnswer((_) async => true);
+      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, false, false));
       expect(result, isTrue);
     });
     test("hourの保存に失敗した場合はfalseが返ること", () async {
-      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((
-          _) async => false);
-      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10))
-          .thenAnswer((_) async => true);
-      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true))
-          .thenAnswer((_) async => true);
-      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true));
+      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((_) async => false);
+      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true, true));
       expect(result, isFalse);
     });
     test("minuteの保存に失敗した場合はfalseが返ること", () async {
-      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((
-          _) async => true);
-      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10))
-          .thenAnswer((_) async => false);
-      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true))
-          .thenAnswer((_) async => true);
-      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true));
+      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((_) async => true);
+      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10)).thenAnswer((_) async => false);
+      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true, true));
       expect(result, isFalse);
     });
     test("enabledの保存に失敗した場合はfalseが返ること", () async {
-      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((
-          _) async => true);
-      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10))
-          .thenAnswer((_) async => true);
-      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true))
-          .thenAnswer((_) async => false);
-      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true));
+      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((_) async => true);
+      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true)).thenAnswer((_) async => false);
+      when(preferences.setBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true, true));
+      expect(result, isFalse);
+    });
+    test("翌日通知フラグの保存に失敗した場合はfalseが返ること", () async {
+      when(preferences.setInt(AlarmRepository.ALARM_HOUR_KEY, 12)).thenAnswer((_) async => true);
+      when(preferences.setInt(AlarmRepository.ALARM_MINUTE_KEY, 10)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_ENABLED_KEY, true)).thenAnswer((_) async => true);
+      when(preferences.setBool(AlarmRepository.ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, true)).thenAnswer((_) async => false);
+      bool result = await alarmRepository.saveAlarm(Alarm(12, 10, true, true));
       expect(result, isFalse);
     });
   });
