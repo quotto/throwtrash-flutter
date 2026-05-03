@@ -14,17 +14,22 @@ void main() {
   testWidgets('編集画面でその他ゴミの名称が初期表示される', (WidgetTester tester) async {
     final trashDataService = MockTrashDataServiceInterface();
     final trashData = TrashData(
-        id: '001',
-        type: 'other',
-        trashVal: '家電',
-        schedules: [TrashSchedule('weekday', '0')],
-        excludes: []);
+      id: '001',
+      type: 'other',
+      trashVal: '家電',
+      schedules: [TrashSchedule('weekday', '0')],
+      excludes: [],
+    );
     when(trashDataService.getTrashDataById('001')).thenReturn(trashData);
 
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(
+      MaterialApp(
         home: ChangeNotifierProvider<EditModel>(
-            create: (context) => EditModel(trashDataService),
-            child: EditItemMain.update('001'))));
+          create: (context) => EditModel(trashDataService),
+          child: EditItemMain.update('001'),
+        ),
+      ),
+    );
 
     await tester.pumpAndSettle();
 
@@ -38,10 +43,14 @@ void main() {
     final trashDataService = MockTrashDataServiceInterface();
     when(trashDataService.getTrashDataById('404')).thenReturn(null);
 
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(
+      MaterialApp(
         home: ChangeNotifierProvider<EditModel>(
-            create: (context) => EditModel(trashDataService),
-            child: EditItemMain.update('404'))));
+          create: (context) => EditModel(trashDataService),
+          child: EditItemMain.update('404'),
+        ),
+      ),
+    );
 
     await tester.pumpAndSettle();
 
