@@ -2,5 +2,5 @@
   "mobileApiEndpoint": "https://apps.mythrowaway.net/mobile/v7",
   "apiEndpoint": "https://apps.mythrowaway.net/backend/v7",
   "apiErrorUrl": "https://apps.mythrowaway.net/v7/500.html",
-  "alarmApiUrl": "https://alarm.mythrowaway.net/v1"
+  "alarmApiUrl": "https://apps.mythrowaway.net/alarm/v2"
 }

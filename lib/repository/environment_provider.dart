@@ -20,7 +20,20 @@ class EnvironmentProvider implements EnvironmentProviderInterface {
   }
 
   @override
-  String get flavor => const String.fromEnvironment('flavor');
+  String get flavor {
+    const lowerFlavor = String.fromEnvironment('flavor');
+    if (lowerFlavor.isNotEmpty) {
+      return lowerFlavor;
+    }
+
+    const upperFlavor = String.fromEnvironment('FLAVOR');
+    if (upperFlavor.isNotEmpty) {
+      return upperFlavor;
+    }
+
+    // --dart-define 未指定時は開発向け設定を利用する
+    return 'development';
+  }
   @override
   String get alarmApiKey => const String.fromEnvironment('alarmApiKey');
 }
