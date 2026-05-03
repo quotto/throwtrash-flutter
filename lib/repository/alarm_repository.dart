@@ -8,6 +8,7 @@ class AlarmRepository implements AlarmRepositoryInterface {
   static const ALARM_HOUR_KEY = 'ALARM_HOUR';
   static const ALARM_MINUTE_KEY = 'ALARM_MINUTE';
   static const ALARM_ENABLED_KEY = 'ALARM_ENABLED';
+  static const ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY = 'ALARM_NEXT_DAY_NOTIFICATION_ENABLED';
   final _logger = Logger();
   final SharedPreferences _preferences;
   static AlarmRepository? _instance;
@@ -30,9 +31,10 @@ class AlarmRepository implements AlarmRepositoryInterface {
     int? hour = _preferences.getInt(ALARM_HOUR_KEY);
     int? minute = _preferences.getInt(ALARM_MINUTE_KEY);
     bool? enabled = _preferences.getBool(ALARM_ENABLED_KEY);
+    bool nextDayNotificationEnabled = _preferences.getBool(ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY) ?? false;
 
     if(hour != null && minute != null && enabled != null) {
-      return Alarm(hour, minute, enabled);
+      return Alarm(hour, minute, enabled, nextDayNotificationEnabled);
     } else {
       return null;
     }
@@ -43,7 +45,8 @@ class AlarmRepository implements AlarmRepositoryInterface {
     try {
       return await _preferences.setInt(ALARM_HOUR_KEY, alarm.hour) &&
           await _preferences.setInt(ALARM_MINUTE_KEY, alarm.minute) &&
-          await _preferences.setBool(ALARM_ENABLED_KEY, alarm.isEnable);
+          await _preferences.setBool(ALARM_ENABLED_KEY, alarm.isEnable) &&
+          await _preferences.setBool(ALARM_NEXT_DAY_NOTIFICATION_ENABLED_KEY, alarm.nextDayNotificationEnabled);
     } catch(error) {
       _logger.e("アラームデータの保存に失敗しました: $error");
       return false;

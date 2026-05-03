@@ -9,6 +9,11 @@ void main() {
       expect(alarm.hour, 12);
       expect(alarm.minute, 34);
       expect(alarm.isEnable, false);
+      expect(alarm.nextDayNotificationEnabled, false);
+    });
+    test('翌日通知の初期値を指定できること', () {
+      final alarm = Alarm(12, 34, false, true);
+      expect(alarm.nextDayNotificationEnabled, true);
     });
     test('時間は0-23の範囲が有効であること', () {
       expect(() => Alarm(-1, 34, false), throwsArgumentError);
@@ -58,6 +63,17 @@ void main() {
       final changedAlarm = alarm.changeTime(12, 45);
       expect(changedAlarm.hour, 12);
       expect(changedAlarm.minute, 45);
+    });
+  });
+
+  group('changeNextDayNotificationEnabled', () {
+    test('翌日通知を有効に変更', () {
+      final alarm = Alarm(12, 34, false, false);
+      final changedAlarm = alarm.changeNextDayNotificationEnabled(true);
+      expect(changedAlarm.nextDayNotificationEnabled, true);
+      expect(changedAlarm.hour, 12);
+      expect(changedAlarm.minute, 34);
+      expect(changedAlarm.isEnable, false);
     });
   });
 }
