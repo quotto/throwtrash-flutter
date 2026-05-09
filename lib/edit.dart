@@ -9,50 +9,54 @@ import 'package:throwtrash/viewModels/exclude_date_model.dart';
 
 class EditItemMain extends StatefulWidget {
   final String _id;
-  EditItemMain() : _id = "";
-  EditItemMain.update(this._id);
+  final bool _copyFrom;
+  const EditItemMain({super.key}) : _id = "", _copyFrom = false;
+  const EditItemMain.update(this._id, {super.key}) : _copyFrom = false;
+  const EditItemMain.copyFrom(this._id, {super.key}) : _copyFrom = true;
 
   @override
   _EditItemMainState createState() {
-    return _EditItemMainState(this._id);
+    return _EditItemMainState();
   }
 }
 
 class _EditItemMainState extends State<EditItemMain> {
-  final String _id;
-  final TextEditingController _otherTrashNameController = TextEditingController();
+  final TextEditingController _otherTrashNameController =
+      TextEditingController();
   bool _isModelLoaded = false;
   bool _isOtherTrashNameInitialized = false;
   bool _loadFailed = false;
 
-  _EditItemMainState(this._id);
-
-
   final _failedSnackBar = SnackBar(
     backgroundColor: Colors.pinkAccent,
-      content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
-    duration: Duration(
-        seconds: 1
-    ),
+    content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
+    duration: Duration(seconds: 1),
   );
 
   final _successSnackBar = SnackBar(
     backgroundColor: Colors.green,
-    content: Text('設定しました',style: TextStyle(color: Colors.white),),
-    duration: Duration(
-        seconds: 1
-    ),
+    content: Text('設定しました', style: TextStyle(color: Colors.white)),
+    duration: Duration(seconds: 1),
   );
 
-
   final Map<String, Widget> _ScheduleTypeToggles = {
-    "weekday":Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('毎週', textAlign: TextAlign.center)),
-    "month":  Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('毎月同じ日', textAlign: TextAlign.center)),
-    "biweek": Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('特定の週', textAlign: TextAlign.center)),
-    "evweek": Padding(padding: EdgeInsets.symmetric(vertical: 10.0), child: Text('隔週', textAlign: TextAlign.center)),
+    "weekday": Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      child: Text('毎週', textAlign: TextAlign.center),
+    ),
+    "month": Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      child: Text('毎月同じ日', textAlign: TextAlign.center),
+    ),
+    "biweek": Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      child: Text('特定の週', textAlign: TextAlign.center),
+    ),
+    "evweek": Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      child: Text('隔週', textAlign: TextAlign.center),
+    ),
   };
-
-
 
   final List<String> _WeekdayList = [
     '日曜日',
@@ -61,7 +65,7 @@ class _EditItemMainState extends State<EditItemMain> {
     '水曜日',
     '木曜日',
     '金曜日',
-    '土曜日'
+    '土曜日',
   ];
 
   final _formKey = GlobalKey<FormState>();
@@ -72,9 +76,12 @@ class _EditItemMainState extends State<EditItemMain> {
     if (_isModelLoaded) {
       return;
     }
-    if (_id.isNotEmpty) {
+    if (widget._id.isNotEmpty) {
       EditModel model = Provider.of<EditModel>(context, listen: false);
-      if (!model.loadModel(_id)) {
+      bool loaded = widget._copyFrom
+          ? model.loadCopiedModel(widget._id)
+          : model.loadModel(widget._id);
+      if (!loaded) {
         _loadFailed = true;
       }
     }
@@ -118,119 +125,143 @@ class _EditItemMainState extends State<EditItemMain> {
           },
         );
       case 'month':
-        return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Text('毎月'),
-          Expanded(
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('毎月'),
+            Expanded(
               child: TextFormField(
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            controller: TextEditingController(text: schedule.value),
-            decoration: InputDecoration(hintText: '日にちを入力'),
-            onChanged: (changedValue) {
-              model.changeValue(scheduleNumber, changedValue);
-            },
-            validator: (String? inputValue) {
-              try {
-                return inputValue != null &&
-                        int.parse(inputValue) > 0 &&
-                        int.parse(inputValue) < 32
-                    ? null
-                    : '日にちは1～31の値で入力してください';
-              } catch (Exception) {
-                return '日にちは数字で入力してください';
-              }
-            },
-          )),
-          Expanded(child: Text('日'))
-        ]);
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                controller: TextEditingController(text: schedule.value),
+                decoration: InputDecoration(hintText: '日にちを入力'),
+                onChanged: (changedValue) {
+                  model.changeValue(scheduleNumber, changedValue);
+                },
+                validator: (String? inputValue) {
+                  try {
+                    return inputValue != null &&
+                            int.parse(inputValue) > 0 &&
+                            int.parse(inputValue) < 32
+                        ? null
+                        : '日にちは1～31の値で入力してください';
+                  } catch (Exception) {
+                    return '日にちは数字で入力してください';
+                  }
+                },
+              ),
+            ),
+            Expanded(child: Text('日')),
+          ],
+        );
       case 'biweek':
         List<String> initValue = schedule.value.split('-');
-        return Row(children: [
-          DropdownButton<int>(
-            value: int.parse(initValue[1]),
-            items: [1, 2, 3, 4, 5].map((index) {
-              return DropdownMenuItem(value: index, child: Text('第$index'));
-            }).toList(),
-            onChanged: (int? changedValue) {
-              if (changedValue != null) {
-                model.changeValue(scheduleNumber,
-                    '${initValue[0]}-${changedValue.toString()}');
-              }
-            },
-          ),
-          DropdownButton<String>(
+        return Row(
+          children: [
+            DropdownButton<int>(
+              value: int.parse(initValue[1]),
+              items: [1, 2, 3, 4, 5].map((index) {
+                return DropdownMenuItem(value: index, child: Text('第$index'));
+              }).toList(),
+              onChanged: (int? changedValue) {
+                if (changedValue != null) {
+                  model.changeValue(
+                    scheduleNumber,
+                    '${initValue[0]}-${changedValue.toString()}',
+                  );
+                }
+              },
+            ),
+            DropdownButton<String>(
               value: initValue[0],
               items: new List.generate(_WeekdayList.length, (index) {
                 return DropdownMenuItem(
-                    value: index.toString(), child: Text(_WeekdayList[index]));
+                  value: index.toString(),
+                  child: Text(_WeekdayList[index]),
+                );
               }).toList(),
               onChanged: (String? changedValue) {
                 if (changedValue != null) {
                   model.changeValue(
-                      scheduleNumber, '${changedValue}-${initValue[1]}');
-                }
-              })
-        ]);
-      case 'evweek':
-        return Column(mainAxisSize: MainAxisSize.min, children: [
-          Row(children: [
-            DropdownButton<int>(
-                value: schedule.value['interval'],
-                items: [2, 3, 4].map((interval) {
-                  return DropdownMenuItem(
-                    value: interval,
-                    child: Text('$interval週に1回'),
+                    scheduleNumber,
+                    '${changedValue}-${initValue[1]}',
                   );
-                }).toList(),
-                onChanged: (int? changedValue) {
-                  if (changedValue != null) {
-                    model.changeEvweekValue(
+                }
+              },
+            ),
+          ],
+        );
+      case 'evweek':
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                DropdownButton<int>(
+                  value: schedule.value['interval'],
+                  items: [2, 3, 4].map((interval) {
+                    return DropdownMenuItem(
+                      value: interval,
+                      child: Text('$interval週に1回'),
+                    );
+                  }).toList(),
+                  onChanged: (int? changedValue) {
+                    if (changedValue != null) {
+                      model.changeEvweekValue(
                         scheduleNumber,
                         schedule.value['weekday'],
                         changedValue,
-                        schedule.value['start']);
-                  }
-                }),
-            Text('の'),
-            DropdownButton<String>(
-                value: schedule.value['weekday'],
-                items: new List.generate(_WeekdayList.length, (index) {
-                  return DropdownMenuItem(
+                        schedule.value['start'],
+                      );
+                    }
+                  },
+                ),
+                Text('の'),
+                DropdownButton<String>(
+                  value: schedule.value['weekday'],
+                  items: new List.generate(_WeekdayList.length, (index) {
+                    return DropdownMenuItem(
                       value: index.toString(),
-                      child: Text(_WeekdayList[index]));
-                }).toList(),
-                onChanged: (String? changedValue) {
-                  if (changedValue != null) {
-                    model.changeEvweekValue(scheduleNumber, changedValue,
-                        schedule.value['interval'], schedule.value['start']);
-                  }
-                })
-          ]),
-          TextField(
-            controller: TextEditingController(
-              text: schedule.value['start'],
+                      child: Text(_WeekdayList[index]),
+                    );
+                  }).toList(),
+                  onChanged: (String? changedValue) {
+                    if (changedValue != null) {
+                      model.changeEvweekValue(
+                        scheduleNumber,
+                        changedValue,
+                        schedule.value['interval'],
+                        schedule.value['start'],
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
-            decoration: InputDecoration(
-              labelText: '直近のゴミ出し日を選択',
-            ),
-            readOnly: true,
-            onTap: () async {
-              final selectedDate = await showDatePicker(
+            TextField(
+              controller: TextEditingController(text: schedule.value['start']),
+              decoration: InputDecoration(labelText: '直近のゴミ出し日を選択'),
+              readOnly: true,
+              onTap: () async {
+                final selectedDate = await showDatePicker(
                   context: context,
                   initialDate: DateTime.now(),
                   firstDate: DateTime(DateTime.now().year - 1),
-                  lastDate: DateTime(DateTime.now().year + 1));
+                  lastDate: DateTime(DateTime.now().year + 1),
+                );
 
-              if (selectedDate != null) {
-                model.changeEvweekValue(
+                if (selectedDate != null) {
+                  model.changeEvweekValue(
                     scheduleNumber,
                     schedule.value['weekday'],
                     schedule.value['interval'],
-                    selectedDate.toIso8601String().substring(0, 10));
-              }
-            },
-          )
-        ]);
+                    selectedDate.toIso8601String().substring(0, 10),
+                  );
+                }
+              },
+            ),
+          ],
+        );
       default:
         return Text('');
     }
@@ -239,53 +270,56 @@ class _EditItemMainState extends State<EditItemMain> {
   Widget _scheduleForm(int scheduleNumber, TrashSchedule schedule) {
     EditModel model = Provider.of<EditModel>(context);
     return Container(
-        decoration: BoxDecoration(
-            color: (scheduleNumber + 1) % 2 == 0
-                ? Theme.of(context).colorScheme.primaryContainer
-                : Theme.of(context).colorScheme.background),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+      decoration: BoxDecoration(
+        color: (scheduleNumber + 1) % 2 == 0
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Theme.of(context).colorScheme.background,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Container(
+            constraints: BoxConstraints(
+              minWidth: MediaQuery.of(context).size.width,
+            ),
+            padding: EdgeInsets.fromLTRB(0, 16, 0, 0),
+            child: CupertinoSegmentedControl<String>(
+              children: _ScheduleTypeToggles,
+              onValueChanged: ((String newValue) {
+                model.changeScheduleType(scheduleNumber, newValue);
+              }),
+              groupValue: model.schedules[scheduleNumber].type,
+            ),
+          ),
+          Row(
             mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                constraints: BoxConstraints(
-                  minWidth: MediaQuery.of(context).size.width
+              Flexible(
+                flex: 7,
+                child: Padding(
+                  padding: EdgeInsets.only(left: 16, right: 16),
+                  child: _scheduleInput(scheduleNumber, schedule),
                 ),
-                padding: EdgeInsets.fromLTRB(0,16,0,0),
-                        child: CupertinoSegmentedControl<String>(
-                      children: _ScheduleTypeToggles,
-                      onValueChanged: ((String newValue){
-                        model.changeScheduleType(scheduleNumber, newValue) ;
-                      }),
-                      groupValue: model.schedules[scheduleNumber].type,
-                )
               ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                      flex: 7,
-                      child: Padding(
-                              padding: EdgeInsets.only(left: 16,right:16),
-                              child: _scheduleInput(scheduleNumber, schedule)
-                            )
-                      )
-                  ,
-                  Flexible(
-                      flex: 3,
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: IconButton(
-                          icon: Icon(Icons.delete_forever),
-                          iconSize: 32,
-                          color: Theme.of(context).colorScheme.error,
-                          onPressed: () => model.removeSchedule(scheduleNumber),
-                        ))
-                      )
-                  ]
+              Flexible(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: IconButton(
+                    icon: Icon(Icons.delete_forever),
+                    iconSize: 32,
+                    color: Theme.of(context).colorScheme.error,
+                    onPressed: () => model.removeSchedule(scheduleNumber),
+                  ),
+                ),
               ),
-        ]));
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _allScheduleList(List<TrashSchedule> schedules) {
@@ -297,140 +331,162 @@ class _EditItemMainState extends State<EditItemMain> {
       index++;
     });
     if (schedules.length < 3) {
-      children.add(IconButton(
-        icon: Icon(Icons.add_circle_outline),
-        iconSize: 32,
-        color: Theme.of(context).colorScheme.primary,
-        onPressed: () {
-          model.addSchedule();
-        },
-      ));
+      children.add(
+        IconButton(
+          icon: Icon(Icons.add_circle_outline),
+          iconSize: 32,
+          color: Theme.of(context).colorScheme.primary,
+          onPressed: () {
+            model.addSchedule();
+          },
+        ),
+      );
     }
 
-    return Expanded(
-        flex: 1,
-        child: ListView(
-          children: children
-        )
-    );
+    return Expanded(flex: 1, child: ListView(children: children));
   }
 
   @override
   Widget build(BuildContext context) {
-    print('edit Id: $_id');
+    print('edit Id: ${widget._id}');
     if (_loadFailed) {
-      return Center(
-          child: Text('データの読み込みに失敗しました')
-      );
+      return Center(child: Text('データの読み込みに失敗しました'));
     }
     return Scaffold(
-        appBar: AppBar(
-          title: Text('編集'),
-        ),
-        body: Consumer<EditModel>(builder: (context, editModel, child) {
+      appBar: AppBar(title: Text(widget._copyFrom ? 'コピー作成' : '編集')),
+      body: Consumer<EditModel>(
+        builder: (context, editModel, child) {
           return Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      DropdownButton<String>(
-                        value: editModel.trash.type,
-                        onChanged: (newValue) {
-                          if (newValue != null) {
-                            editModel.changeTrashType(newValue);
-                            if (newValue != 'other') {
-                              _otherTrashNameController.text = '';
-                            }
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    DropdownButton<String>(
+                      value: editModel.trash.type,
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          editModel.changeTrashType(newValue);
+                          if (newValue != 'other') {
+                            _otherTrashNameController.text = '';
                           }
-                        },
-                        items: TrashDataService.trashNameMap.keys
-                            .map<DropdownMenuItem<String>>((key) {
-                          return DropdownMenuItem<String>(
+                        }
+                      },
+                      items: TrashDataService.trashNameMap.keys
+                          .map<DropdownMenuItem<String>>((key) {
+                            return DropdownMenuItem<String>(
                               value: key,
                               child: Text(
-                                  TrashDataService.trashNameMap.containsKey(key)
-                                      ? TrashDataService.trashNameMap[key]!
-                                      : ''));
-                        }).toList(),
-                        style: TextStyle(
-                            fontSize: 24,
-                            color:
-                                Theme.of(context).textTheme.bodyLarge!.color),
-                        underline: Container(
-                            height: 2, color: Theme.of(context).colorScheme.secondary),
+                                TrashDataService.trashNameMap.containsKey(key)
+                                    ? TrashDataService.trashNameMap[key]!
+                                    : '',
+                              ),
+                            );
+                          })
+                          .toList(),
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Theme.of(context).textTheme.bodyLarge!.color,
                       ),
-                      Visibility(
-                          visible: editModel.trash.type == 'other',
-                          child: Container(
-                              height: 100,
-                              child: TextFormField(
-                                controller: _otherTrashNameController,
-                                maxLength: 20,
-                                maxLines: 1,
-                                decoration: InputDecoration(
-                                  hintText: 'ゴミの名前を入力してください',
-                                ),
-                                validator: (String? value) {
-                                  if (editModel.trash.type == 'other' &&
-                                      (value != null && value.length == 0)) {
-                                    return 'ゴミの名前を入力してください';
-                                  }
-                                  return null;
-                                },
-                                onChanged: (changedValue) {
-                                  editModel.changeTrashName(changedValue);
-                                },
-                              )))
-                    ]),
+                      underline: Container(
+                        height: 2,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    Visibility(
+                      visible: editModel.trash.type == 'other',
+                      child: Container(
+                        height: 100,
+                        child: TextFormField(
+                          controller: _otherTrashNameController,
+                          maxLength: 20,
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            hintText: 'ゴミの名前を入力してください',
+                          ),
+                          validator: (String? value) {
+                            if (editModel.trash.type == 'other' &&
+                                (value != null && value.length == 0)) {
+                              return 'ゴミの名前を入力してください';
+                            }
+                            return null;
+                          },
+                          onChanged: (changedValue) {
+                            editModel.changeTrashName(changedValue);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 _allScheduleList(editModel.schedules),
                 Container(
                   padding: EdgeInsets.only(bottom: 32.0),
                   alignment: Alignment.center,
                   child: FilledButton.tonal(
-                    onPressed: editModel.editState == EditState.PROCESSING ? null : () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>
-                          ChangeNotifierProvider<ExcludeViewModel>(create: (create)=>
-                            ExcludeViewModel.load(editModel.excludes),
-                            child: ExcludeDateView(),
-                          )
-                        )
-                      ).then((result){
-                        if(result != null) {
-                          editModel.setExcludeDate((result as ExcludeViewModel).excludeDates);
-                        }
-                      });
-                    },
+                    onPressed: editModel.editState == EditState.PROCESSING
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<ExcludeViewModel>(
+                                      create: (create) => ExcludeViewModel.load(
+                                        editModel.excludes,
+                                      ),
+                                      child: ExcludeDateView(),
+                                    ),
+                              ),
+                            ).then((result) {
+                              if (result != null) {
+                                editModel.setExcludeDate(
+                                  (result as ExcludeViewModel).excludeDates,
+                                );
+                              }
+                            });
+                          },
                     child: Text('例外日の設定'),
-                  )
+                  ),
                 ),
                 Container(
                   padding: EdgeInsets.only(bottom: 32.0),
                   alignment: Alignment.center,
-                    child: FilledButton(
-                      key: Key('submit'),
-                      onPressed: editModel.editState == EditState.PROCESSING ? null : () async {
-                        if (_formKey.currentState!.validate()) {
-                          if(await editModel.submitTrashData()) {
-                            ScaffoldMessenger.of(context).showSnackBar(_successSnackBar);
-                            await Future.delayed(Duration(milliseconds: 500));
-                            Navigator.pop(context, true);
-                          } else if(editModel.editState == EditState.ERROR) {
-                            ScaffoldMessenger.of(context).showSnackBar(_failedSnackBar);
-                          }
-                        }
-                      },
-                      child: editModel.editType == EditType.NEW ?
-                        Text('登録') : Text('更新')
-
-                    )
-                )
-              ]));
-        }));
+                  child: FilledButton(
+                    key: Key('submit'),
+                    onPressed: editModel.editState == EditState.PROCESSING
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              if (await editModel.submitTrashData()) {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(_successSnackBar);
+                                await Future.delayed(
+                                  Duration(milliseconds: 500),
+                                );
+                                Navigator.pop(context, true);
+                              } else if (editModel.editState ==
+                                  EditState.ERROR) {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(_failedSnackBar);
+                              }
+                            }
+                          },
+                    child: editModel.editType == EditType.NEW
+                        ? Text('登録')
+                        : Text('更新'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 }
