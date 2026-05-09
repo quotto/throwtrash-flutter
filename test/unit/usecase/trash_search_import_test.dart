@@ -98,6 +98,7 @@ void main() {
       final result = await service.importTrashSchedule('160-0023');
 
       expect(result.success, isTrue);
+      expect(result.message, 'ゴミ出し予定を取り込みました');
       verify(
         trashRepository.replaceAllTrashData(
           argThat(
@@ -106,8 +107,9 @@ void main() {
         ),
       ).called(1);
       verify(trashRepository.setSyncStatus(SyncStatus.SYNCING)).called(1);
-      expect(fcmService.title, '自動取り込みが完了しました');
-      verify(trashRepository.saveImportMessage('自動取り込みが完了しました')).called(1);
+      expect(fcmService.title, '自動取り込み');
+      expect(fcmService.body, 'ゴミ出し予定を取り込みました');
+      verify(trashRepository.saveImportMessage('ゴミ出し予定を取り込みました')).called(1);
     });
 
     test('エラー時は既存データを削除しない', () async {
@@ -122,9 +124,40 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.replaceAllTrashData(any));
-      expect(fcmService.title, '自動取り込みに失敗しました');
+      expect(fcmService.title, '自動取り込み');
+      expect(fcmService.body, '指定された住所に対応するゴミ出し予定を特定できませんでした。');
       verify(
         trashRepository.saveImportMessage('指定された住所に対応するゴミ出し予定を特定できませんでした。'),
+      ).called(1);
+    });
+
+    test('一部未対応の予定がある場合は保存後に注意メッセージを残す', () async {
+      when(
+        trashApi.searchTrashSchedule(
+          '160-0023',
+          TrashSearchInputType.postalCode,
+        ),
+      ).thenAnswer(
+        (_) async => TrashSearchResult.success([
+          TrashData(
+            id: '',
+            type: 'burn',
+            schedules: [TrashSchedule('weekday', '2')],
+          ),
+        ], message: '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。'),
+      );
+
+      final result = await service.importTrashSchedule('160-0023');
+
+      expect(result.success, isTrue);
+      expect(result.message, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
+      expect(fcmService.title, '自動取り込み');
+      expect(fcmService.body, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
+      verify(trashRepository.replaceAllTrashData(any)).called(1);
+      verify(
+        trashRepository.saveImportMessage(
+          '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。',
+        ),
       ).called(1);
     });
 
@@ -151,6 +184,8 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.setSyncStatus(SyncStatus.SYNCING));
+      expect(fcmService.title, '自動取り込み');
+      expect(fcmService.body, '自動取り込み結果の保存に失敗しました。');
       verify(
         trashRepository.saveImportMessage('自動取り込み結果の保存に失敗しました。'),
       ).called(1);

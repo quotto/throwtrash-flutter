@@ -44,6 +44,36 @@ void main() {
       find.byKey(Key('auto-import-submit')),
     );
     expect(enabledSubmitButton.onPressed, isNotNull);
+    expect(find.textContaining('留意事項を読み、詳細な住所を入力しないようにしてください'), findsOneWidget);
+  });
+
+  testWidgets('留意事項リンクから新しい注意事項を表示する', (tester) async {
+    final service = MockTrashDataServiceInterface();
+    await tester.pumpWidget(
+      Provider<TrashDataServiceInterface>.value(
+        value: service,
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () => showAutoImportDialog(context),
+              child: Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('auto-import-note-link')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('AIによる自動登録機能であるため誤りを含む可能性があります。'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('詳細は入力しないでください'), findsOneWidget);
+    expect(find.textContaining('入力データの学習を無効化しています'), findsOneWidget);
   });
 
   testWidgets('初回ダイアログはキャンセルで表示済みにする', (tester) async {

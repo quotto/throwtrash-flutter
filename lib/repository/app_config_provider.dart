@@ -8,38 +8,44 @@ import 'package:throwtrash/usecase/repository/environment_provider_interface.dar
 class AppConfigProvider implements AppConfigProviderInterface {
   static AppConfigProvider? _instance;
   String _trashApiEndpoint = "";
-  String _mobileApiUrl ="";
-  String _accountLinkErrorUrl="";
-  String _version="";
+  String _mobileApiUrl = "";
+  String _accountLinkErrorUrl = "";
+  String _version = "";
   String _alarmApiUrl = "";
+  String _trashSearchApiEndpoint = "";
   String test = "";
 
   factory AppConfigProvider() {
-    if(_instance==null) {
+    if (_instance == null) {
       throw StateError("AppConfigProvider is not initialized");
     }
     return _instance!;
   }
 
-  static Future<void> initialize(EnvironmentProviderInterface environmentProvider) async {
-    if(_instance != null) {
+  static Future<void> initialize(
+    EnvironmentProviderInterface environmentProvider,
+  ) async {
+    if (_instance != null) {
       throw StateError("AppConfigProvider is already initialized");
     }
     _instance = AppConfigProvider._();
 
-    String configStr = await rootBundle.loadString('json/${environmentProvider.flavor}/config.json');
+    String configStr = await rootBundle.loadString(
+      'json/${environmentProvider.flavor}/config.json',
+    );
     Map<String, dynamic> config = json.decode(configStr);
     _instance!._trashApiEndpoint = config["apiEndpoint"]!;
     _instance!._mobileApiUrl = config["mobileApiEndpoint"]!;
     _instance!._accountLinkErrorUrl = config["apiErrorUrl"]!;
     _instance!._alarmApiUrl = config["alarmApiUrl"]!;
+    _instance!._trashSearchApiEndpoint = config["trashSearchApiEndpoint"]!;
 
     // package_info_plusを使ってバージョン情報を取得してインスタンス変数に格納
     // flavorがdevの場合はサフィックスを付与する
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
-    if(environmentProvider.flavor!="production") {
-      version = "${version}-dev";
+    if (environmentProvider.flavor != "production") {
+      version = "$version-dev";
     }
     _instance!._version = version;
   }
@@ -49,9 +55,22 @@ class AppConfigProvider implements AppConfigProviderInterface {
   }
 
   AppConfigProvider._();
+
+  @override
   String get trashApiUrl => _instance!._trashApiEndpoint;
+
+  @override
   String get mobileApiUrl => _instance!._mobileApiUrl;
+
+  @override
   String get accountLinkErrorUrl => _instance!._accountLinkErrorUrl;
+
+  @override
   String get version => _instance!._version;
+
+  @override
   String get alarmApiUrl => _instance!._alarmApiUrl;
+
+  @override
+  String get trashSearchApiEndpoint => _instance!._trashSearchApiEndpoint;
 }

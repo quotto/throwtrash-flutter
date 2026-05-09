@@ -28,7 +28,6 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           flutter test test/unit --coverage \
-            --dart-define=trashSearchApiEndpoint="${{ secrets.TRASH_SEARCH_API_ENDPOINT }}" \
             --dart-define=trashSearchApiKey="${{ secrets.TRASH_SEARCH_API_KEY }}"
 
       - name: Calculate coverage

@@ -157,10 +157,7 @@ class TrashDataService implements TrashDataServiceInterface {
     );
     if (!searchResult.success) {
       await _trashRepository.saveImportMessage(searchResult.message);
-      await _fcmService?.showLocalNotification(
-        '自動取り込みに失敗しました',
-        'アプリを開いてエラー内容を確認してください。',
-      );
+      await _fcmService?.showLocalNotification('自動取り込み', searchResult.message);
       return TrashImportResult.failure(searchResult.message);
     }
 
@@ -170,20 +167,14 @@ class TrashDataService implements TrashDataServiceInterface {
     if (!replaceResult) {
       final message = '自動取り込み結果の保存に失敗しました。';
       await _trashRepository.saveImportMessage(message);
-      await _fcmService?.showLocalNotification(
-        '自動取り込みに失敗しました',
-        'アプリを開いてエラー内容を確認してください。',
-      );
+      await _fcmService?.showLocalNotification('自動取り込み', message);
       return TrashImportResult.failure(message);
     }
     await _changeSyncStatusToSyncing();
     await refreshTrashData();
-    final importResult = TrashImportResult.success();
+    final importResult = TrashImportResult.success(searchResult.message);
     await _trashRepository.saveImportMessage(importResult.message);
-    await _fcmService?.showLocalNotification(
-      importResult.message,
-      'ゴミ出し予定の自動取り込みが完了しました。',
-    );
+    await _fcmService?.showLocalNotification('自動取り込み', importResult.message);
     return importResult;
   }
 

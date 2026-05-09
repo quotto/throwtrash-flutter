@@ -3,7 +3,8 @@ import 'package:throwtrash/models/trash_data.dart';
 enum TrashSearchInputType { postalCode, address }
 
 class TrashSearchResult {
-  TrashSearchResult.success(this.trashes) : success = true, message = '';
+  TrashSearchResult.success(this.trashes, {this.message = 'ゴミ出し予定を取り込みました'})
+    : success = true;
 
   TrashSearchResult.failure(this.message) : success = false, trashes = const [];
 
@@ -13,7 +14,7 @@ class TrashSearchResult {
 }
 
 class TrashImportResult {
-  TrashImportResult.success() : success = true, message = '自動取り込みが完了しました';
+  TrashImportResult.success([this.message = 'ゴミ出し予定を取り込みました']) : success = true;
 
   TrashImportResult.failure(this.message) : success = false;
 

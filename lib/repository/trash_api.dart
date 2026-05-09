@@ -38,8 +38,7 @@ class TrashApi implements TrashApiInterface {
       _platform = "ios";
     }
     this._mobileApiEndpoint = this._configProvider.mobileApiUrl;
-    this._trashSearchApiEndpoint =
-        _environmentProvider?.trashSearchApiEndpoint ?? '';
+    this._trashSearchApiEndpoint = this._configProvider.trashSearchApiEndpoint;
     this._trashSearchApiKey = _environmentProvider?.trashSearchApiKey ?? '';
   }
 
@@ -204,47 +203,57 @@ class TrashApi implements TrashApiInterface {
       if (response.statusCode == 200) {
         final responseBody = decoded as Map<String, dynamic>;
         final errorType = responseBody['error_type'] as String? ?? '';
+        final userFacingMessage = _toSearchErrorMessage(errorType);
         if (errorType != '' && errorType != 'unsupported_schedule') {
-          return TrashSearchResult.failure(
-            responseBody['message'] as String? ?? '自動取り込みに失敗しました。',
-          );
+          return TrashSearchResult.failure(userFacingMessage);
         }
         final trashes = _decodeSearchTrashData(responseBody['trashes'] as List);
         if (trashes.isEmpty && errorType != '') {
-          return TrashSearchResult.failure(
-            responseBody['message'] as String? ?? '自動取り込みに失敗しました。',
-          );
+          return TrashSearchResult.failure(userFacingMessage);
         }
-        return TrashSearchResult.success(trashes);
+        return TrashSearchResult.success(
+          trashes,
+          message: errorType == 'unsupported_schedule'
+              ? userFacingMessage
+              : 'ゴミ出し予定を取り込みました',
+        );
       }
 
       if (decoded is Map<String, dynamic> && decoded['message'] is String) {
         return TrashSearchResult.failure(
-          _toUserFacingErrorMessage(
-            response.statusCode,
-            decoded['message'] as String,
-          ),
+          _toUserFacingErrorMessage(response.statusCode),
         );
       }
     } catch (e) {
       _logger.e('Failed search trash schedule: $e');
     }
-    return TrashSearchResult.failure('自動取り込みに失敗しました。');
+    return TrashSearchResult.failure(_toSearchErrorMessage('unknown'));
   }
 
-  String _toUserFacingErrorMessage(int statusCode, String message) {
+  String _toSearchErrorMessage(String errorType) {
+    switch (errorType) {
+      case 'invalid_address':
+        return '入力された住所に対応するゴミ出し予定を特定できませんでした。町名・丁目までのおおよその住所で再度お試しください。';
+      case 'invalid_postal_code':
+        return '入力された郵便番号に対応するゴミ出し予定を特定できませんでした。住所での取り込みをお試しください。';
+      case 'unsupported_schedule':
+        return '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。';
+      case 'unknown':
+      default:
+        return 'ゴミ出し予定の取り込みに失敗しました。時間をおいて再度お試しください。';
+    }
+  }
+
+  String _toUserFacingErrorMessage(int statusCode) {
     switch (statusCode) {
       case 403:
-        return '自動取り込み API の認証に失敗しました。';
       case 429:
-        return '自動取り込み API が混み合っています。時間をおいて再度お試しください。';
       case 500:
       case 502:
-        return 'ゴミ出し予定の調査中に予期しないエラーが発生しました。';
       case 504:
-        return 'ゴミ出し予定の調査がタイムアウトしました。';
+        return _toSearchErrorMessage('unknown');
       default:
-        return message;
+        return _toSearchErrorMessage('unknown');
     }
   }
 

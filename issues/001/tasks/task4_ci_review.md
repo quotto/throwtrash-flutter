@@ -10,8 +10,8 @@ devops, reviewer
 
 ## 内容
 
-- CI/CD に自動取り込み API の `--dart-define=trashSearchApiEndpoint` と `--dart-define=trashSearchApiKey` を追加する。
-- GitHub Actions のシークレット名は `TRASH_SEARCH_API_ENDPOINT` と `TRASH_SEARCH_API_KEY` とする。
+- CI/CD に自動取り込み API の `--dart-define=trashSearchApiKey` を追加する。
+- GitHub Actions のシークレット名は `TRASH_SEARCH_API_KEY` とする。
 - 実装後に Copilot review を実行する。
 - セキュリティ観点で API キー、入力情報、通知内容、ログ出力を確認する。
 
@@ -29,9 +29,9 @@ devops, reviewer
 
 ## 実績
 
-- `.github/workflows/coverage.yml` に `trashSearchApiEndpoint` と `trashSearchApiKey` の `--dart-define` を追加した。
+- `.github/workflows/coverage.yml` に `trashSearchApiKey` の `--dart-define` を追加した。
 - `fvm dart run build_runner build --delete-conflicting-outputs` を実行した。
-- `fvm flutter test` を実行し、252 件の全テスト通過を確認した。
-- `fvm flutter analyze` は error なし、既存を含む info 指摘あり。
+- `TMPDIR=/Volumes/extend/project/throwtrash-flutter/.tmp fvm flutter test` を実行し、255 件の全テスト通過を確認した。
+- `TMPDIR=/Volumes/extend/project/throwtrash-flutter/.tmp fvm flutter analyze` は error なし、既存を含む info 指摘 247 件あり。
 - Copilot review を実行し、結果を `work/copilot_review_issues_001_002.md` に記録した。
 - Copilot review の High 指摘 3 件（データ破壊リスク、未処理非同期、初回ダイアログ非表示条件）と主要な Medium 指摘に対応した。

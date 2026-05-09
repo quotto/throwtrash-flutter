@@ -18,9 +18,6 @@ class FakeTrashSearchEnvironment implements EnvironmentProviderInterface {
   String get flavor => 'development';
 
   @override
-  String get trashSearchApiEndpoint => 'https://search.example.com';
-
-  @override
   String get trashSearchApiKey => 'search-api-key';
 }
 
@@ -36,6 +33,9 @@ void main() {
       when(
         appConfigProvider.mobileApiUrl,
       ).thenReturn('https://mobile.example.com');
+      when(
+        appConfigProvider.trashSearchApiEndpoint,
+      ).thenReturn('https://search.example.com');
       trashApi = TrashApi.createForTest(
         appConfigProvider,
         httpClient,
@@ -82,6 +82,7 @@ void main() {
       );
 
       expect(result.success, isTrue);
+      expect(result.message, 'ゴミ出し予定を取り込みました');
       expect(result.trashes, hasLength(2));
       expect(result.trashes[0].type, 'burn');
       expect(result.trashes[0].schedules[0].type, 'weekday');
@@ -145,6 +146,7 @@ void main() {
       );
 
       expect(result.success, isTrue);
+      expect(result.message, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
       expect(result.trashes, hasLength(1));
       expect(result.trashes.single.type, 'resource');
     });
@@ -175,7 +177,39 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.message, '住所または郵便番号を指定してください。');
+      expect(result.message, 'ゴミ出し予定の取り込みに失敗しました。時間をおいて再度お試しください。');
+    });
+
+    test('住所不明エラーは固定メッセージに変換する', () async {
+      when(
+        httpClient.post(
+          any,
+          body: anyNamed('body'),
+          headers: anyNamed('headers'),
+        ),
+      ).thenAnswer(
+        (_) async => Response.bytes(
+          utf8.encode(
+            jsonEncode({
+              'trashes': [],
+              'message': 'raw backend message',
+              'error_type': 'invalid_address',
+            }),
+          ),
+          200,
+        ),
+      );
+
+      final result = await trashApi.searchTrashSchedule(
+        '東京都新宿区',
+        TrashSearchInputType.address,
+      );
+
+      expect(result.success, isFalse);
+      expect(
+        result.message,
+        '入力された住所に対応するゴミ出し予定を特定できませんでした。町名・丁目までのおおよその住所で再度お試しください。',
+      );
     });
 
     test('Gateway 認証エラーはユーザー向けメッセージに変換する', () async {
@@ -198,7 +232,7 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.message, '自動取り込み API の認証に失敗しました。');
+      expect(result.message, 'ゴミ出し予定の取り込みに失敗しました。時間をおいて再度お試しください。');
     });
 
     test('通信例外は失敗結果に変換する', () async {
@@ -216,7 +250,7 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.message, '自動取り込みに失敗しました。');
+      expect(result.message, 'ゴミ出し予定の取り込みに失敗しました。時間をおいて再度お試しください。');
     });
   });
 }

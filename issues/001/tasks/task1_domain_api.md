@@ -14,7 +14,8 @@ developer
 - `TrashApiInterface` と `TrashApi` に検索 API 呼び出しを追加する。
 - API レスポンスから既存 `TrashData` への変換処理を追加する。
 - 入力値を郵便番号/住所へ分類するロジックを追加する。
-- `trashSearchApiEndpoint` と `trashSearchApiKey` を `EnvironmentProvider` から取得する。
+- `trashSearchApiEndpoint` は `AppConfigProvider` から取得する。
+- `trashSearchApiKey` は `EnvironmentProvider` から取得する。
 
 ## テスト
 

@@ -8,8 +8,8 @@
 
 - 実装前に本計画の承認を得る。
 - 実装は TDD で進め、先に失敗する単体テスト・Widget テストを追加する。
-- API エンドポイントと API キーはビルド時の `--dart-define` から読み込む。
-  - `--dart-define=trashSearchApiEndpoint=...`
+- API エンドポイントは `json/{flavor}/config.json` から読み込む。
+- API キーはビルド時の `--dart-define` から読み込む。
   - `--dart-define=trashSearchApiKey=...`
 - API 仕様は `issues/001/openapi.yaml` を正とする。
 - 取り込み完了・エラー通知は端末上のローカル通知で行う。
@@ -80,8 +80,8 @@
    - エラーの場合はエラー内容を表示する。
    - メッセージは取り込み処理直後のみ表示し、表示後に消す。
 9. CI/CD を修正する。
-   - 自動取り込み API のエンドポイント/API キーを `--dart-define` で渡せるようにする。
-   - GitHub Actions のシークレット名は `TRASH_SEARCH_API_ENDPOINT` と `TRASH_SEARCH_API_KEY` とする。
+   - 自動取り込み API のエンドポイントを config で、API キーを `--dart-define` で渡せるようにする。
+   - GitHub Actions のシークレット名は `TRASH_SEARCH_API_KEY` とする。
 
 ## エージェント編成
 
@@ -113,9 +113,9 @@
 
 ## 命名
 
-- Dart define
+- Config
   - `trashSearchApiEndpoint`
+- Dart define
   - `trashSearchApiKey`
 - GitHub Actions secrets
-  - `TRASH_SEARCH_API_ENDPOINT`
   - `TRASH_SEARCH_API_KEY`

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -30,11 +31,40 @@ class AutoImportDialog extends StatefulWidget {
 
 class _AutoImportDialogState extends State<AutoImportDialog> {
   final TextEditingController _controller = TextEditingController();
+  late final TapGestureRecognizer _noteTapRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteTapRecognizer = TapGestureRecognizer()..onTap = _showNoteDialog;
+  }
 
   @override
   void dispose() {
+    _noteTapRecognizer.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _showNoteDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('留意事項'),
+        content: Text(
+          '・AIによる自動登録機能であるため誤りを含む可能性があります。\n'
+          '・現在登録済みのデータは削除されます。\n'
+          '・住所を入力する際は番地等の詳細は入力しないでください。町名や丁目など、自治体で定められたゴミ出し予定の判別に必要十分な粒度で入力してください（例: 東京都新宿区西新宿2丁目）。\n'
+          '・入力された情報はアプリ提供者側で一切保存・流用しません。また当機能に利用するAIは入力データの学習を無効化していますが、万が一当機能へのデータ入力により何らかの損害が発生した場合でもアプリ提供者は一切の責任を負いかねますのでご了承ください。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('閉じる'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _markInitialDialogShown(
@@ -68,29 +98,26 @@ class _AutoImportDialogState extends State<AutoImportDialog> {
               ),
               Align(
                 alignment: Alignment.centerLeft,
-                child: TextButton(
+                child: GestureDetector(
                   key: Key('auto-import-note-link'),
-                  onPressed: () {
-                    showDialog<void>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('留意事項'),
-                        content: Text(
-                          'AIによる自動判別機能であるため誤りを含む可能性があります。\n'
-                          '現在登録済みのデータは削除されます。\n'
-                          '住所は番地等の詳細まで入力せず、識別可能な粒度で入力してください。\n'
-                          '入力された情報は管理側では保存・流用しませんが、入力は自己責任で行ってください。',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: Text('閉じる'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _showNoteDialog,
+                  child: Text.rich(
+                    TextSpan(
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      children: [
+                        TextSpan(
+                          text: '留意事項',
+                          recognizer: _noteTapRecognizer,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            decoration: TextDecoration.underline,
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                  child: Text('留意事項'),
+                        ),
+                        TextSpan(text: 'を読み、詳細な住所を入力しないようにしてください'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],

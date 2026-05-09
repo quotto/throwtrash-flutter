@@ -37,9 +37,7 @@ class EnvironmentProvider implements EnvironmentProviderInterface {
 
   @override
   String get alarmApiKey => const String.fromEnvironment('alarmApiKey');
-  @override
-  String get trashSearchApiEndpoint =>
-      const String.fromEnvironment('trashSearchApiEndpoint');
+
   @override
   String get trashSearchApiKey =>
       const String.fromEnvironment('trashSearchApiKey');
