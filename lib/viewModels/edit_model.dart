@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/exclude_date.dart';
@@ -5,17 +7,9 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 
-enum EditState {
-  EDIT,
-  PROCESSING,
-  COMPLETE,
-  ERROR
-}
+enum EditState { EDIT, PROCESSING, COMPLETE, ERROR }
 
-enum EditType {
-  NEW,
-  UPDATE
-}
+enum EditType { NEW, UPDATE }
 
 class EditModel extends ChangeNotifier {
   final TrashDataServiceInterface _trashDataService;
@@ -24,23 +18,44 @@ class EditModel extends ChangeNotifier {
   EditState _editState = EditState.EDIT;
   EditType _editType = EditType.NEW;
 
-
   EditModel(this._trashDataService) {
     _trashData = TrashData(
-        id: DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
-        type: 'burn',
-        trashVal: '',
-        schedules: [TrashSchedule('weekday', '0')],
-        excludes: []
+      id: DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
+      type: 'burn',
+      trashVal: '',
+      schedules: [TrashSchedule('weekday', '0')],
+      excludes: [],
     );
   }
 
   bool loadModel(String id) {
-    if(id.isNotEmpty) {
+    if (id.isNotEmpty) {
       TrashData? findData = _trashDataService.getTrashDataById(id);
-      if(findData != null) {
+      if (findData != null) {
         _trashData = findData;
         _editType = EditType.UPDATE;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool loadCopiedModel(String id) {
+    if (id.isNotEmpty) {
+      TrashData? findData = _trashDataService.getTrashDataById(id);
+      if (findData != null) {
+        final copiedJson =
+            jsonDecode(jsonEncode(findData.toJson())) as Map<String, dynamic>;
+        TrashData copiedTrashData = TrashData.fromJson(copiedJson);
+        _trashData = TrashData(
+          id: DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
+          type: copiedTrashData.type,
+          trashVal: copiedTrashData.trashVal,
+          schedules: copiedTrashData.schedules,
+          excludes: copiedTrashData.excludes,
+        );
+        _editType = EditType.NEW;
+        _editState = EditState.EDIT;
         return true;
       }
     }
@@ -55,7 +70,7 @@ class EditModel extends ChangeNotifier {
 
   void changeTrashType(String changedTrashType) {
     _trashData.type = changedTrashType;
-    if(changedTrashType != 'other') {
+    if (changedTrashType != 'other') {
       _trashData.trashVal = '';
     }
 
@@ -64,14 +79,14 @@ class EditModel extends ChangeNotifier {
 
   void changeTrashName(String changedTrashName) {
     // この処理ではViewに変更を通知しない…本当か？
-    if(_trashData.type == 'other') {
+    if (_trashData.type == 'other') {
       _trashData.trashVal = changedTrashName;
     }
   }
 
   void changeScheduleType(int index, String changedScheduleType) {
-    dynamic scheduleValue = (){
-      switch(changedScheduleType) {
+    dynamic scheduleValue = () {
+      switch (changedScheduleType) {
         case 'weekday':
           return '0';
         case 'month':
@@ -79,10 +94,17 @@ class EditModel extends ChangeNotifier {
         case 'biweek':
           return '0-1';
         case 'evweek':
-          return {'weekday': '0', 'start': DateTime.now().toIso8601String().substring(0,10), 'interval': 2};
+          return {
+            'weekday': '0',
+            'start': DateTime.now().toIso8601String().substring(0, 10),
+            'interval': 2,
+          };
       }
     }();
-    TrashSchedule newTrashSchedule = TrashSchedule(changedScheduleType, scheduleValue);
+    TrashSchedule newTrashSchedule = TrashSchedule(
+      changedScheduleType,
+      scheduleValue,
+    );
     _trashData.schedules[index] = newTrashSchedule;
 
     notifyListeners();
@@ -94,34 +116,37 @@ class EditModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeEvweekValue(int index, String weekday, int interval, String start) {
+  void changeEvweekValue(
+    int index,
+    String weekday,
+    int interval,
+    String start,
+  ) {
     _trashData.schedules[index].value = {
       'weekday': weekday,
       'interval': interval,
-      'start': start
+      'start': start,
     };
 
     notifyListeners();
   }
 
   void addSchedule() {
-    _trashData.schedules.add(
-        TrashSchedule('weekday', '0')
-    );
+    _trashData.schedules.add(TrashSchedule('weekday', '0'));
     notifyListeners();
   }
 
   void removeSchedule(int index) {
-    if(_trashData.schedules.length > 1) {
+    if (_trashData.schedules.length > 1) {
       _trashData.schedules.removeAt(index);
     }
     notifyListeners();
   }
 
   Future<bool> submitTrashData() async {
-    if(_editType == EditType.NEW) {
+    if (_editType == EditType.NEW) {
       return _registerTrashData();
-    } else if(_editType == EditType.UPDATE) {
+    } else if (_editType == EditType.UPDATE) {
       return _updateTrashData();
     }
     return false;
@@ -131,7 +156,7 @@ class EditModel extends ChangeNotifier {
   TrashData _getRemappedEveScheduleTrashData() {
     TrashData remappedTrashData = TrashData.fromJson(_trashData.toJson());
     remappedTrashData.schedules = remappedTrashData.schedules.map((element) {
-      if(element.type == 'evweek') {
+      if (element.type == 'evweek') {
         DateTime start = DateTime.parse(element.value['start']);
         _logger.d("remapEvSchedule: before -> ${element.value}");
         // 日曜日からの差分を求める
@@ -139,7 +164,7 @@ class EditModel extends ChangeNotifier {
         int startWeekday = start.weekday == 7 ? 0 : start.weekday;
         int diff = 0 - startWeekday;
         DateTime newStart = start.add(Duration(days: diff));
-        element.value['start'] = newStart.toIso8601String().substring(0,10);
+        element.value['start'] = newStart.toIso8601String().substring(0, 10);
         _logger.d("remapEvSchedule: after -> ${element.value}");
       }
       return element;
@@ -149,24 +174,30 @@ class EditModel extends ChangeNotifier {
   }
 
   Future<bool> _registerTrashData() async {
-    if(_editState != EditState.PROCESSING && _editState != EditState.COMPLETE) {
+    if (_editState != EditState.PROCESSING &&
+        _editState != EditState.COMPLETE) {
       _editState = EditState.PROCESSING;
-      return _trashDataService.addTrashData(_getRemappedEveScheduleTrashData()).then((result) {
-        _editState = result ? EditState.COMPLETE : EditState.ERROR;
-        return result;
-      });
+      return _trashDataService
+          .addTrashData(_getRemappedEveScheduleTrashData())
+          .then((result) {
+            _editState = result ? EditState.COMPLETE : EditState.ERROR;
+            return result;
+          });
     }
     return false;
   }
 
-  Future<bool> _updateTrashData()  async {
-    if(_editState != EditState.PROCESSING && _editState != EditState.COMPLETE) {
+  Future<bool> _updateTrashData() async {
+    if (_editState != EditState.PROCESSING &&
+        _editState != EditState.COMPLETE) {
       _editState = EditState.PROCESSING;
       notifyListeners();
-      return _trashDataService.updateTrashData(_getRemappedEveScheduleTrashData()).then((result) {
-        _editState = result ? EditState.COMPLETE : EditState.ERROR;
-        return result;
-      });
+      return _trashDataService
+          .updateTrashData(_getRemappedEveScheduleTrashData())
+          .then((result) {
+            _editState = result ? EditState.COMPLETE : EditState.ERROR;
+            return result;
+          });
     }
     return false;
   }
