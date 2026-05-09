@@ -3,22 +3,23 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i7;
+import 'dart:async' as _i8;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:throwtrash/models/calendar_model.dart' as _i9;
-import 'package:throwtrash/models/exclude_date.dart' as _i10;
-import 'package:throwtrash/models/trash_api_register_response.dart' as _i12;
-import 'package:throwtrash/models/trash_data.dart' as _i8;
+import 'package:throwtrash/models/calendar_model.dart' as _i10;
+import 'package:throwtrash/models/exclude_date.dart' as _i11;
+import 'package:throwtrash/models/trash_api_register_response.dart' as _i13;
+import 'package:throwtrash/models/trash_data.dart' as _i9;
+import 'package:throwtrash/models/trash_search_result.dart' as _i4;
 import 'package:throwtrash/models/trash_sync_result.dart' as _i3;
 import 'package:throwtrash/models/trash_update_result.dart' as _i2;
-import 'package:throwtrash/models/user.dart' as _i4;
+import 'package:throwtrash/models/user.dart' as _i5;
 import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
-    as _i5;
-import 'package:throwtrash/usecase/repository/trash_api_interface.dart' as _i11;
-import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
     as _i6;
-import 'package:throwtrash/usecase/user_service_interface.dart' as _i13;
+import 'package:throwtrash/usecase/repository/trash_api_interface.dart' as _i12;
+import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
+    as _i7;
+import 'package:throwtrash/usecase/user_service_interface.dart' as _i14;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -47,8 +48,14 @@ class _FakeTrashSyncResult_1 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
-class _FakeUser_2 extends _i1.SmartFake implements _i4.User {
-  _FakeUser_2(Object parent, Invocation parentInvocation)
+class _FakeTrashSearchResult_2 extends _i1.SmartFake
+    implements _i4.TrashSearchResult {
+  _FakeTrashSearchResult_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeUser_3 extends _i1.SmartFake implements _i5.User {
+  _FakeUser_3(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -56,7 +63,7 @@ class _FakeUser_2 extends _i1.SmartFake implements _i4.User {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCrashReportInterface extends _i1.Mock
-    implements _i5.CrashReportInterface {
+    implements _i6.CrashReportInterface {
   @override
   void reportCrash(dynamic exception, {StackTrace? stackTrace, bool? fatal}) =>
       super.noSuchMethod(
@@ -73,142 +80,187 @@ class MockCrashReportInterface extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTrashRepositoryInterface extends _i1.Mock
-    implements _i6.TrashRepositoryInterface {
+    implements _i7.TrashRepositoryInterface {
   @override
-  _i7.Future<bool> updateTrashData(_i8.TrashData? trashData) =>
+  _i8.Future<bool> updateTrashData(_i9.TrashData? trashData) =>
       (super.noSuchMethod(
             Invocation.method(#updateTrashData, [trashData]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<bool> insertTrashData(_i8.TrashData? trashData) =>
+  _i8.Future<bool> insertTrashData(_i9.TrashData? trashData) =>
       (super.noSuchMethod(
             Invocation.method(#insertTrashData, [trashData]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<List<_i8.TrashData>> readAllTrashData() =>
+  _i8.Future<bool> replaceAllTrashData(List<_i9.TrashData>? allTrashData) =>
+      (super.noSuchMethod(
+            Invocation.method(#replaceAllTrashData, [allTrashData]),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
+          )
+          as _i8.Future<bool>);
+
+  @override
+  _i8.Future<List<_i9.TrashData>> readAllTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#readAllTrashData, []),
-            returnValue: _i7.Future<List<_i8.TrashData>>.value(
-              <_i8.TrashData>[],
+            returnValue: _i8.Future<List<_i9.TrashData>>.value(
+              <_i9.TrashData>[],
             ),
-            returnValueForMissingStub: _i7.Future<List<_i8.TrashData>>.value(
-              <_i8.TrashData>[],
+            returnValueForMissingStub: _i8.Future<List<_i9.TrashData>>.value(
+              <_i9.TrashData>[],
             ),
           )
-          as _i7.Future<List<_i8.TrashData>>);
+          as _i8.Future<List<_i9.TrashData>>);
 
   @override
-  _i7.Future<bool> deleteTrashData(String? id) =>
+  _i8.Future<bool> deleteTrashData(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteTrashData, [id]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<bool> updateLastUpdateTime(int? updateTimestamp) =>
+  _i8.Future<bool> updateLastUpdateTime(int? updateTimestamp) =>
       (super.noSuchMethod(
             Invocation.method(#updateLastUpdateTime, [updateTimestamp]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<int> getLastUpdateTime() =>
+  _i8.Future<int> getLastUpdateTime() =>
       (super.noSuchMethod(
             Invocation.method(#getLastUpdateTime, []),
-            returnValue: _i7.Future<int>.value(0),
-            returnValueForMissingStub: _i7.Future<int>.value(0),
+            returnValue: _i8.Future<int>.value(0),
+            returnValueForMissingStub: _i8.Future<int>.value(0),
           )
-          as _i7.Future<int>);
+          as _i8.Future<int>);
 
   @override
-  _i7.Future<bool> truncateAllTrashData() =>
+  _i8.Future<bool> truncateAllTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#truncateAllTrashData, []),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<_i9.SyncStatus> getSyncStatus() =>
+  _i8.Future<_i10.SyncStatus> getSyncStatus() =>
       (super.noSuchMethod(
             Invocation.method(#getSyncStatus, []),
-            returnValue: _i7.Future<_i9.SyncStatus>.value(
-              _i9.SyncStatus.NOT_YET,
+            returnValue: _i8.Future<_i10.SyncStatus>.value(
+              _i10.SyncStatus.NOT_YET,
             ),
-            returnValueForMissingStub: _i7.Future<_i9.SyncStatus>.value(
-              _i9.SyncStatus.NOT_YET,
+            returnValueForMissingStub: _i8.Future<_i10.SyncStatus>.value(
+              _i10.SyncStatus.NOT_YET,
             ),
           )
-          as _i7.Future<_i9.SyncStatus>);
+          as _i8.Future<_i10.SyncStatus>);
 
   @override
-  _i7.Future<bool> setSyncStatus(_i9.SyncStatus? syncStatus) =>
+  _i8.Future<bool> setSyncStatus(_i10.SyncStatus? syncStatus) =>
       (super.noSuchMethod(
             Invocation.method(#setSyncStatus, [syncStatus]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<List<_i10.ExcludeDate>> readGlobalExcludeDates() =>
+  _i8.Future<List<_i11.ExcludeDate>> readGlobalExcludeDates() =>
       (super.noSuchMethod(
             Invocation.method(#readGlobalExcludeDates, []),
-            returnValue: _i7.Future<List<_i10.ExcludeDate>>.value(
-              <_i10.ExcludeDate>[],
+            returnValue: _i8.Future<List<_i11.ExcludeDate>>.value(
+              <_i11.ExcludeDate>[],
             ),
-            returnValueForMissingStub: _i7.Future<List<_i10.ExcludeDate>>.value(
-              <_i10.ExcludeDate>[],
+            returnValueForMissingStub: _i8.Future<List<_i11.ExcludeDate>>.value(
+              <_i11.ExcludeDate>[],
             ),
           )
-          as _i7.Future<List<_i10.ExcludeDate>>);
+          as _i8.Future<List<_i11.ExcludeDate>>);
 
   @override
-  _i7.Future<bool> writeGlobalExcludeDates(
-    List<_i10.ExcludeDate>? excludeDates,
+  _i8.Future<bool> writeGlobalExcludeDates(
+    List<_i11.ExcludeDate>? excludeDates,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#writeGlobalExcludeDates, [excludeDates]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
+
+  @override
+  _i8.Future<bool> shouldShowInitialSearchDialog() =>
+      (super.noSuchMethod(
+            Invocation.method(#shouldShowInitialSearchDialog, []),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
+          )
+          as _i8.Future<bool>);
+
+  @override
+  _i8.Future<bool> markInitialSearchDialogShown() =>
+      (super.noSuchMethod(
+            Invocation.method(#markInitialSearchDialogShown, []),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
+          )
+          as _i8.Future<bool>);
+
+  @override
+  _i8.Future<bool> saveImportMessage(String? message) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveImportMessage, [message]),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
+          )
+          as _i8.Future<bool>);
+
+  @override
+  _i8.Future<String?> consumeImportMessage() =>
+      (super.noSuchMethod(
+            Invocation.method(#consumeImportMessage, []),
+            returnValue: _i8.Future<String?>.value(),
+            returnValueForMissingStub: _i8.Future<String?>.value(),
+          )
+          as _i8.Future<String?>);
 }
 
 /// A class which mocks [TrashApiInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTrashApiInterface extends _i1.Mock implements _i11.TrashApiInterface {
+class MockTrashApiInterface extends _i1.Mock implements _i12.TrashApiInterface {
   @override
-  _i7.Future<_i12.RegisterResponse?> registerUserAndTrashData(
-    List<_i8.TrashData>? allTrashData,
+  _i8.Future<_i13.RegisterResponse?> registerUserAndTrashData(
+    List<_i9.TrashData>? allTrashData,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#registerUserAndTrashData, [allTrashData]),
-            returnValue: _i7.Future<_i12.RegisterResponse?>.value(),
+            returnValue: _i8.Future<_i13.RegisterResponse?>.value(),
             returnValueForMissingStub:
-                _i7.Future<_i12.RegisterResponse?>.value(),
+                _i8.Future<_i13.RegisterResponse?>.value(),
           )
-          as _i7.Future<_i12.RegisterResponse?>);
+          as _i8.Future<_i13.RegisterResponse?>);
 
   @override
-  _i7.Future<_i2.TrashUpdateResult> updateTrashData(
+  _i8.Future<_i2.TrashUpdateResult> updateTrashData(
     String? id,
-    List<_i8.TrashData>? localSchedule,
-    List<_i10.ExcludeDate>? globalExcludes,
+    List<_i9.TrashData>? localSchedule,
+    List<_i11.ExcludeDate>? globalExcludes,
     int? localTimestamp,
   ) =>
       (super.noSuchMethod(
@@ -218,7 +270,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i11.TrashApiInterface {
               globalExcludes,
               localTimestamp,
             ]),
-            returnValue: _i7.Future<_i2.TrashUpdateResult>.value(
+            returnValue: _i8.Future<_i2.TrashUpdateResult>.value(
               _FakeTrashUpdateResult_0(
                 this,
                 Invocation.method(#updateTrashData, [
@@ -229,7 +281,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i11.TrashApiInterface {
                 ]),
               ),
             ),
-            returnValueForMissingStub: _i7.Future<_i2.TrashUpdateResult>.value(
+            returnValueForMissingStub: _i8.Future<_i2.TrashUpdateResult>.value(
               _FakeTrashUpdateResult_0(
                 this,
                 Invocation.method(#updateTrashData, [
@@ -241,60 +293,82 @@ class MockTrashApiInterface extends _i1.Mock implements _i11.TrashApiInterface {
               ),
             ),
           )
-          as _i7.Future<_i2.TrashUpdateResult>);
+          as _i8.Future<_i2.TrashUpdateResult>);
 
   @override
-  _i7.Future<_i3.TrashSyncResult> syncTrashData(String? userId) =>
+  _i8.Future<_i3.TrashSyncResult> syncTrashData(String? userId) =>
       (super.noSuchMethod(
             Invocation.method(#syncTrashData, [userId]),
-            returnValue: _i7.Future<_i3.TrashSyncResult>.value(
+            returnValue: _i8.Future<_i3.TrashSyncResult>.value(
               _FakeTrashSyncResult_1(
                 this,
                 Invocation.method(#syncTrashData, [userId]),
               ),
             ),
-            returnValueForMissingStub: _i7.Future<_i3.TrashSyncResult>.value(
+            returnValueForMissingStub: _i8.Future<_i3.TrashSyncResult>.value(
               _FakeTrashSyncResult_1(
                 this,
                 Invocation.method(#syncTrashData, [userId]),
               ),
             ),
           )
-          as _i7.Future<_i3.TrashSyncResult>);
+          as _i8.Future<_i3.TrashSyncResult>);
+
+  @override
+  _i8.Future<_i4.TrashSearchResult> searchTrashSchedule(
+    String? input,
+    _i4.TrashSearchInputType? inputType,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchTrashSchedule, [input, inputType]),
+            returnValue: _i8.Future<_i4.TrashSearchResult>.value(
+              _FakeTrashSearchResult_2(
+                this,
+                Invocation.method(#searchTrashSchedule, [input, inputType]),
+              ),
+            ),
+            returnValueForMissingStub: _i8.Future<_i4.TrashSearchResult>.value(
+              _FakeTrashSearchResult_2(
+                this,
+                Invocation.method(#searchTrashSchedule, [input, inputType]),
+              ),
+            ),
+          )
+          as _i8.Future<_i4.TrashSearchResult>);
 }
 
 /// A class which mocks [UserServiceInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockUserServiceInterface extends _i1.Mock
-    implements _i13.UserServiceInterface {
+    implements _i14.UserServiceInterface {
   @override
-  _i4.User get user =>
+  _i5.User get user =>
       (super.noSuchMethod(
             Invocation.getter(#user),
-            returnValue: _FakeUser_2(this, Invocation.getter(#user)),
-            returnValueForMissingStub: _FakeUser_2(
+            returnValue: _FakeUser_3(this, Invocation.getter(#user)),
+            returnValueForMissingStub: _FakeUser_3(
               this,
               Invocation.getter(#user),
             ),
           )
-          as _i4.User);
+          as _i5.User);
 
   @override
-  _i7.Future<bool> registerUser(String? id) =>
+  _i8.Future<bool> registerUser(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#registerUser, [id]),
-            returnValue: _i7.Future<bool>.value(false),
-            returnValueForMissingStub: _i7.Future<bool>.value(false),
+            returnValue: _i8.Future<bool>.value(false),
+            returnValueForMissingStub: _i8.Future<bool>.value(false),
           )
-          as _i7.Future<bool>);
+          as _i8.Future<bool>);
 
   @override
-  _i7.Future<void> refreshUser() =>
+  _i8.Future<void> refreshUser() =>
       (super.noSuchMethod(
             Invocation.method(#refreshUser, []),
-            returnValue: _i7.Future<void>.value(),
-            returnValueForMissingStub: _i7.Future<void>.value(),
+            returnValue: _i8.Future<void>.value(),
+            returnValueForMissingStub: _i8.Future<void>.value(),
           )
-          as _i7.Future<void>);
+          as _i8.Future<void>);
 }

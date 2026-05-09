@@ -1,5 +1,6 @@
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/exclude_date.dart';
+import 'package:throwtrash/models/trash_search_result.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 
 abstract class TrashDataServiceInterface {
@@ -21,6 +22,11 @@ abstract class TrashDataServiceInterface {
   Future<bool> updateTrashData(TrashData trashData);
   Future<bool> updateGlobalExcludeDates(List<ExcludeDate> excludeDates);
   Future<SyncResult> syncTrashData();
+  TrashSearchInputType classifySearchInput(String input);
+  Future<TrashImportResult> importTrashSchedule(String input);
+  Future<bool> shouldShowInitialSearchDialog();
+  Future<bool> markInitialSearchDialogShown();
+  Future<String?> consumeImportMessage();
 
   /// 5週間分全てのゴミを返す
   /// @param
@@ -28,11 +34,15 @@ abstract class TrashDataServiceInterface {
   /// dataSet カレンダーに表示する日付のリスト
   ///
   /// @return カレンダーのポジションごとのゴミ捨てリスト
-  List<List<TrashData>> getEnableTrashList(
-      {required int year,
-      required int month,
-      required List<int> targetDateList});
+  List<List<TrashData>> getEnableTrashList({
+    required int year,
+    required int month,
+    required List<int> targetDateList,
+  });
 
-  List<TrashData> getTrashOfToday(
-      {required int year, required int month, required int date});
+  List<TrashData> getTrashOfToday({
+    required int year,
+    required int month,
+    required int date,
+  });
 }

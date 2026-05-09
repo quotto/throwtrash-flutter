@@ -26,6 +26,7 @@ class _EditItemMainState extends State<EditItemMain> {
   bool _isModelLoaded = false;
   bool _isOtherTrashNameInitialized = false;
   bool _loadFailed = false;
+  bool _importMessageLoaded = false;
 
   final _failedSnackBar = SnackBar(
     backgroundColor: Colors.pinkAccent,
@@ -87,6 +88,18 @@ class _EditItemMainState extends State<EditItemMain> {
     }
     _syncOtherTrashNameFromModel();
     _isModelLoaded = true;
+    if (!_importMessageLoaded) {
+      _importMessageLoaded = true;
+      EditModel model = Provider.of<EditModel>(context, listen: false);
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final message = await model.consumeImportMessage();
+        if (message != null && mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
+        }
+      });
+    }
   }
 
   @override

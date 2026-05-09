@@ -138,6 +138,14 @@ class MockTrashRepositoryInterface extends _i1.Mock
           as _i4.Future<bool>);
 
   @override
+  _i4.Future<bool> replaceAllTrashData(List<_i9.TrashData>? allTrashData) =>
+      (super.noSuchMethod(
+            Invocation.method(#replaceAllTrashData, [allTrashData]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
   _i4.Future<List<_i9.TrashData>> readAllTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#readAllTrashData, []),
@@ -216,6 +224,38 @@ class MockTrashRepositoryInterface extends _i1.Mock
             returnValue: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> shouldShowInitialSearchDialog() =>
+      (super.noSuchMethod(
+            Invocation.method(#shouldShowInitialSearchDialog, []),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> markInitialSearchDialogShown() =>
+      (super.noSuchMethod(
+            Invocation.method(#markInitialSearchDialogShown, []),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> saveImportMessage(String? message) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveImportMessage, [message]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<String?> consumeImportMessage() =>
+      (super.noSuchMethod(
+            Invocation.method(#consumeImportMessage, []),
+            returnValue: _i4.Future<String?>.value(),
+          )
+          as _i4.Future<String?>);
 }
 
 /// A class which mocks [CrashReportInterface].

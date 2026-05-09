@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:throwtrash/auto_import_dialog.dart';
 import 'package:throwtrash/edit.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
@@ -31,10 +32,25 @@ class _TrashListState extends State<TrashList> {
         child: Consumer<ListModel>(
           builder: (context, list, child) {
             return ListView.separated(
-              itemCount: list.trashList.length,
+              itemCount: list.trashList.length + 1,
               separatorBuilder: (context, index) =>
                   Divider(color: Theme.of(context).dividerColor),
               itemBuilder: (context, index) {
+                if (index == list.trashList.length) {
+                  return Padding(
+                    padding: EdgeInsets.all(16),
+                    child: ElevatedButton.icon(
+                      key: Key('open-auto-import-dialog'),
+                      icon: Icon(Icons.cloud_download),
+                      label: Text('自動取り込み（β）'),
+                      onPressed: () {
+                        showAutoImportDialog(context).then((_) {
+                          list.reload();
+                        });
+                      },
+                    ),
+                  );
+                }
                 TrashListData trashData = list.trashList[index];
                 print('$index:${trashData.id}');
                 return Row(

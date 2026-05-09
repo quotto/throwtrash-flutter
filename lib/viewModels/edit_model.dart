@@ -68,6 +68,10 @@ class EditModel extends ChangeNotifier {
   EditState get editState => _editState;
   EditType get editType => _editType;
 
+  Future<String?> consumeImportMessage() {
+    return _trashDataService.consumeImportMessage();
+  }
+
   void changeTrashType(String changedTrashType) {
     _trashData.type = changedTrashType;
     if (changedTrashType != 'other') {

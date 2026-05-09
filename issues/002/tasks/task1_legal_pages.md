@@ -4,6 +4,10 @@
 
 developer
 
+## 状態
+
+完了
+
 ## 内容
 
 - 「その他」画面を追加する。
@@ -22,3 +26,9 @@ developer
 
 - 対象 Widget テストが通る。
 - 初稿本文が欠落なく表示される。
+
+## 実績
+
+- `OtherPage` と `LegalDocumentPage` を追加した。
+- `assets/legal/term_of_service.txt` と `assets/legal/privacy_policy.txt` を追加し、`pubspec.yaml` に登録した。
+- その他画面から利用規約・プライバシーポリシーを開く Widget テストを追加した。

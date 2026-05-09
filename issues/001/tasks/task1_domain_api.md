@@ -4,6 +4,10 @@
 
 developer
 
+## 状態
+
+完了
+
 ## 内容
 
 - 検索 API 用 Model を追加する。
@@ -23,3 +27,11 @@ developer
 
 - 対象単体テストが通る。
 - `openapi.yaml` の主要レスポンスに対応している。
+
+## 実績
+
+- `TrashSearchResult` と `TrashSearchInputType` を追加した。
+- 検索 API の `/search` 呼び出し、API キー送信、エラーレスポンス変換を実装した。
+- API レスポンスから既存 `TrashData` / `TrashSchedule` へ変換した。
+- `unsupported` スケジュールは保存対象から除外した。
+- 対象テスト: `test/unit/repository/trash_search_api_test.dart`

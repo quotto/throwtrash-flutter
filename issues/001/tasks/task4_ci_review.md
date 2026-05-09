@@ -4,6 +4,10 @@
 
 devops, reviewer
 
+## 状態
+
+完了
+
 ## 内容
 
 - CI/CD に自動取り込み API の `--dart-define=trashSearchApiEndpoint` と `--dart-define=trashSearchApiKey` を追加する。
@@ -22,3 +26,12 @@ devops, reviewer
 
 - 主要検証コマンドが通る。
 - レビュー指摘が解消または対応方針付きで記録される。
+
+## 実績
+
+- `.github/workflows/coverage.yml` に `trashSearchApiEndpoint` と `trashSearchApiKey` の `--dart-define` を追加した。
+- `fvm dart run build_runner build --delete-conflicting-outputs` を実行した。
+- `fvm flutter test` を実行し、252 件の全テスト通過を確認した。
+- `fvm flutter analyze` は error なし、既存を含む info 指摘あり。
+- Copilot review を実行し、結果を `work/copilot_review_issues_001_002.md` に記録した。
+- Copilot review の High 指摘 3 件（データ破壊リスク、未処理非同期、初回ダイアログ非表示条件）と主要な Medium 指摘に対応した。
