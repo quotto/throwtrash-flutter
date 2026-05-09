@@ -81,14 +81,14 @@
    - メッセージは取り込み処理直後のみ表示し、表示後に消す。
 9. CI/CD を修正する。
    - 自動取り込み API のエンドポイントを config で、API キーを `--dart-define` で渡せるようにする。
-   - GitHub Actions のシークレット名は `TRASH_SEARCH_API_KEY` とする。
+   - GitHub Actions と Codemagic のシークレット名は `TRASH_SEARCH_API_KEY` とする。
 
 ## エージェント編成
 
 - manager: 計画管理、要求整合、タスク更新、最終確認。
 - developer: Model/Repository/UseCase/UI/テスト実装。TDD と verification-loop を担当。
 - reviewer: 実装後レビュー、セキュリティ観点、Copilot review の実行。
-- devops: CI/CD の dart-define 追加、必要時に GitHub Actions の結果監視。
+- devops: CI/CD の dart-define 追加、必要時に GitHub Actions / Codemagic の結果監視。
 
 ## 実装順序
 
@@ -117,5 +117,5 @@
   - `trashSearchApiEndpoint`
 - Dart define
   - `trashSearchApiKey`
-- GitHub Actions secrets
+- CI/CD secrets
   - `TRASH_SEARCH_API_KEY`
