@@ -8,18 +8,19 @@ import 'dart:async' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:throwtrash/models/calendar_model.dart' as _i10;
 import 'package:throwtrash/models/exclude_date.dart' as _i11;
-import 'package:throwtrash/models/trash_api_register_response.dart' as _i13;
+import 'package:throwtrash/models/trash_api_register_response.dart' as _i14;
 import 'package:throwtrash/models/trash_data.dart' as _i9;
+import 'package:throwtrash/models/trash_import_message.dart' as _i12;
 import 'package:throwtrash/models/trash_search_result.dart' as _i4;
 import 'package:throwtrash/models/trash_sync_result.dart' as _i3;
 import 'package:throwtrash/models/trash_update_result.dart' as _i2;
 import 'package:throwtrash/models/user.dart' as _i5;
 import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
     as _i6;
-import 'package:throwtrash/usecase/repository/trash_api_interface.dart' as _i12;
+import 'package:throwtrash/usecase/repository/trash_api_interface.dart' as _i13;
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
     as _i7;
-import 'package:throwtrash/usecase/user_service_interface.dart' as _i14;
+import 'package:throwtrash/usecase/user_service_interface.dart' as _i15;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -222,7 +223,7 @@ class MockTrashRepositoryInterface extends _i1.Mock
           as _i8.Future<bool>);
 
   @override
-  _i8.Future<bool> saveImportMessage(String? message) =>
+  _i8.Future<bool> saveImportMessage(_i12.TrashImportMessage? message) =>
       (super.noSuchMethod(
             Invocation.method(#saveImportMessage, [message]),
             returnValue: _i8.Future<bool>.value(false),
@@ -231,30 +232,31 @@ class MockTrashRepositoryInterface extends _i1.Mock
           as _i8.Future<bool>);
 
   @override
-  _i8.Future<String?> consumeImportMessage() =>
+  _i8.Future<_i12.TrashImportMessage?> consumeImportMessage() =>
       (super.noSuchMethod(
             Invocation.method(#consumeImportMessage, []),
-            returnValue: _i8.Future<String?>.value(),
-            returnValueForMissingStub: _i8.Future<String?>.value(),
+            returnValue: _i8.Future<_i12.TrashImportMessage?>.value(),
+            returnValueForMissingStub:
+                _i8.Future<_i12.TrashImportMessage?>.value(),
           )
-          as _i8.Future<String?>);
+          as _i8.Future<_i12.TrashImportMessage?>);
 }
 
 /// A class which mocks [TrashApiInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTrashApiInterface extends _i1.Mock implements _i12.TrashApiInterface {
+class MockTrashApiInterface extends _i1.Mock implements _i13.TrashApiInterface {
   @override
-  _i8.Future<_i13.RegisterResponse?> registerUserAndTrashData(
+  _i8.Future<_i14.RegisterResponse?> registerUserAndTrashData(
     List<_i9.TrashData>? allTrashData,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#registerUserAndTrashData, [allTrashData]),
-            returnValue: _i8.Future<_i13.RegisterResponse?>.value(),
+            returnValue: _i8.Future<_i14.RegisterResponse?>.value(),
             returnValueForMissingStub:
-                _i8.Future<_i13.RegisterResponse?>.value(),
+                _i8.Future<_i14.RegisterResponse?>.value(),
           )
-          as _i8.Future<_i13.RegisterResponse?>);
+          as _i8.Future<_i14.RegisterResponse?>);
 
   @override
   _i8.Future<_i2.TrashUpdateResult> updateTrashData(
@@ -341,7 +343,7 @@ class MockTrashApiInterface extends _i1.Mock implements _i12.TrashApiInterface {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockUserServiceInterface extends _i1.Mock
-    implements _i14.UserServiceInterface {
+    implements _i15.UserServiceInterface {
   @override
   _i5.User get user =>
       (super.noSuchMethod(

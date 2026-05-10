@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/exclude_date.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_api_register_response.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
@@ -156,7 +157,9 @@ class TrashDataService implements TrashDataServiceInterface {
       classifySearchInput(trimmedInput),
     );
     if (!searchResult.success) {
-      await _trashRepository.saveImportMessage(searchResult.message);
+      await _trashRepository.saveImportMessage(
+        TrashImportMessage.error(searchResult.message),
+      );
       await _fcmService?.showLocalNotification('自動取り込み', searchResult.message);
       return TrashImportResult.failure(searchResult.message);
     }
@@ -166,14 +169,18 @@ class TrashDataService implements TrashDataServiceInterface {
     );
     if (!replaceResult) {
       final message = '自動取り込み結果の保存に失敗しました。';
-      await _trashRepository.saveImportMessage(message);
+      await _trashRepository.saveImportMessage(
+        TrashImportMessage.error(message),
+      );
       await _fcmService?.showLocalNotification('自動取り込み', message);
       return TrashImportResult.failure(message);
     }
     await _changeSyncStatusToSyncing();
     await refreshTrashData();
     final importResult = TrashImportResult.success(searchResult.message);
-    await _trashRepository.saveImportMessage(importResult.message);
+    await _trashRepository.saveImportMessage(
+      TrashImportMessage.success(importResult.message),
+    );
     await _fcmService?.showLocalNotification('自動取り込み', importResult.message);
     return importResult;
   }
@@ -189,7 +196,7 @@ class TrashDataService implements TrashDataServiceInterface {
   }
 
   @override
-  Future<String?> consumeImportMessage() {
+  Future<TrashImportMessage?> consumeImportMessage() {
     return _trashRepository.consumeImportMessage();
   }
 

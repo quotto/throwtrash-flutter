@@ -4,21 +4,22 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
-import 'dart:ui' as _i11;
+import 'dart:ui' as _i12;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
 import 'package:throwtrash/models/account_link_info.dart' as _i3;
 import 'package:throwtrash/models/exclude_date.dart' as _i6;
 import 'package:throwtrash/models/trash_data.dart' as _i5;
+import 'package:throwtrash/models/trash_import_message.dart' as _i10;
 import 'package:throwtrash/models/trash_search_result.dart' as _i2;
-import 'package:throwtrash/usecase/account_link_service_interface.dart' as _i12;
+import 'package:throwtrash/usecase/account_link_service_interface.dart' as _i13;
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart'
-    as _i14;
+    as _i15;
 import 'package:throwtrash/usecase/sync_result.dart' as _i9;
 import 'package:throwtrash/usecase/trash_data_service_interface.dart' as _i4;
-import 'package:throwtrash/viewModels/account_link_model.dart' as _i13;
-import 'package:throwtrash/viewModels/change_theme_model.dart' as _i10;
+import 'package:throwtrash/viewModels/account_link_model.dart' as _i14;
+import 'package:throwtrash/viewModels/change_theme_model.dart' as _i11;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -218,13 +219,14 @@ class MockTrashDataServiceInterface extends _i1.Mock
           as _i7.Future<bool>);
 
   @override
-  _i7.Future<String?> consumeImportMessage() =>
+  _i7.Future<_i10.TrashImportMessage?> consumeImportMessage() =>
       (super.noSuchMethod(
             Invocation.method(#consumeImportMessage, []),
-            returnValue: _i7.Future<String?>.value(),
-            returnValueForMissingStub: _i7.Future<String?>.value(),
+            returnValue: _i7.Future<_i10.TrashImportMessage?>.value(),
+            returnValueForMissingStub:
+                _i7.Future<_i10.TrashImportMessage?>.value(),
           )
-          as _i7.Future<String?>);
+          as _i7.Future<_i10.TrashImportMessage?>);
 
   @override
   List<List<_i5.TrashData>> getEnableTrashList({
@@ -264,7 +266,7 @@ class MockTrashDataServiceInterface extends _i1.Mock
 /// A class which mocks [ChangeThemeModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockChangeThemeModel extends _i1.Mock implements _i10.ChangeThemeModel {
+class MockChangeThemeModel extends _i1.Mock implements _i11.ChangeThemeModel {
   @override
   bool get darkMode =>
       (super.noSuchMethod(
@@ -302,13 +304,13 @@ class MockChangeThemeModel extends _i1.Mock implements _i10.ChangeThemeModel {
           as _i7.Future<void>);
 
   @override
-  void addListener(_i11.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i11.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
     returnValueForMissingStub: null,
   );
@@ -330,10 +332,10 @@ class MockChangeThemeModel extends _i1.Mock implements _i10.ChangeThemeModel {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAccountLinkServiceInterface extends _i1.Mock
-    implements _i12.AccountLinkServiceInterface {
+    implements _i13.AccountLinkServiceInterface {
   @override
   _i7.Future<_i3.AccountLinkInfo> startLink(
-    _i13.AccountLinkType? accountLinkType,
+    _i14.AccountLinkType? accountLinkType,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#startLink, [accountLinkType]),
@@ -366,7 +368,7 @@ class MockAccountLinkServiceInterface extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAppConfigProviderInterface extends _i1.Mock
-    implements _i14.AppConfigProviderInterface {
+    implements _i15.AppConfigProviderInterface {
   @override
   String get trashApiUrl =>
       (super.noSuchMethod(

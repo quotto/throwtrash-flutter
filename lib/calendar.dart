@@ -19,6 +19,7 @@ import 'package:throwtrash/viewModels/change_theme_model.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:throwtrash/viewModels/exclude_date_model.dart';
 import 'package:throwtrash/viewModels/list_model.dart';
+import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/view_common/trash_color.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,17 +37,12 @@ class CalendarWidget extends StatefulWidget {
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   Logger _logger = Logger();
-  final _rollbackSnackBar = SnackBar(
-    backgroundColor: Colors.amber,
-    content: Text(
-      '他の端末でスケジュールが更新されました。',
-      style: TextStyle(color: Colors.white),
-    ),
+  final _rollbackSnackBar = AppFeedbackSnackBar.warning(
+    '他の端末でスケジュールが更新されました。',
     duration: Duration(seconds: 1),
   );
-  final _failedSnackBar = SnackBar(
-    backgroundColor: Colors.pink,
-    content: Text('データの更新に失敗しました。', style: TextStyle(color: Colors.white)),
+  final _failedSnackBar = AppFeedbackSnackBar.error(
+    'データの更新に失敗しました。',
     duration: Duration(seconds: 1),
   );
 

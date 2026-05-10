@@ -1,5 +1,6 @@
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/exclude_date.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 
 import '../../models/calendar_model.dart';
 
@@ -18,6 +19,6 @@ abstract class TrashRepositoryInterface {
   Future<bool> writeGlobalExcludeDates(List<ExcludeDate> excludeDates);
   Future<bool> shouldShowInitialSearchDialog();
   Future<bool> markInitialSearchDialogShown();
-  Future<bool> saveImportMessage(String message);
-  Future<String?> consumeImportMessage();
+  Future<bool> saveImportMessage(TrashImportMessage message);
+  Future<TrashImportMessage?> consumeImportMessage();
 }

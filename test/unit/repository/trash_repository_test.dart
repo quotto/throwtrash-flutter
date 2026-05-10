@@ -4,6 +4,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/repository/trash_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,13 +37,15 @@ void main() {
     });
     test('データが1件ある状態で1件のデータが返却される', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData.toJson())]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData.toJson())]);
       List<TrashData> result = await repository.readAllTrashData();
       expect(result.length, 1);
       expect(result[0].id, '001');
@@ -57,29 +60,32 @@ void main() {
     });
     test('データが3件ある状態で3件のデータが返却される', () async {
       TrashData trashData1 = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
 
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'burn',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
 
       TrashData trashData3 = TrashData(
-          id: '003',
-          type: 'unburn',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '003',
+        type: 'unburn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn([
         jsonEncode(trashData1.toJson()),
         jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
+        jsonEncode(trashData3.toJson()),
       ]);
       List<TrashData> result = await repository.readAllTrashData();
       expect(result.length, 3);
@@ -91,63 +97,78 @@ void main() {
   group('insertTrashData', () {
     test('登録済みデータ無しの状態で新規追加', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn(null);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       bool result = await repository.insertTrashData(trashData);
       expect(result, true);
-      verify(sharedPreferences.setStringList(
-          'TRASH_DATA', [jsonEncode(trashData.toJson())])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData.toJson()),
+        ]),
+      ).called(1);
     });
     test('登録済みデータ有の状態で新規追加', () async {
       TrashData trashData1 = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData1.toJson())]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData1.toJson())]);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'burn',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       bool result2 = await repository.insertTrashData(trashData2);
       expect(result2, true);
-      verify(sharedPreferences.setStringList('TRASH_DATA', [
-        jsonEncode(trashData1.toJson()),
-        jsonEncode(trashData2.toJson())
-      ])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData1.toJson()),
+          jsonEncode(trashData2.toJson()),
+        ]),
+      ).called(1);
     });
     test('ID重複でエラー', () async {
       TrashData trashData1 = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData1.toJson())]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData1.toJson())]);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       TrashData trashData2 = TrashData(
-          id: '001',
-          type: 'burn',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       bool result2 = await repository.insertTrashData(trashData2);
       expect(result2, false);
       verifyNever(sharedPreferences.setStringList('TRASH_DATA', any));
@@ -156,72 +177,85 @@ void main() {
   group('updateTrashData', () {
     test('通常のアップデート,全1件,1件目更新', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData.toJson())]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData.toJson())]);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       trashData.type = 'burn';
       trashData.trashVal = '';
 
       bool result2 = await repository.updateTrashData(trashData);
       expect(result2, true);
-      verify(sharedPreferences.setStringList(
-          'TRASH_DATA', [jsonEncode(trashData.toJson())])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData.toJson()),
+        ]),
+      ).called(1);
     });
     test('通常のアップデート,全3件,2件目更新', () async {
       TrashData trashData1 = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
 
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'burn',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
 
       TrashData trashData3 = TrashData(
-          id: '003',
-          type: 'unburn',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '003',
+        type: 'unburn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
 
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn([
         jsonEncode(trashData1.toJson()),
         jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
+        jsonEncode(trashData3.toJson()),
       ]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       trashData2.type = 'plastic';
       trashData2.trashVal = '';
 
       bool result = await repository.updateTrashData(trashData2);
       expect(result, true);
-      verify(sharedPreferences.setStringList('TRASH_DATA', [
-        jsonEncode(trashData1.toJson()),
-        jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
-      ])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData1.toJson()),
+          jsonEncode(trashData2.toJson()),
+          jsonEncode(trashData3.toJson()),
+        ]),
+      ).called(1);
     });
     test('対象データ無しでエラー（登録済みデータなし）', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn(null);
 
       bool result = await repository.updateTrashData(trashData);
@@ -230,20 +264,23 @@ void main() {
     });
     test('対象データ無しでエラー（登録済みデータあり,1件目の更新）', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData.toJson())]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData.toJson())]);
 
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
 
       bool result2 = await repository.updateTrashData(trashData2);
       expect(result2, false);
@@ -253,117 +290,138 @@ void main() {
   group('deleteTrashData', () {
     test('3件データある状態で1件目を削除', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       TrashData trashData3 = TrashData(
-          id: '003',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '003',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn([
         jsonEncode(trashData.toJson()),
         jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
+        jsonEncode(trashData3.toJson()),
       ]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       bool result = await repository.deleteTrashData('001');
       expect(result, true);
-      verify(sharedPreferences.setStringList('TRASH_DATA', [
-        jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
-      ])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData2.toJson()),
+          jsonEncode(trashData3.toJson()),
+        ]),
+      ).called(1);
     });
     test('3件データある状態で2件目を削除', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       TrashData trashData3 = TrashData(
-          id: '003',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '003',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn([
         jsonEncode(trashData.toJson()),
         jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
+        jsonEncode(trashData3.toJson()),
       ]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       bool result = await repository.deleteTrashData('002');
       expect(result, true);
-      verify(sharedPreferences.setStringList('TRASH_DATA', [
-        jsonEncode(trashData.toJson()),
-        jsonEncode(trashData3.toJson())
-      ])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData.toJson()),
+          jsonEncode(trashData3.toJson()),
+        ]),
+      ).called(1);
     });
     test('3件データある状態で3件目を削除', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       TrashData trashData2 = TrashData(
-          id: '002',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '002',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       TrashData trashData3 = TrashData(
-          id: '003',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
+        id: '003',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
       when(sharedPreferences.getStringList('TRASH_DATA')).thenReturn([
         jsonEncode(trashData.toJson()),
         jsonEncode(trashData2.toJson()),
-        jsonEncode(trashData3.toJson())
+        jsonEncode(trashData3.toJson()),
       ]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       bool result = await repository.deleteTrashData('003');
       expect(result, true);
-      verify(sharedPreferences.setStringList('TRASH_DATA', [
-        jsonEncode(trashData.toJson()),
-        jsonEncode(trashData2.toJson())
-      ])).called(1);
+      verify(
+        sharedPreferences.setStringList('TRASH_DATA', [
+          jsonEncode(trashData.toJson()),
+          jsonEncode(trashData2.toJson()),
+        ]),
+      ).called(1);
     });
     test('1件データがある状態の削除', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData.toJson())]);
-      when(sharedPreferences.setStringList('TRASH_DATA', any))
-          .thenAnswer((_) async => true);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData.toJson())]);
+      when(
+        sharedPreferences.setStringList('TRASH_DATA', any),
+      ).thenAnswer((_) async => true);
 
       bool result = await repository.deleteTrashData('001');
       expect(result, true);
@@ -377,13 +435,15 @@ void main() {
     });
     test('対象データ無しでエラー（登録済みデータあり）', () async {
       TrashData trashData = TrashData(
-          id: '001',
-          type: 'other',
-          trashVal: '生ごみ',
-          schedules: [TrashSchedule('weekday', '0')],
-          excludes: [ExcludeDate(1, 10)]);
-      when(sharedPreferences.getStringList('TRASH_DATA'))
-          .thenReturn([jsonEncode(trashData.toJson())]);
+        id: '001',
+        type: 'other',
+        trashVal: '生ごみ',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [ExcludeDate(1, 10)],
+      );
+      when(
+        sharedPreferences.getStringList('TRASH_DATA'),
+      ).thenReturn([jsonEncode(trashData.toJson())]);
 
       bool result = await repository.deleteTrashData('002');
       expect(result, false);
@@ -404,18 +464,21 @@ void main() {
   });
   group('updateLastUpdateTime', () {
     test('正常に更新される', () async {
-      when(sharedPreferences.setInt('LAST_UPDATE_TIME', 1633024800))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.setInt('LAST_UPDATE_TIME', 1633024800),
+      ).thenAnswer((_) async => true);
       bool result = await repository.updateLastUpdateTime(1633024800);
       expect(result, true);
-      verify(sharedPreferences.setInt('LAST_UPDATE_TIME', 1633024800))
-          .called(1);
+      verify(
+        sharedPreferences.setInt('LAST_UPDATE_TIME', 1633024800),
+      ).called(1);
     });
   });
   group('truncateAllTrashData', () {
     test('正常に削除される', () async {
-      when(sharedPreferences.remove('TRASH_DATA'))
-          .thenAnswer((_) async => true);
+      when(
+        sharedPreferences.remove('TRASH_DATA'),
+      ).thenAnswer((_) async => true);
       bool result = await repository.truncateAllTrashData();
       expect(result, true);
       verify(sharedPreferences.remove('TRASH_DATA')).called(1);
@@ -460,10 +523,95 @@ void main() {
       ).called(1);
     });
   });
+  group('importMessage', () {
+    test('成功メッセージを種別付きで保存できる', () async {
+      when(
+        sharedPreferences.setString(TrashRepository.IMPORT_MESSAGE_KEY, any),
+      ).thenAnswer((_) async => true);
+
+      final result = await repository.saveImportMessage(
+        TrashImportMessage.success('ゴミ出し予定を取り込みました'),
+      );
+
+      expect(result, isTrue);
+      final captured =
+          verify(
+                sharedPreferences.setString(
+                  TrashRepository.IMPORT_MESSAGE_KEY,
+                  captureAny,
+                ),
+              ).captured.single
+              as String;
+      final saved = jsonDecode(captured) as Map<String, dynamic>;
+      expect(saved['message'], 'ゴミ出し予定を取り込みました');
+      expect(saved['type'], 'success');
+    });
+
+    test('失敗メッセージを種別付きで保存できる', () async {
+      when(
+        sharedPreferences.setString(TrashRepository.IMPORT_MESSAGE_KEY, any),
+      ).thenAnswer((_) async => true);
+
+      final result = await repository.saveImportMessage(
+        TrashImportMessage.error('自動取り込み結果の保存に失敗しました。'),
+      );
+
+      expect(result, isTrue);
+      final captured =
+          verify(
+                sharedPreferences.setString(
+                  TrashRepository.IMPORT_MESSAGE_KEY,
+                  captureAny,
+                ),
+              ).captured.single
+              as String;
+      final saved = jsonDecode(captured) as Map<String, dynamic>;
+      expect(saved['message'], '自動取り込み結果の保存に失敗しました。');
+      expect(saved['type'], 'error');
+    });
+
+    test('保存済みメッセージを一度だけ取得して削除できる', () async {
+      when(
+        sharedPreferences.getString(TrashRepository.IMPORT_MESSAGE_KEY),
+      ).thenReturn(
+        jsonEncode({'message': 'ゴミ出し予定を取り込みました', 'type': 'success'}),
+      );
+      when(
+        sharedPreferences.remove(TrashRepository.IMPORT_MESSAGE_KEY),
+      ).thenAnswer((_) async => true);
+
+      final result = await repository.consumeImportMessage();
+
+      expect(result?.message, 'ゴミ出し予定を取り込みました');
+      expect(result?.isSuccess, isTrue);
+      verify(
+        sharedPreferences.remove(TrashRepository.IMPORT_MESSAGE_KEY),
+      ).called(1);
+    });
+
+    test('旧形式の文字列メッセージも表示後に削除できる', () async {
+      when(
+        sharedPreferences.getString(TrashRepository.IMPORT_MESSAGE_KEY),
+      ).thenReturn('ゴミ出し予定を取り込みました');
+      when(
+        sharedPreferences.remove(TrashRepository.IMPORT_MESSAGE_KEY),
+      ).thenAnswer((_) async => true);
+
+      final result = await repository.consumeImportMessage();
+
+      expect(result?.message, 'ゴミ出し予定を取り込みました');
+      expect(result?.isSuccess, isTrue);
+      verify(
+        sharedPreferences.remove(TrashRepository.IMPORT_MESSAGE_KEY),
+      ).called(1);
+    });
+  });
   group("initialize", () {
     test("initializeが繰り返し実行された場合はStateErrorが発生すること", () {
-      expect(() => TrashRepository.initialize(sharedPreferences),
-          throwsStateError);
+      expect(
+        () => TrashRepository.initialize(sharedPreferences),
+        throwsStateError,
+      );
     });
   });
 }

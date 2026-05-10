@@ -9,8 +9,9 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
 import 'package:throwtrash/models/exclude_date.dart' as _i5;
 import 'package:throwtrash/models/trash_data.dart' as _i4;
+import 'package:throwtrash/models/trash_import_message.dart' as _i8;
 import 'package:throwtrash/models/trash_search_result.dart' as _i2;
-import 'package:throwtrash/usecase/sync_result.dart' as _i8;
+import 'package:throwtrash/usecase/sync_result.dart' as _i9;
 import 'package:throwtrash/usecase/trash_data_service.dart' as _i3;
 
 // ignore_for_file: type=lint
@@ -168,12 +169,12 @@ class MockTrashDataService extends _i1.Mock implements _i3.TrashDataService {
           as _i6.Future<bool>);
 
   @override
-  _i6.Future<String?> consumeImportMessage() =>
+  _i6.Future<_i8.TrashImportMessage?> consumeImportMessage() =>
       (super.noSuchMethod(
             Invocation.method(#consumeImportMessage, []),
-            returnValue: _i6.Future<String?>.value(),
+            returnValue: _i6.Future<_i8.TrashImportMessage?>.value(),
           )
-          as _i6.Future<String?>);
+          as _i6.Future<_i8.TrashImportMessage?>);
 
   @override
   List<List<_i4.TrashData>> getEnableTrashList({
@@ -208,12 +209,12 @@ class MockTrashDataService extends _i1.Mock implements _i3.TrashDataService {
           as List<_i4.TrashData>);
 
   @override
-  _i6.Future<_i8.SyncResult> syncTrashData() =>
+  _i6.Future<_i9.SyncResult> syncTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#syncTrashData, []),
-            returnValue: _i6.Future<_i8.SyncResult>.value(
-              _i8.SyncResult.skipped,
+            returnValue: _i6.Future<_i9.SyncResult>.value(
+              _i9.SyncResult.skipped,
             ),
           )
-          as _i6.Future<_i8.SyncResult>);
+          as _i6.Future<_i9.SyncResult>);
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:throwtrash/exclude_date.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
+import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:provider/provider.dart';
 import 'package:throwtrash/viewModels/exclude_date_model.dart';
@@ -26,17 +27,14 @@ class _EditItemMainState extends State<EditItemMain> {
   bool _isModelLoaded = false;
   bool _isOtherTrashNameInitialized = false;
   bool _loadFailed = false;
-  bool _importMessageLoaded = false;
 
-  final _failedSnackBar = SnackBar(
-    backgroundColor: Colors.pinkAccent,
-    content: Text('設定に失敗しました', style: TextStyle(color: Colors.white)),
+  final _failedSnackBar = AppFeedbackSnackBar.error(
+    '設定に失敗しました',
     duration: Duration(seconds: 1),
   );
 
-  final _successSnackBar = SnackBar(
-    backgroundColor: Colors.green,
-    content: Text('設定しました', style: TextStyle(color: Colors.white)),
+  final _successSnackBar = AppFeedbackSnackBar.success(
+    '設定しました',
     duration: Duration(seconds: 1),
   );
 
@@ -88,18 +86,6 @@ class _EditItemMainState extends State<EditItemMain> {
     }
     _syncOtherTrashNameFromModel();
     _isModelLoaded = true;
-    if (!_importMessageLoaded) {
-      _importMessageLoaded = true;
-      EditModel model = Provider.of<EditModel>(context, listen: false);
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final message = await model.consumeImportMessage();
-        if (message != null && mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
-        }
-      });
-    }
   }
 
   @override

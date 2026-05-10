@@ -5,13 +5,69 @@ import 'package:provider/provider.dart';
 
 import 'package:throwtrash/list.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
+import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/viewModels/list_model.dart';
 
 import 'widget_test.mocks.dart';
 
 void main() {
+  Future<void> pumpTrashList(
+    WidgetTester tester,
+    MockTrashDataServiceInterface trashDataService,
+  ) async {
+    when(trashDataService.allTrashList).thenReturn([]);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MultiProvider(
+          providers: [
+            Provider<TrashDataServiceInterface>.value(value: trashDataService),
+            ChangeNotifierProvider<ListModel>(
+              create: (_) => ListModel(trashDataService),
+            ),
+          ],
+          child: TrashList(),
+        ),
+      ),
+    );
+  }
+
+  testWidgets('一覧画面で取り込み成功メッセージが正常系背景色で一度だけ表示される', (tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+    when(
+      trashDataService.consumeImportMessage(),
+    ).thenAnswer((_) async => TrashImportMessage.success('ゴミ出し予定を取り込みました'));
+
+    await pumpTrashList(tester, trashDataService);
+    await tester.pump();
+
+    expect(find.text('ゴミ出し予定を取り込みました'), findsOneWidget);
+    final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(snackBar.backgroundColor, AppFeedbackColors.successBackground);
+
+    await tester.pump();
+    verify(trashDataService.consumeImportMessage()).called(1);
+  });
+
+  testWidgets('一覧画面で取り込み失敗メッセージが異常系背景色で一度だけ表示される', (tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+    when(
+      trashDataService.consumeImportMessage(),
+    ).thenAnswer((_) async => TrashImportMessage.error('自動取り込み結果の保存に失敗しました。'));
+
+    await pumpTrashList(tester, trashDataService);
+    await tester.pump();
+
+    expect(find.text('自動取り込み結果の保存に失敗しました。'), findsOneWidget);
+    final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(snackBar.backgroundColor, AppFeedbackColors.errorBackground);
+
+    await tester.pump();
+    verify(trashDataService.consumeImportMessage()).called(1);
+  });
+
   testWidgets('一覧画面でコピーボタンが削除ボタンの左側に表示される', (tester) async {
     final trashDataService = MockTrashDataServiceInterface();
     when(trashDataService.allTrashList).thenReturn([
@@ -23,6 +79,7 @@ void main() {
         excludes: [],
       ),
     ]);
+    when(trashDataService.consumeImportMessage()).thenAnswer((_) async => null);
     when(
       trashDataService.getTrashName(
         type: anyNamed('type'),
@@ -65,6 +122,7 @@ void main() {
       excludes: [],
     );
     when(trashDataService.allTrashList).thenReturn([trashData]);
+    when(trashDataService.consumeImportMessage()).thenAnswer((_) async => null);
     when(
       trashDataService.getTrashName(
         type: anyNamed('type'),

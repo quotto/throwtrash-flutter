@@ -1,5 +1,6 @@
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/exclude_date.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 
@@ -26,7 +27,7 @@ abstract class TrashDataServiceInterface {
   Future<TrashImportResult> importTrashSchedule(String input);
   Future<bool> shouldShowInitialSearchDialog();
   Future<bool> markInitialSearchDialogShown();
-  Future<String?> consumeImportMessage();
+  Future<TrashImportMessage?> consumeImportMessage();
 
   /// 5週間分全てのゴミを返す
   /// @param

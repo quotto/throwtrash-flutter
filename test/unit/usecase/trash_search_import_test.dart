@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:throwtrash/models/calendar_model.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
 import 'package:throwtrash/usecase/repository/fcm_interface.dart';
@@ -109,7 +110,15 @@ void main() {
       verify(trashRepository.setSyncStatus(SyncStatus.SYNCING)).called(1);
       expect(fcmService.title, '自動取り込み');
       expect(fcmService.body, 'ゴミ出し予定を取り込みました');
-      verify(trashRepository.saveImportMessage('ゴミ出し予定を取り込みました')).called(1);
+      verify(
+        trashRepository.saveImportMessage(
+          argThat(
+            isA<TrashImportMessage>()
+                .having((value) => value.message, 'message', 'ゴミ出し予定を取り込みました')
+                .having((value) => value.isSuccess, 'isSuccess', isTrue),
+          ),
+        ),
+      ).called(1);
     });
 
     test('エラー時は既存データを削除しない', () async {
@@ -127,7 +136,17 @@ void main() {
       expect(fcmService.title, '自動取り込み');
       expect(fcmService.body, '指定された住所に対応するゴミ出し予定を特定できませんでした。');
       verify(
-        trashRepository.saveImportMessage('指定された住所に対応するゴミ出し予定を特定できませんでした。'),
+        trashRepository.saveImportMessage(
+          argThat(
+            isA<TrashImportMessage>()
+                .having(
+                  (value) => value.message,
+                  'message',
+                  '指定された住所に対応するゴミ出し予定を特定できませんでした。',
+                )
+                .having((value) => value.isSuccess, 'isSuccess', isFalse),
+          ),
+        ),
       ).called(1);
     });
 
@@ -156,7 +175,15 @@ void main() {
       verify(trashRepository.replaceAllTrashData(any)).called(1);
       verify(
         trashRepository.saveImportMessage(
-          '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。',
+          argThat(
+            isA<TrashImportMessage>()
+                .having(
+                  (value) => value.message,
+                  'message',
+                  '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。',
+                )
+                .having((value) => value.isSuccess, 'isSuccess', isTrue),
+          ),
         ),
       ).called(1);
     });
@@ -187,7 +214,17 @@ void main() {
       expect(fcmService.title, '自動取り込み');
       expect(fcmService.body, '自動取り込み結果の保存に失敗しました。');
       verify(
-        trashRepository.saveImportMessage('自動取り込み結果の保存に失敗しました。'),
+        trashRepository.saveImportMessage(
+          argThat(
+            isA<TrashImportMessage>()
+                .having(
+                  (value) => value.message,
+                  'message',
+                  '自動取り込み結果の保存に失敗しました。',
+                )
+                .having((value) => value.isSuccess, 'isSuccess', isFalse),
+          ),
+        ),
       ).called(1);
     });
 
@@ -200,11 +237,13 @@ void main() {
       ).thenAnswer((_) async => true);
       when(
         trashRepository.consumeImportMessage(),
-      ).thenAnswer((_) async => '完了しました');
+      ).thenAnswer((_) async => TrashImportMessage.success('完了しました'));
 
       expect(await service.shouldShowInitialSearchDialog(), isTrue);
       expect(await service.markInitialSearchDialogShown(), isTrue);
-      expect(await service.consumeImportMessage(), '完了しました');
+      final message = await service.consumeImportMessage();
+      expect(message?.message, '完了しました');
+      expect(message?.isSuccess, isTrue);
     });
   });
 }

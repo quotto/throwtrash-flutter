@@ -5,6 +5,7 @@ import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 import 'package:throwtrash/viewModels/list_model.dart';
 import 'package:provider/provider.dart';
+import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/view_common/trash_color.dart';
 
 class TrashList extends StatefulWidget {
@@ -15,14 +16,37 @@ class TrashList extends StatefulWidget {
 }
 
 class _TrashListState extends State<TrashList> {
-  final _successSnackBar = SnackBar(
-    content: Text('削除しました'),
+  bool _importMessageLoaded = false;
+
+  final _successSnackBar = AppFeedbackSnackBar.success(
+    '削除しました',
     duration: Duration(seconds: 1),
   );
-  final _failedSnackBar = SnackBar(
-    content: Text('削除に失敗しました'),
+  final _failedSnackBar = AppFeedbackSnackBar.error(
+    '削除に失敗しました',
     duration: Duration(seconds: 1),
   );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_importMessageLoaded) {
+      return;
+    }
+    _importMessageLoaded = true;
+    final trashDataService = Provider.of<TrashDataServiceInterface>(
+      context,
+      listen: false,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final message = await trashDataService.consumeImportMessage();
+      if (message != null && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(AppFeedbackSnackBar.importMessage(message));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

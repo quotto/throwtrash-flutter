@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:throwtrash/models/calendar_model.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -196,17 +197,28 @@ class TrashRepository implements TrashRepositoryInterface {
   }
 
   @override
-  Future<bool> saveImportMessage(String message) async {
-    return _preferences.setString(IMPORT_MESSAGE_KEY, message);
+  Future<bool> saveImportMessage(TrashImportMessage message) async {
+    return _preferences.setString(
+      IMPORT_MESSAGE_KEY,
+      jsonEncode(message.toJson()),
+    );
   }
 
   @override
-  Future<String?> consumeImportMessage() async {
-    final message = _preferences.getString(IMPORT_MESSAGE_KEY);
-    if (message == null) {
+  Future<TrashImportMessage?> consumeImportMessage() async {
+    final rawMessage = _preferences.getString(IMPORT_MESSAGE_KEY);
+    if (rawMessage == null) {
       return null;
     }
     await _preferences.remove(IMPORT_MESSAGE_KEY);
-    return message;
+    try {
+      final json = jsonDecode(rawMessage);
+      if (json is Map<String, dynamic>) {
+        return TrashImportMessage.fromJson(json);
+      }
+    } on FormatException {
+      return TrashImportMessage.fromLegacyMessage(rawMessage);
+    }
+    return TrashImportMessage.fromLegacyMessage(rawMessage);
   }
 }

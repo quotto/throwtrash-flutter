@@ -9,6 +9,7 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
 import 'package:throwtrash/models/exclude_date.dart' as _i6;
 import 'package:throwtrash/models/trash_data.dart' as _i5;
+import 'package:throwtrash/models/trash_import_message.dart' as _i10;
 import 'package:throwtrash/models/trash_search_result.dart' as _i2;
 import 'package:throwtrash/usecase/calendar_service.dart' as _i3;
 import 'package:throwtrash/usecase/sync_result.dart' as _i9;
@@ -197,12 +198,12 @@ class MockTrashDataServiceInterface extends _i1.Mock
           as _i7.Future<bool>);
 
   @override
-  _i7.Future<String?> consumeImportMessage() =>
+  _i7.Future<_i10.TrashImportMessage?> consumeImportMessage() =>
       (super.noSuchMethod(
             Invocation.method(#consumeImportMessage, []),
-            returnValue: _i7.Future<String?>.value(),
+            returnValue: _i7.Future<_i10.TrashImportMessage?>.value(),
           )
-          as _i7.Future<String?>);
+          as _i7.Future<_i10.TrashImportMessage?>);
 
   @override
   List<List<_i5.TrashData>> getEnableTrashList({
