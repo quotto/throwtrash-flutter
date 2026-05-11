@@ -15,7 +15,7 @@ class FcmService implements FcmInterface {
 
   FcmService._(this._firebaseMessaging, this._configRepository);
 
-  static initialize(
+  static void initialize(
     FirebaseMessaging firebaseMessaging,
     ConfigRepositoryInterface configRepository,
     GlobalKey<NavigatorState> navigatorKey,
@@ -95,17 +95,17 @@ class FcmService implements FcmInterface {
     const DarwinNotificationDetails notificationDetailsDarwin =
         DarwinNotificationDetails();
     await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
     );
     const NotificationDetails notificationDetails = NotificationDetails(
       iOS: notificationDetailsDarwin,
     );
     await flutterLocalNotificationsPlugin.show(
-      0,
-      message.notification?.title,
-      message.notification?.body,
-      notificationDetails,
+      id: 0,
+      title: message.notification?.title,
+      body: message.notification?.body,
+      notificationDetails: notificationDetails,
       payload: 'item x',
     );
   }
@@ -123,7 +123,7 @@ class FcmService implements FcmInterface {
         );
 
     await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
     );
     const DarwinNotificationDetails notificationDetailsDarwin =
@@ -132,10 +132,10 @@ class FcmService implements FcmInterface {
       iOS: notificationDetailsDarwin,
     );
     await flutterLocalNotificationsPlugin.show(
-      1,
-      title,
-      body,
-      notificationDetails,
+      id: 1,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
       payload: 'trash_search_import',
     );
   }

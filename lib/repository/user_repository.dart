@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:throwtrash/usecase/repository/user_repository_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,14 +14,14 @@ class UserRepository implements UserRepositoryInterface {
   UserRepository._(this._preferences);
 
   static void initialize(SharedPreferences preferences) {
-    if(_instance != null) {
+    if (_instance != null) {
       throw StateError('UserRepository is already initialized');
     }
     _instance = UserRepository._(preferences);
   }
 
   factory UserRepository() {
-    if(_instance == null) {
+    if (_instance == null) {
       throw StateError('UserRepository is not initialized');
     }
     return _instance!;
@@ -27,8 +29,8 @@ class UserRepository implements UserRepositoryInterface {
 
   @override
   Future<User?> readUser() async {
-    String? userId = this._preferences.getString(USER_ID_KEY);
-    if(userId == null) {
+    String? userId = _preferences.getString(USER_ID_KEY);
+    if (userId == null) {
       return null;
     }
     return User(userId);
@@ -36,6 +38,6 @@ class UserRepository implements UserRepositoryInterface {
 
   @override
   Future<bool> writeUser(User user) async {
-    return this._preferences.setString(USER_ID_KEY, user.id);
+    return _preferences.setString(USER_ID_KEY, user.id);
   }
 }

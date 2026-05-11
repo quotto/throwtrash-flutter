@@ -14,8 +14,14 @@ class TrashApiSyncDataResponse {
   @JsonKey(name: "globalExcludes", defaultValue: [])
   List<ExcludeDate> globalExcludes;
 
-  TrashApiSyncDataResponse(this.id, this.description, this.platform,
-      this.sharedId, this.timestamp, this.globalExcludes);
+  TrashApiSyncDataResponse(
+    this.id,
+    this.description,
+    this.platform,
+    this.sharedId,
+    this.timestamp,
+    this.globalExcludes,
+  );
   factory TrashApiSyncDataResponse.fromJson(Map<String, dynamic> json) =>
       _$TrashApiSyncDataResponseFromJson(json);
   Map<String, dynamic> toJson() => _$TrashApiSyncDataResponseToJson(this);

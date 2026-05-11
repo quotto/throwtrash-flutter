@@ -6,7 +6,13 @@ part 'trash_data.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class TrashData {
-  TrashData({required this.id,required this.type,this.trashVal = "", this.schedules=const [],this.excludes = const []});
+  TrashData({
+    required this.id,
+    required this.type,
+    this.trashVal = "",
+    this.schedules = const [],
+    this.excludes = const [],
+  });
 
   final String id;
   String type;
@@ -16,12 +22,13 @@ class TrashData {
   List<ExcludeDate> excludes;
 
   bool isMatchOfDay(int year, int month, int date) {
-    return (
-        !this.excludes.any((exclude)=>exclude.month == month && exclude.date == date)) &&
-      schedules.any((schedule) => schedule.isMatch(year, month, date));
+    return (!excludes.any(
+          (exclude) => exclude.month == month && exclude.date == date,
+        )) &&
+        schedules.any((schedule) => schedule.isMatch(year, month, date));
   }
 
-  factory TrashData.fromJson(Map<String,dynamic> json) => _$TrashDataFromJson(json);
-  Map<String,dynamic> toJson() => _$TrashDataToJson(this);
-
+  factory TrashData.fromJson(Map<String, dynamic> json) =>
+      _$TrashDataFromJson(json);
+  Map<String, dynamic> toJson() => _$TrashDataToJson(this);
 }

@@ -16,7 +16,7 @@ class EditItemMain extends StatefulWidget {
   const EditItemMain.copyFrom(this._id, {super.key}) : _copyFrom = true;
 
   @override
-  _EditItemMainState createState() {
+  State<EditItemMain> createState() {
     return _EditItemMainState();
   }
 }
@@ -38,7 +38,7 @@ class _EditItemMainState extends State<EditItemMain> {
     duration: Duration(seconds: 1),
   );
 
-  final Map<String, Widget> _ScheduleTypeToggles = {
+  final Map<String, Widget> _scheduleTypeToggles = {
     "weekday": Padding(
       padding: EdgeInsets.symmetric(vertical: 10.0),
       child: Text('毎週', textAlign: TextAlign.center),
@@ -57,7 +57,7 @@ class _EditItemMainState extends State<EditItemMain> {
     ),
   };
 
-  final List<String> _WeekdayList = [
+  final List<String> _weekdayList = [
     '日曜日',
     '月曜日',
     '火曜日',
@@ -111,10 +111,10 @@ class _EditItemMainState extends State<EditItemMain> {
       case 'weekday':
         return DropdownButton<String>(
           value: schedule.value,
-          items: new List.generate(7, (index) {
+          items: List.generate(7, (index) {
             return DropdownMenuItem(
               value: index.toString(),
-              child: Text(_WeekdayList[index]),
+              child: Text(_weekdayList[index]),
             );
           }),
           onChanged: (changedValue) {
@@ -144,7 +144,7 @@ class _EditItemMainState extends State<EditItemMain> {
                             int.parse(inputValue) < 32
                         ? null
                         : '日にちは1～31の値で入力してください';
-                  } catch (Exception) {
+                  } catch (_) {
                     return '日にちは数字で入力してください';
                   }
                 },
@@ -173,17 +173,17 @@ class _EditItemMainState extends State<EditItemMain> {
             ),
             DropdownButton<String>(
               value: initValue[0],
-              items: new List.generate(_WeekdayList.length, (index) {
+              items: List.generate(_weekdayList.length, (index) {
                 return DropdownMenuItem(
                   value: index.toString(),
-                  child: Text(_WeekdayList[index]),
+                  child: Text(_weekdayList[index]),
                 );
               }).toList(),
               onChanged: (String? changedValue) {
                 if (changedValue != null) {
                   model.changeValue(
                     scheduleNumber,
-                    '${changedValue}-${initValue[1]}',
+                    '$changedValue-${initValue[1]}',
                   );
                 }
               },
@@ -218,10 +218,10 @@ class _EditItemMainState extends State<EditItemMain> {
                 Text('の'),
                 DropdownButton<String>(
                   value: schedule.value['weekday'],
-                  items: new List.generate(_WeekdayList.length, (index) {
+                  items: List.generate(_weekdayList.length, (index) {
                     return DropdownMenuItem(
                       value: index.toString(),
-                      child: Text(_WeekdayList[index]),
+                      child: Text(_weekdayList[index]),
                     );
                   }).toList(),
                   onChanged: (String? changedValue) {
@@ -272,7 +272,7 @@ class _EditItemMainState extends State<EditItemMain> {
       decoration: BoxDecoration(
         color: (scheduleNumber + 1) % 2 == 0
             ? Theme.of(context).colorScheme.primaryContainer
-            : Theme.of(context).colorScheme.background,
+            : Theme.of(context).colorScheme.surface,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -284,7 +284,7 @@ class _EditItemMainState extends State<EditItemMain> {
             ),
             padding: EdgeInsets.fromLTRB(0, 16, 0, 0),
             child: CupertinoSegmentedControl<String>(
-              children: _ScheduleTypeToggles,
+              children: _scheduleTypeToggles,
               onValueChanged: ((String newValue) {
                 model.changeScheduleType(scheduleNumber, newValue);
               }),
@@ -325,10 +325,10 @@ class _EditItemMainState extends State<EditItemMain> {
     EditModel model = Provider.of<EditModel>(context);
     List<Widget> children = [];
     int index = 0;
-    schedules.forEach((schedule) {
+    for (var schedule in schedules) {
       children.add(_scheduleForm(index, schedule));
       index++;
-    });
+    }
     if (schedules.length < 3) {
       children.add(
         IconButton(
@@ -347,7 +347,7 @@ class _EditItemMainState extends State<EditItemMain> {
 
   @override
   Widget build(BuildContext context) {
-    print('edit Id: ${widget._id}');
+    debugPrint('edit Id: ${widget._id}');
     if (_loadFailed) {
       return Center(child: Text('データの読み込みに失敗しました'));
     }
@@ -397,7 +397,7 @@ class _EditItemMainState extends State<EditItemMain> {
                     ),
                     Visibility(
                       visible: editModel.trash.type == 'other',
-                      child: Container(
+                      child: SizedBox(
                         height: 100,
                         child: TextFormField(
                           controller: _otherTrashNameController,
@@ -408,7 +408,7 @@ class _EditItemMainState extends State<EditItemMain> {
                           ),
                           validator: (String? value) {
                             if (editModel.trash.type == 'other' &&
-                                (value != null && value.length == 0)) {
+                                (value != null && value.isEmpty)) {
                               return 'ゴミの名前を入力してください';
                             }
                             return null;
@@ -461,15 +461,24 @@ class _EditItemMainState extends State<EditItemMain> {
                         : () async {
                             if (_formKey.currentState!.validate()) {
                               if (await editModel.submitTrashData()) {
+                                if (!context.mounted) {
+                                  return;
+                                }
                                 ScaffoldMessenger.of(
                                   context,
                                 ).showSnackBar(_successSnackBar);
                                 await Future.delayed(
                                   Duration(milliseconds: 500),
                                 );
+                                if (!context.mounted) {
+                                  return;
+                                }
                                 Navigator.pop(context, true);
                               } else if (editModel.editState ==
                                   EditState.ERROR) {
+                                if (!context.mounted) {
+                                  return;
+                                }
                                 ScaffoldMessenger.of(
                                   context,
                                 ).showSnackBar(_failedSnackBar);

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
@@ -21,7 +22,6 @@ import 'package:throwtrash/viewModels/exclude_date_model.dart';
 import 'package:throwtrash/viewModels/list_model.dart';
 import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/view_common/trash_color.dart';
-import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'account_link.dart';
@@ -31,12 +31,14 @@ import 'exclude_date.dart';
 import 'list.dart';
 
 class CalendarWidget extends StatefulWidget {
+  const CalendarWidget({super.key});
+
   @override
-  _CalendarWidgetState createState() => _CalendarWidgetState();
+  State<CalendarWidget> createState() => _CalendarWidgetState();
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  Logger _logger = Logger();
+  final Logger _logger = Logger();
   final _rollbackSnackBar = AppFeedbackSnackBar.warning(
     '他の端末でスケジュールが更新されました。',
     duration: Duration(seconds: 1),
@@ -49,23 +51,27 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   final List<String> _weekdayLabel = ['日', '月', '火', '水', '木', '金', '土'];
 
   PageController controller = PageController(initialPage: 0);
-  StreamSubscription? _sub;
+  final AppLinks _appLinks = AppLinks();
+  StreamSubscription<Uri>? _sub;
 
   Future<void> initUniLinks(AccountLinkServiceInterface service) async {
     try {
-      final initialLink = await getInitialLink();
+      final initialLink = await _appLinks.getInitialLink();
       _logger.d("start via App Links: $initialLink");
     } on PlatformException {
       _logger.e("failed start via App Links");
     }
-    _sub = uriLinkStream.listen(
-      (Uri? link) {
+    _sub = _appLinks.uriLinkStream.listen(
+      (Uri link) {
         _logger.d("change link stream: $link");
-        String? code = link?.queryParameters["code"];
-        String? state = link?.queryParameters["state"];
+        String? code = link.queryParameters["code"];
+        String? state = link.queryParameters["state"];
         if (code != null && state != null) {
           AccountLinkModel accountLinkModel = AccountLinkModel(service);
           accountLinkModel.prepareAccountLinkInfo(code).then((_) {
+            if (!mounted) {
+              return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -159,11 +165,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: index == 0
-                      ? Colors.red.shade600.withOpacity(opacity)
+                      ? Colors.red.shade600.withValues(alpha: opacity)
                       : (index == 6
-                            ? Colors.blue.shade600.withOpacity(opacity)
+                            ? Colors.blue.shade600.withValues(alpha: opacity)
                             : Theme.of(context).textTheme.bodyLarge!.color
-                                  ?.withOpacity(opacity)),
+                                  ?.withValues(alpha: opacity)),
                 ),
               ),
               Wrap(
@@ -558,14 +564,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     ],
                   ),
                 ),
-                Container(
-                  child: Text(
-                    "Version ${Provider.of<AppConfigProviderInterface>(context).version}",
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
-                      height: 1.5,
-                    ),
+                Text(
+                  "Version ${Provider.of<AppConfigProviderInterface>(context).version}",
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                    height: 1.5,
                   ),
                 ),
               ],
@@ -583,7 +587,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       flex: 5,
                       child: PageView(
                         controller: controller,
-                        children: new List<Column>.generate(
+                        children: List<Column>.generate(
                           calendar.calendarsDateList.length,
                           (index) {
                             return _calendarColumn(
@@ -608,7 +612,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   Widget loadingContainer = Stack(
     children: [
-      Container(color: Colors.black.withOpacity(0.5)),
+      Container(color: Colors.black.withValues(alpha: 0.5)),
       Center(child: CircularProgressIndicator()),
     ],
   );

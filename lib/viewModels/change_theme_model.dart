@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../usecase/change_theme_service_interface.dart';
 
-class ChangeThemeModel extends ChangeNotifier{
+class ChangeThemeModel extends ChangeNotifier {
   late bool _darkMode;
   bool get darkMode => _darkMode;
   final ChangeThemeServiceInterface _changeThemeServiceInterface;
@@ -17,9 +17,8 @@ class ChangeThemeModel extends ChangeNotifier{
   Future<void> switchDarkMode() async {
     _darkMode = !_darkMode;
     _changeThemeServiceInterface.switchDarkMode(_darkMode).catchError((e) {
-        log(e.toString());
-      }
-    );
+      log(e.toString());
+    });
     notifyListeners();
   }
 }

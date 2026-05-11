@@ -7,7 +7,13 @@ part 'trash_data_response.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class TrashDataResponse {
-  TrashDataResponse(this.id,this.type,this.trashVal,this.schedules,this.excludes);
+  TrashDataResponse(
+    this.id,
+    this.type,
+    this.trashVal,
+    this.schedules,
+    this.excludes,
+  );
 
   final String id;
   String type;
@@ -17,21 +23,23 @@ class TrashDataResponse {
   List<ExcludeDate>? excludes;
 
   bool isMatchOfDay(int year, int month, int date) {
-    return (
-        this.excludes != null && !this.excludes!.any((exclude)=>exclude.month == month && exclude.date == date)) &&
-      schedules.any((schedule) => schedule.isMatch(year, month, date));
+    return (excludes != null &&
+            !excludes!.any(
+              (exclude) => exclude.month == month && exclude.date == date,
+            )) &&
+        schedules.any((schedule) => schedule.isMatch(year, month, date));
   }
 
-  factory TrashDataResponse.fromJson(Map<String,dynamic> json) => _$TrashDataResponseFromJson(json);
-  Map<String,dynamic> toJson() => _$TrashDataResponseToJson(this);
+  factory TrashDataResponse.fromJson(Map<String, dynamic> json) =>
+      _$TrashDataResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$TrashDataResponseToJson(this);
   TrashData toTrashData() {
-   return TrashData(
-     id: this.id,
-     type: this.type,
-     trashVal: trashVal != null ? trashVal! : "",
-     schedules: schedules,
-     excludes: excludes != null ? excludes! : []
-   );
+    return TrashData(
+      id: id,
+      type: type,
+      trashVal: trashVal != null ? trashVal! : "",
+      schedules: schedules,
+      excludes: excludes != null ? excludes! : [],
+    );
   }
-
 }
