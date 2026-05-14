@@ -6,6 +6,20 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FLAVOR="${FLAVOR:-development}"
 IOS_DIR="$ROOT_DIR/ios/$FLAVOR"
 
+fail() {
+  local message="$1"
+  echo "::error file=tool/maestro/prepare_ios_ci_env.sh::$message" >&2
+  echo "$message" >&2
+  exit 1
+}
+
+require_env() {
+  local name="$1"
+  if [[ -z "${!name:-}" ]]; then
+    fail "$name is required"
+  fi
+}
+
 decode_base64() {
   if base64 --help 2>&1 | grep -q -- '--decode'; then
     base64 --decode
@@ -29,7 +43,7 @@ write_secret_file() {
   printf '%s' "$content" >"$output_path"
 }
 
-: "${GOOGLE_SERVICE_INFO_PLIST:?GOOGLE_SERVICE_INFO_PLIST is required}"
+require_env GOOGLE_SERVICE_INFO_PLIST
 FIREBASE_APP_ID="${FIREBASE_APP_ID:-local-e2e-placeholder}"
 PLIST_BUDDY_BIN="/usr/libexec/PlistBuddy"
 
@@ -40,8 +54,8 @@ write_secret_file "$GOOGLE_SERVICE_INFO_PLIST" "$IOS_DIR/GoogleService-Info.plis
 if [[ -n "${FIREBASE_INFO:-}" ]]; then
   printf '%s' "$FIREBASE_INFO" > "$IOS_DIR/firebase.json"
 else
-  PROJECT_ID="$("$PLIST_BUDDY_BIN" -c 'Print :PROJECT_ID' "$IOS_DIR/GoogleService-Info.plist")"
-  GOOGLE_APP_ID="$("$PLIST_BUDDY_BIN" -c 'Print :GOOGLE_APP_ID' "$IOS_DIR/GoogleService-Info.plist")"
+  PROJECT_ID="$("$PLIST_BUDDY_BIN" -c 'Print :PROJECT_ID' "$IOS_DIR/GoogleService-Info.plist" 2>/dev/null)" || fail "PROJECT_ID was not found in GoogleService-Info.plist"
+  GOOGLE_APP_ID="$("$PLIST_BUDDY_BIN" -c 'Print :GOOGLE_APP_ID' "$IOS_DIR/GoogleService-Info.plist" 2>/dev/null)" || fail "GOOGLE_APP_ID was not found in GoogleService-Info.plist"
   export PROJECT_ID GOOGLE_APP_ID
   python3 - <<'PY' > "$IOS_DIR/firebase.json"
 import json
