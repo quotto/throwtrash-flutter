@@ -33,9 +33,6 @@ jobs:
         with:
           flutter-version: '3.41.0'
 
-      - name: Install FVM
-        run: dart pub global activate fvm
-
       - name: Install Maestro CLI
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
