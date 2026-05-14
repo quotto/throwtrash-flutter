@@ -16,12 +16,10 @@ decode_base64() {
 
 : "${FIREBASE_INFO:?FIREBASE_INFO is required}"
 : "${GOOGLE_SERVICE_INFO_PLIST:?GOOGLE_SERVICE_INFO_PLIST is required}"
-: "${FIREBASE_OPTIONS:?FIREBASE_OPTIONS is required}"
-: "${FIREBASE_APP_ID:?FIREBASE_APP_ID is required}"
+FIREBASE_APP_ID="${FIREBASE_APP_ID:-local-e2e-placeholder}"
 
 mkdir -p "$IOS_DIR"
 
 printf '%s' "$FIREBASE_INFO" > "$IOS_DIR/firebase.json"
 printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | decode_base64 > "$IOS_DIR/GoogleService-Info.plist"
-printf '%s' "$FIREBASE_OPTIONS" | decode_base64 > "$ROOT_DIR/lib/firebase_options.dart"
 printf 'FIREBASE_APP_ID=%s\n' "$FIREBASE_APP_ID" > "$ROOT_DIR/ios/.env"

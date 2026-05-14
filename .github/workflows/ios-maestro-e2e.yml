@@ -20,7 +20,6 @@ jobs:
       TMPDIR: ${{ github.workspace }}/.tmp
       FIREBASE_INFO: ${{ secrets.FIREBASE_INFO }}
       GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
-      FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
       FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
       ALARM_API_KEY: ${{ secrets.ALARM_API_KEY }}
       TRASH_SEARCH_API_KEY: ${{ secrets.TRASH_SEARCH_API_KEY }}
