@@ -16,6 +16,7 @@ jobs:
     env:
       FLAVOR: development
       APP_ID: net.mythrowaway.dev
+      E2E_DISABLE_FIREBASE: true
       REPORT_DIR: ${{ github.workspace }}/.maestro-results
       TMPDIR: ${{ github.workspace }}/.tmp
       GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}

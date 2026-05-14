@@ -12,6 +12,7 @@ DERIVED_DATA_DIR="${DERIVED_DATA_DIR:-$ROOT_DIR/.derived-data}"
 XCODEBUILD_LOG="${XCODEBUILD_LOG:-$TMPDIR/xcodebuild-$FLAVOR.log}"
 IB_SUPPORT_DIR="${IB_SUPPORT_DIR:-$ROOT_DIR/.e2e-home/Library/Developer/Xcode/UserData/IB Support}"
 MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
+E2E_DISABLE_FIREBASE="${E2E_DISABLE_FIREBASE:-true}"
 ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
 TRASH_SEARCH_API_KEY="${TRASH_SEARCH_API_KEY:-}"
 MAESTRO_BIN="$(command -v maestro)"
@@ -61,15 +62,21 @@ if ! grep -q '<key>API_KEY</key>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
   exit 1
 fi
 
-if grep -q '<string>local-e2e-placeholder</string>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
+if [[ "$E2E_DISABLE_FIREBASE" != true ]] && grep -q '<string>local-e2e-placeholder</string>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
   echo "ios/$FLAVOR/GoogleService-Info.plist contains placeholder API_KEY; restore a real Firebase config before running Maestro E2E" >&2
   exit 1
 fi
 
-if [[ "$(tr -d '[:space:]' < "$FIREBASE_INFO_PATH")" == "{}" ]]; then
+if [[ "$E2E_DISABLE_FIREBASE" != true ]] && [[ "$(tr -d '[:space:]' < "$FIREBASE_INFO_PATH")" == "{}" ]]; then
   echo "ios/$FLAVOR/firebase.json is empty; restore a real Firebase config before running Maestro E2E" >&2
   exit 1
 fi
+
+encode_dart_define() {
+  printf '%s' "$1" | base64 | tr -d '\n'
+}
+
+DART_DEFINES="$(encode_dart_define "E2E_DISABLE_FIREBASE=$E2E_DISABLE_FIREBASE")"
 
 resolve_simulator_id() {
   if [[ -n "${SIMULATOR_ID:-}" ]]; then
@@ -113,6 +120,7 @@ open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || t
   -destination "id=$SIMULATOR_ID" \
   -derivedDataPath "$DERIVED_DATA_DIR" \
   FLAVOR="$FLAVOR" \
+  DART_DEFINES="$DART_DEFINES" \
   TARGETED_DEVICE_FAMILY=1 \
   build >"$XCODEBUILD_LOG" 2>&1 || {
     tail -200 "$XCODEBUILD_LOG" >&2

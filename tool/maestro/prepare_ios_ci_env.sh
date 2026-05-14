@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FLAVOR="${FLAVOR:-development}"
 IOS_DIR="$ROOT_DIR/ios/$FLAVOR"
+APP_ID="${APP_ID:-net.mythrowaway.dev}"
 
 fail() {
   local message="$1"
@@ -18,6 +19,41 @@ require_env() {
   if [[ -z "${!name:-}" ]]; then
     fail "$name is required"
   fi
+}
+
+write_placeholder_plist() {
+  cat <<EOF >"$1"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>API_KEY</key>
+  <string>local-e2e-placeholder</string>
+  <key>GCM_SENDER_ID</key>
+  <string>000000000000</string>
+  <key>PLIST_VERSION</key>
+  <string>1</string>
+  <key>BUNDLE_ID</key>
+  <string>$APP_ID</string>
+  <key>PROJECT_ID</key>
+  <string>throwtrash-e2e</string>
+  <key>STORAGE_BUCKET</key>
+  <string>throwtrash-e2e.appspot.com</string>
+  <key>IS_ADS_ENABLED</key>
+  <false/>
+  <key>IS_ANALYTICS_ENABLED</key>
+  <false/>
+  <key>IS_APPINVITE_ENABLED</key>
+  <false/>
+  <key>IS_GCM_ENABLED</key>
+  <false/>
+  <key>IS_SIGNIN_ENABLED</key>
+  <false/>
+  <key>GOOGLE_APP_ID</key>
+  <string>${FIREBASE_APP_ID}</string>
+</dict>
+</plist>
+EOF
 }
 
 decode_base64() {
@@ -43,13 +79,16 @@ write_secret_file() {
   printf '%s' "$content" >"$output_path"
 }
 
-require_env GOOGLE_SERVICE_INFO_PLIST
 FIREBASE_APP_ID="${FIREBASE_APP_ID:-local-e2e-placeholder}"
 PLIST_BUDDY_BIN="/usr/libexec/PlistBuddy"
 
 mkdir -p "$IOS_DIR"
 
-write_secret_file "$GOOGLE_SERVICE_INFO_PLIST" "$IOS_DIR/GoogleService-Info.plist"
+if [[ -n "${GOOGLE_SERVICE_INFO_PLIST:-}" ]]; then
+  write_secret_file "$GOOGLE_SERVICE_INFO_PLIST" "$IOS_DIR/GoogleService-Info.plist"
+else
+  write_placeholder_plist "$IOS_DIR/GoogleService-Info.plist"
+fi
 
 if [[ -n "${FIREBASE_INFO:-}" ]]; then
   printf '%s' "$FIREBASE_INFO" > "$IOS_DIR/firebase.json"
