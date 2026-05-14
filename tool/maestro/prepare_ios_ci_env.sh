@@ -29,12 +29,50 @@ write_secret_file() {
   printf '%s' "$content" >"$output_path"
 }
 
-: "${FIREBASE_INFO:?FIREBASE_INFO is required}"
 : "${GOOGLE_SERVICE_INFO_PLIST:?GOOGLE_SERVICE_INFO_PLIST is required}"
 FIREBASE_APP_ID="${FIREBASE_APP_ID:-local-e2e-placeholder}"
+PLIST_BUDDY_BIN="/usr/libexec/PlistBuddy"
 
 mkdir -p "$IOS_DIR"
 
-printf '%s' "$FIREBASE_INFO" > "$IOS_DIR/firebase.json"
 write_secret_file "$GOOGLE_SERVICE_INFO_PLIST" "$IOS_DIR/GoogleService-Info.plist"
+
+if [[ -n "${FIREBASE_INFO:-}" ]]; then
+  printf '%s' "$FIREBASE_INFO" > "$IOS_DIR/firebase.json"
+else
+  PROJECT_ID="$("$PLIST_BUDDY_BIN" -c 'Print :PROJECT_ID' "$IOS_DIR/GoogleService-Info.plist")"
+  GOOGLE_APP_ID="$("$PLIST_BUDDY_BIN" -c 'Print :GOOGLE_APP_ID' "$IOS_DIR/GoogleService-Info.plist")"
+  export PROJECT_ID GOOGLE_APP_ID
+  python3 - <<'PY' > "$IOS_DIR/firebase.json"
+import json
+import os
+
+project_id = os.environ["PROJECT_ID"]
+google_app_id = os.environ["GOOGLE_APP_ID"]
+
+print(json.dumps({
+    "flutter": {
+        "platforms": {
+            "ios": {
+                "default": {
+                    "projectId": project_id,
+                    "appId": google_app_id,
+                    "uploadDebugSymbols": True,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist",
+                },
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": project_id,
+                    "configurations": {
+                        "ios": google_app_id,
+                    },
+                },
+            },
+        },
+    },
+}))
+PY
+fi
+
 printf 'FIREBASE_APP_ID=%s\n' "$FIREBASE_APP_ID" > "$ROOT_DIR/ios/.env"
