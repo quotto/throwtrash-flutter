@@ -37,6 +37,12 @@ jobs:
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
+      - name: Install CocoaPods
+        run: |
+          if ! command -v pod >/dev/null 2>&1; then
+            sudo gem install cocoapods -N
+          fi
+
       - name: Prepare iOS config
         run: chmod +x tool/maestro/prepare_ios_ci_env.sh && tool/maestro/prepare_ios_ci_env.sh
 

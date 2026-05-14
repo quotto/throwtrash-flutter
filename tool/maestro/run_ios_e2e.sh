@@ -15,9 +15,6 @@ MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
 E2E_DISABLE_FIREBASE="${E2E_DISABLE_FIREBASE:-true}"
 ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
 TRASH_SEARCH_API_KEY="${TRASH_SEARCH_API_KEY:-}"
-MAESTRO_BIN="$(command -v maestro)"
-POD_BIN="$(command -v pod)"
-XCODEBUILD_BIN="$(command -v xcodebuild)"
 if command -v fvm >/dev/null 2>&1; then
   FLUTTER_CMD=(fvm flutter)
 elif command -v flutter >/dev/null 2>&1; then
@@ -26,6 +23,21 @@ else
   echo "flutter command was not found" >&2
   exit 1
 fi
+require_command() {
+  local name="$1"
+  local resolved
+  resolved="$(command -v "$name" || true)"
+  if [[ -z "$resolved" ]]; then
+    echo "::error file=tool/maestro/run_ios_e2e.sh::$name command was not found" >&2
+    echo "$name command was not found" >&2
+    exit 127
+  fi
+  printf '%s' "$resolved"
+}
+
+MAESTRO_BIN="$(require_command maestro)"
+POD_BIN="$(require_command pod)"
+XCODEBUILD_BIN="$(require_command xcodebuild)"
 GOOGLE_SERVICE_INFO_PLIST_PATH="$ROOT_DIR/ios/$FLAVOR/GoogleService-Info.plist"
 FIREBASE_INFO_PATH="$ROOT_DIR/ios/$FLAVOR/firebase.json"
 
