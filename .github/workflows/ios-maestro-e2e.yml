@@ -1,0 +1,59 @@
+name: iOS Maestro E2E
+
+on:
+  push:
+    branches:
+      - refactor/e2e-test
+      - release
+
+permissions:
+  contents: read
+
+jobs:
+  maestro-e2e:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      FLAVOR: development
+      APP_ID: net.mythrowaway.dev
+      REPORT_DIR: ${{ github.workspace }}/.maestro-results
+      TMPDIR: ${{ github.workspace }}/.tmp
+      FIREBASE_INFO: ${{ secrets.FIREBASE_INFO }}
+      GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+      FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
+      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+      ALARM_API_KEY: ${{ secrets.ALARM_API_KEY }}
+      TRASH_SEARCH_API_KEY: ${{ secrets.TRASH_SEARCH_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.0'
+
+      - name: Install FVM
+        run: dart pub global activate fvm
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Prepare iOS config
+        run: chmod +x tool/maestro/prepare_ios_ci_env.sh && tool/maestro/prepare_ios_ci_env.sh
+
+      - name: Run Maestro iOS E2E
+        run: chmod +x tool/maestro/run_ios_e2e.sh && tool/maestro/run_ios_e2e.sh
+        env:
+          PATH: $HOME/.pub-cache/bin:$PATH
+
+      - name: Upload Maestro artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-maestro-e2e
+          path: |
+            .maestro-results
+          retention-days: 7

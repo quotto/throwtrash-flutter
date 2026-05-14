@@ -86,4 +86,27 @@ void main() {
     expect(find.text('ゴミ出し予定を取り込みました'), findsNothing);
     verifyNever(trashDataService.consumeImportMessage());
   });
+
+  testWidgets('編集画面に E2E 向け key が配置される', (WidgetTester tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChangeNotifierProvider<EditModel>(
+          create: (context) => EditModel(trashDataService),
+          child: EditItemMain(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('trash-type-dropdown')), findsOneWidget);
+    expect(find.byKey(Key('schedule-form-0')), findsOneWidget);
+    expect(find.byKey(Key('schedule-type-0-weekday')), findsOneWidget);
+    expect(find.byKey(Key('schedule-input-0')), findsOneWidget);
+    expect(find.byKey(Key('add-schedule-button')), findsOneWidget);
+    expect(find.byKey(Key('open-exclude-date-settings')), findsOneWidget);
+    expect(find.byKey(Key('submit')), findsOneWidget);
+  });
 }

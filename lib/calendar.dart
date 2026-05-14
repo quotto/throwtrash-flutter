@@ -54,6 +54,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   final AppLinks _appLinks = AppLinks();
   StreamSubscription<Uri>? _sub;
 
+  Widget _identified(String id, Widget child) {
+    return Semantics(identifier: id, child: child);
+  }
+
   Future<void> initUniLinks(AccountLinkServiceInterface service) async {
     try {
       final initialLink = await _appLinks.getInitialLink();
@@ -153,9 +157,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   ) {
     List<Widget> calendarCellColumn = [];
     dateList.asMap().forEach((index, date) {
-      double opacity = week == 1 && date > 7 || week == 5 && date <= 7
-          ? 0.5
-          : 1.0;
+      double opacity =
+          week == 1 && date > 7 || week == 5 && date <= 7 ? 0.5 : 1.0;
       calendarCellColumn.add(
         Expanded(
           child: Column(
@@ -167,9 +170,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   color: index == 0
                       ? Colors.red.shade600.withValues(alpha: opacity)
                       : (index == 6
-                            ? Colors.blue.shade600.withValues(alpha: opacity)
-                            : Theme.of(context).textTheme.bodyLarge!.color
-                                  ?.withValues(alpha: opacity)),
+                          ? Colors.blue.shade600.withValues(alpha: opacity)
+                          : Theme.of(context)
+                              .textTheme
+                              .bodyLarge!
+                              .color
+                              ?.withValues(alpha: opacity)),
                 ),
               ),
               Wrap(
@@ -270,8 +276,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       color: weekday == '日'
                           ? Colors.red.shade600
                           : (weekday == '土'
-                                ? Colors.blue.shade600
-                                : Theme.of(context).textTheme.bodyLarge!.color),
+                              ? Colors.blue.shade600
+                              : Theme.of(context).textTheme.bodyLarge!.color),
                     ),
                   ),
                 );
@@ -294,6 +300,19 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       builder: (context, calendar, child) {
         return Scaffold(
           appBar: AppBar(
+            leading: Builder(
+              builder: (context) => _identified(
+                'open-drawer',
+                IconButton(
+                  key: Key('open-drawer'),
+                  tooltip: 'メニューを開く',
+                  icon: Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+              ),
+            ),
             title: Text('${calendar.year}年${calendar.month}月'),
             // リロードボタン
             actions: <Widget>[
@@ -313,105 +332,116 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     // スクロールは無効化する
                     physics: NeverScrollableScrollPhysics(),
                     children: <Widget>[
-                      ListTile(
-                        title: Text("追加"),
-                        leading: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Icon(Icons.add),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<EditModel>(
-                                    create: (context) => EditModel(
-                                      Provider.of<TrashDataServiceInterface>(
-                                        context,
-                                        listen: false,
-                                      ),
-                                    ),
-                                    child: EditItemMain(),
-                                  ),
-                            ),
-                          ).then((result) {
-                            if (result != null && result) {
-                              calendar.reload();
-                            }
-                          });
-                        },
-                      ),
-                      ListTile(
-                        title: Text("編集"),
-                        leading: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Icon(Icons.edit),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<ListModel>(
-                                    create: (context) => ListModel(
-                                      Provider.of<TrashDataServiceInterface>(
-                                        context,
-                                        listen: false,
-                                      ),
-                                    ),
-                                    child: TrashList(),
-                                  ),
-                            ),
-                          ).then((result) {
-                            // 編集・削除ではデータの更新有無が判別できないためリロード処理を強制実行する
-                            calendar.reload();
-                          });
-                        },
-                      ),
-                      ListTile(
-                        title: Text("例外日"),
-                        leading: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Icon(Icons.event_busy),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          final trashDataService =
-                              Provider.of<TrashDataServiceInterface>(
-                                context,
-                                listen: false,
-                              );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<ExcludeViewModel>(
-                                    create: (context) => ExcludeViewModel.load(
-                                      trashDataService.globalExcludeDates,
-                                    ),
-                                    child: ExcludeDateView(
-                                      showGlobalDescription: true,
+                      _identified(
+                        'drawer-add',
+                        ListTile(
+                          key: Key('drawer-add'),
+                          title: Text("追加"),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Icon(Icons.add),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<EditModel>(
+                                  create: (context) => EditModel(
+                                    Provider.of<TrashDataServiceInterface>(
+                                      context,
+                                      listen: false,
                                     ),
                                   ),
-                            ),
-                          ).then((result) async {
-                            if (result != null) {
-                              final viewModel = result as ExcludeViewModel;
-                              final newExcludeDates = viewModel.excludeDates
-                                  .map((value) {
-                                    return ExcludeDate(value[0], value[1]);
-                                  })
-                                  .toList();
-                              final updateResult = await trashDataService
-                                  .updateGlobalExcludeDates(newExcludeDates);
-                              if (updateResult) {
+                                  child: EditItemMain(),
+                                ),
+                              ),
+                            ).then((result) {
+                              if (result != null && result) {
                                 calendar.reload();
                               }
-                            }
-                          });
-                        },
+                            });
+                          },
+                        ),
+                      ),
+                      _identified(
+                        'drawer-edit',
+                        ListTile(
+                          key: Key('drawer-edit'),
+                          title: Text("編集"),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Icon(Icons.edit),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<ListModel>(
+                                  create: (context) => ListModel(
+                                    Provider.of<TrashDataServiceInterface>(
+                                      context,
+                                      listen: false,
+                                    ),
+                                  ),
+                                  child: TrashList(),
+                                ),
+                              ),
+                            ).then((result) {
+                              // 編集・削除ではデータの更新有無が判別できないためリロード処理を強制実行する
+                              calendar.reload();
+                            });
+                          },
+                        ),
+                      ),
+                      _identified(
+                        'drawer-global-exclude',
+                        ListTile(
+                          key: Key('drawer-global-exclude'),
+                          title: Text("例外日"),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Icon(Icons.event_busy),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            final trashDataService =
+                                Provider.of<TrashDataServiceInterface>(
+                              context,
+                              listen: false,
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<ExcludeViewModel>(
+                                  create: (context) => ExcludeViewModel.load(
+                                    trashDataService.globalExcludeDates,
+                                  ),
+                                  child: ExcludeDateView(
+                                    showGlobalDescription: true,
+                                  ),
+                                ),
+                              ),
+                            ).then((result) async {
+                              if (result != null) {
+                                final viewModel = result as ExcludeViewModel;
+                                final newExcludeDates =
+                                    viewModel.excludeDates.map((value) {
+                                  return ExcludeDate(value[0], value[1]);
+                                }).toList();
+                                final updateResult = await trashDataService
+                                    .updateGlobalExcludeDates(newExcludeDates);
+                                if (updateResult) {
+                                  calendar.reload();
+                                }
+                              }
+                            });
+                          },
+                        ),
                       ),
                       ListTile(
                         title: Text("通知設定"),
@@ -483,9 +513,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       ChangeNotifierProvider<AccountLinkModel>(
-                                        create: (context) => accountLinkModel,
-                                        child: AccountLink(),
-                                      ),
+                                    create: (context) => accountLinkModel,
+                                    child: AccountLink(),
+                                  ),
                                 ),
                               );
                             }
@@ -521,9 +551,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               builder: (context) => OtherPage(
                                 applicationVersion:
                                     Provider.of<AppConfigProviderInterface>(
-                                      context,
-                                      listen: false,
-                                    ).version,
+                                  context,
+                                  listen: false,
+                                ).version,
                               ),
                             ),
                           );

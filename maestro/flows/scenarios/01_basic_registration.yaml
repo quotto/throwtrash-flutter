@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+    permissions:
+      notifications: allow
+- tapOn:
+    text: 許可
+    optional: true
+- tapOn:
+    text: キャンセル
+    optional: true
+- assertVisible: ${CURRENT_MONTH_LABEL}
+- runFlow: ../common/open_add.yaml
+- tapOn:
+    id: submit-trash-data
+- assertVisible: もえるゴミ

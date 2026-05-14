@@ -206,9 +206,15 @@ void main() {
     );
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
+    expect(find.byKey(Key('open-drawer')), findsOneWidget);
+
     final scaffoldState = tester.state<ScaffoldState>(find.byType(Scaffold));
     scaffoldState.openDrawer();
     await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('drawer-add')), findsOneWidget);
+    expect(find.byKey(Key('drawer-edit')), findsOneWidget);
+    expect(find.byKey(Key('drawer-global-exclude')), findsOneWidget);
 
     final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
     int editIndex = -1;

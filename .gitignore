@@ -52,6 +52,7 @@ ios/.env
 GoogleService-Info.plist
 firebase.json
 firebase_options.dart
+firebase_options.json
 android/app/google-services.json
 
 /.idea/copilot/chatSessions/00000000000.xd
@@ -62,3 +63,7 @@ android/app/google-services.json
 
 coverage/
 work/
+.maestro-results/
+.derived-data/
+.e2e-home/
+.tmp/

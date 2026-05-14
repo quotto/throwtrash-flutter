@@ -27,6 +27,10 @@ class _TrashListState extends State<TrashList> {
     duration: Duration(seconds: 1),
   );
 
+  Widget _identified(String id, Widget child) {
+    return Semantics(identifier: id, child: child);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -76,120 +80,162 @@ class _TrashListState extends State<TrashList> {
               }
               TrashListData trashData = list.trashList[index];
               debugPrint('$index:${trashData.id}');
-              return Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            trashData.name,
-                            style: TextStyle(
-                              color: trashColor(
-                                trashData.type,
-                                Theme.of(context).brightness,
+              return _identified(
+                'trash-row-index-$index',
+                _identified(
+                  'trash-row-${trashData.id}',
+                  Row(
+                    key: Key('trash-row-${trashData.id}'),
+                    children: [
+                      Expanded(
+                        child: _identified(
+                          'edit-trash-index-$index',
+                          _identified(
+                            'edit-trash-${trashData.id}',
+                            Semantics(
+                              button: true,
+                              label: '編集',
+                              child: Tooltip(
+                                message: '編集',
+                                child: InkWell(
+                                  key: Key('edit-trash-${trashData.id}'),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        trashData.name,
+                                        style: TextStyle(
+                                          color: trashColor(
+                                            trashData.type,
+                                            Theme.of(context).brightness,
+                                          ),
+                                          fontSize: 24,
+                                        ),
+                                      ),
+                                      Column(
+                                        children: trashData.schedules
+                                            .map<Widget>(
+                                              (schedule) => Text(schedule),
+                                            )
+                                            .toList(),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    final trashDataService =
+                                        Provider.of<TrashDataServiceInterface>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ChangeNotifierProvider<
+                                              EditModel>(
+                                            create: (context) =>
+                                                EditModel(trashDataService),
+                                            child: EditItemMain.update(
+                                              trashData.id,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ).then((result) {
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+                                      if (result != null && result) {
+                                        list.reload();
+                                      }
+                                    });
+                                  },
+                                ),
                               ),
-                              fontSize: 24,
                             ),
                           ),
-                          Column(
-                            children: trashData.schedules
-                                .map<Widget>((schedule) => Text(schedule))
-                                .toList(),
-                          ),
-                        ],
+                        ),
                       ),
-                      onTap: () {
-                        final trashDataService =
-                            Provider.of<TrashDataServiceInterface>(
-                              context,
-                              listen: false,
-                            );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return ChangeNotifierProvider<EditModel>(
-                                create: (context) =>
-                                    EditModel(trashDataService),
-                                child: EditItemMain.update(trashData.id),
-                              );
-                            },
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: _identified(
+                          'copy-trash-index-$index',
+                          _identified(
+                            'copy-trash-${trashData.id}',
+                            IconButton(
+                              key: Key('copy-trash-${trashData.id}'),
+                              tooltip: 'コピー',
+                              icon: Icon(Icons.content_copy),
+                              iconSize: 32,
+                              color: Theme.of(context).colorScheme.primary,
+                              onPressed: () {
+                                final trashDataService =
+                                    Provider.of<TrashDataServiceInterface>(
+                                  context,
+                                  listen: false,
+                                );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return ChangeNotifierProvider<EditModel>(
+                                        create: (context) =>
+                                            EditModel(trashDataService),
+                                        child: EditItemMain.copyFrom(
+                                          trashData.id,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ).then((result) {
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+                                  if (result != null && result) {
+                                    list.reload();
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                        ).then((result) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          if (result != null && result) {
-                            list.reload();
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: IconButton(
-                      key: Key('copy-trash-${trashData.id}'),
-                      tooltip: 'コピー',
-                      icon: Icon(Icons.content_copy),
-                      iconSize: 32,
-                      color: Theme.of(context).colorScheme.primary,
-                      onPressed: () {
-                        final trashDataService =
-                            Provider.of<TrashDataServiceInterface>(
-                              context,
-                              listen: false,
-                            );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return ChangeNotifierProvider<EditModel>(
-                                create: (context) =>
-                                    EditModel(trashDataService),
-                                child: EditItemMain.copyFrom(trashData.id),
-                              );
-                            },
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: _identified(
+                          'delete-trash-index-$index',
+                          _identified(
+                            'delete-trash-${trashData.id}',
+                            IconButton(
+                              key: Key('delete-trash-${trashData.id}'),
+                              tooltip: '削除',
+                              icon: Icon(Icons.delete_forever),
+                              iconSize: 32,
+                              color: Theme.of(context).colorScheme.error,
+                              onPressed: () {
+                                list.deleteTrashData(index).then((result) {
+                                  if (!context.mounted) {
+                                    return;
+                                  }
+                                  if (result) {
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(_successSnackBar);
+                                  } else {
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(_failedSnackBar);
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                        ).then((result) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          if (result != null && result) {
-                            list.reload();
-                          }
-                        });
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: IconButton(
-                      key: Key('delete-trash-${trashData.id}'),
-                      icon: Icon(Icons.delete_forever),
-                      iconSize: 32,
-                      color: Theme.of(context).colorScheme.error,
-                      onPressed: () {
-                        list.deleteTrashData(index).then((result) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          if (result) {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(_successSnackBar);
-                          } else {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(_failedSnackBar);
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                ],
+                ),
               );
             },
           );
