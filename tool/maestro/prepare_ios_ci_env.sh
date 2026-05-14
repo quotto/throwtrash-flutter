@@ -14,6 +14,21 @@ decode_base64() {
   fi
 }
 
+write_secret_file() {
+  local content="$1"
+  local output_path="$2"
+  local temp_path
+  temp_path="$(mktemp)"
+
+  if printf '%s' "$content" | decode_base64 >"$temp_path" 2>/dev/null; then
+    mv "$temp_path" "$output_path"
+    return
+  fi
+
+  rm -f "$temp_path"
+  printf '%s' "$content" >"$output_path"
+}
+
 : "${FIREBASE_INFO:?FIREBASE_INFO is required}"
 : "${GOOGLE_SERVICE_INFO_PLIST:?GOOGLE_SERVICE_INFO_PLIST is required}"
 FIREBASE_APP_ID="${FIREBASE_APP_ID:-local-e2e-placeholder}"
@@ -21,5 +36,5 @@ FIREBASE_APP_ID="${FIREBASE_APP_ID:-local-e2e-placeholder}"
 mkdir -p "$IOS_DIR"
 
 printf '%s' "$FIREBASE_INFO" > "$IOS_DIR/firebase.json"
-printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | decode_base64 > "$IOS_DIR/GoogleService-Info.plist"
+write_secret_file "$GOOGLE_SERVICE_INFO_PLIST" "$IOS_DIR/GoogleService-Info.plist"
 printf 'FIREBASE_APP_ID=%s\n' "$FIREBASE_APP_ID" > "$ROOT_DIR/ios/.env"
