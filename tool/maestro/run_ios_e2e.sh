@@ -136,7 +136,7 @@ open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || t
   -derivedDataPath "$DERIVED_DATA_DIR" \
   FLAVOR="$FLAVOR" \
   TARGETED_DEVICE_FAMILY=1 \
-  build >"$XCODEBUILD_LOG" 2>&1 || {
+  build 2>&1 | tee "$XCODEBUILD_LOG" || {
     tail -200 "$XCODEBUILD_LOG" >&2
     exit 1
   }
