@@ -14,6 +14,7 @@ IB_SUPPORT_DIR="${IB_SUPPORT_DIR:-$ROOT_DIR/.e2e-home/Library/Developer/Xcode/Us
 MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
 ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
 TRASH_SEARCH_API_KEY="${TRASH_SEARCH_API_KEY:-}"
+PREFERRED_IOS_MAJOR="${PREFERRED_IOS_MAJOR:-18}"
 MAESTRO_BIN="$(command -v maestro)"
 POD_BIN="$(command -v pod)"
 XCODEBUILD_BIN="$(command -v xcodebuild)"
@@ -77,7 +78,28 @@ resolve_simulator_id() {
     return
   fi
 
-  xcrun simctl list devices available | awk -F '[()]' '/iPhone/ && $0 !~ /unavailable/ { print $2; exit }'
+  local preferred_id
+  preferred_id="$(
+    xcrun simctl list devices available | awk -F '[()]' -v major="$PREFERRED_IOS_MAJOR" '
+      /iPhone/ && $0 !~ /unavailable/ && $2 ~ ("^" major "\\.") { print $4; exit }
+    '
+  )"
+  if [[ -n "$preferred_id" ]]; then
+    echo "$preferred_id"
+    return
+  fi
+
+  preferred_id="$(
+    xcrun simctl list devices available | awk -F '[()]' '
+      /iPhone/ && $0 !~ /unavailable/ && $2 ~ /^17\./ { print $4; exit }
+    '
+  )"
+  if [[ -n "$preferred_id" ]]; then
+    echo "$preferred_id"
+    return
+  fi
+
+  xcrun simctl list devices available | awk -F '[()]' '/iPhone/ && $0 !~ /unavailable/ { print $4; exit }'
 }
 
 SIMULATOR_ID="$(resolve_simulator_id)"
