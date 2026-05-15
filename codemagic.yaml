@@ -27,7 +27,7 @@ workflows:
         - push
       branch_patterns:
         - pattern: '*'
-          include: true
+          include: false
           source: true
         - pattern: 'release'
           include: false

@@ -19,15 +19,6 @@ class EnvironmentProvider implements EnvironmentProviderInterface {
     return _instance!;
   }
 
-  static bool get disableFirebase {
-    const upperFlag = bool.fromEnvironment('E2E_DISABLE_FIREBASE');
-    if (upperFlag) {
-      return true;
-    }
-
-    return const bool.fromEnvironment('e2eDisableFirebase');
-  }
-
   @override
   String get flavor {
     const lowerFlavor = String.fromEnvironment('flavor');

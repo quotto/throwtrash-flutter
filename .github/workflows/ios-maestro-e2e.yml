@@ -16,10 +16,11 @@ jobs:
     env:
       FLAVOR: development
       APP_ID: net.mythrowaway.dev
-      E2E_DISABLE_FIREBASE: true
       REPORT_DIR: ${{ github.workspace }}/.maestro-results
       TMPDIR: ${{ github.workspace }}/.tmp
+      FIREBASE_INFO: ${{ secrets.FIREBASE_INFO }}
       GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+      FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
       FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
       ALARM_API_KEY: ${{ secrets.ALARM_API_KEY }}
       TRASH_SEARCH_API_KEY: ${{ secrets.TRASH_SEARCH_API_KEY }}
@@ -32,16 +33,13 @@ jobs:
         with:
           flutter-version: '3.41.0'
 
+      - name: Install FVM
+        run: dart pub global activate fvm
+
       - name: Install Maestro CLI
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-
-      - name: Install CocoaPods
-        run: |
-          if ! command -v pod >/dev/null 2>&1; then
-            sudo gem install cocoapods -N
-          fi
 
       - name: Prepare iOS config
         run: chmod +x tool/maestro/prepare_ios_ci_env.sh && tool/maestro/prepare_ios_ci_env.sh

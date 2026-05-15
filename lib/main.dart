@@ -13,8 +13,6 @@ import 'package:throwtrash/repository/config_repository.dart';
 import 'package:throwtrash/repository/crashlytics_report.dart';
 import 'package:throwtrash/repository/environment_provider.dart';
 import 'package:throwtrash/repository/fcm_service.dart';
-import 'package:throwtrash/repository/noop_crash_report.dart';
-import 'package:throwtrash/repository/noop_fcm_service.dart';
 import 'package:throwtrash/usecase/alarm_service.dart';
 import 'package:throwtrash/usecase/alarm_service_interface.dart';
 import 'package:throwtrash/usecase/change_theme_service.dart';
@@ -35,8 +33,6 @@ import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
-import 'package:throwtrash/usecase/repository/crash_report_interface.dart';
-import 'package:throwtrash/usecase/repository/fcm_interface.dart';
 import 'package:throwtrash/usecase/user_service.dart';
 import 'package:throwtrash/usecase/user_service_interface.dart';
 import 'package:provider/provider.dart';
@@ -49,7 +45,7 @@ import 'viewModels/calendar_model.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-Future<void> _initializeRepository({required bool disableFirebase}) async {
+Future<void> _initializeRepository() async {
   await EnvironmentProvider.initialize();
   await AppConfigProvider.initialize(EnvironmentProvider());
   TrashRepository.initialize(await SharedPreferences.getInstance());
@@ -69,58 +65,49 @@ Future<void> _initializeRepository({required bool disableFirebase}) async {
     EnvironmentProvider(),
   );
   ConfigRepository.initialize(await SharedPreferences.getInstance());
-  if (!disableFirebase) {
-    FcmService.initialize(
-      FirebaseMessaging.instance,
-      ConfigRepository(),
-      navigatorKey,
-    );
-  }
+  FcmService.initialize(
+    FirebaseMessaging.instance,
+    ConfigRepository(),
+    navigatorKey,
+  );
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final disableFirebase = EnvironmentProvider.disableFirebase;
-  if (!disableFirebase) {
-    await Firebase.initializeApp();
+  await Firebase.initializeApp();
 
-    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-  }
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
 
-  await _initializeRepository(disableFirebase: disableFirebase);
+  await _initializeRepository();
 
   UserServiceInterface userService = UserService(UserRepository());
   await userService.refreshUser();
-  final CrashReportInterface crashReport =
-      disableFirebase ? NoopCrashReport() : CrashlyticsReport();
-  final FcmInterface fcmService =
-      disableFirebase ? const NoopFcmService() : FcmService();
 
   TrashDataServiceInterface trashDataService = TrashDataService(
     userService,
     TrashRepository(),
     TrashApi(),
-    crashReport,
-    fcmService,
+    CrashlyticsReport(),
+    FcmService(),
   );
   AccountLinkServiceInterface accountLinkService = AccountLinkService(
     AppConfigProvider(),
     AccountLinkApi(),
     AccountLinkRepository(),
     UserRepository(),
-    crashReport,
+    CrashlyticsReport(),
   );
 
   AlarmServiceInterface alarmService = AlarmService(
     AlarmRepository(),
     AlarmApi(),
     ConfigRepository(),
-    fcmService,
+    FcmService(),
     UserRepository(),
   );
 
@@ -162,7 +149,7 @@ Future<void> main() async {
             ActivationApi(),
             userService,
             TrashRepository(),
-            crashReport,
+            CrashlyticsReport(),
           ),
         ),
         Provider<AlarmServiceInterface>(create: (context) => alarmService),
@@ -189,8 +176,9 @@ class MyApp extends StatelessWidget {
       child: Consumer<ChangeThemeModel>(
         builder: (context, changeThemeModel, child) => MaterialApp(
           theme: ThemeData(
-            brightness:
-                changeThemeModel.darkMode ? Brightness.dark : Brightness.light,
+            brightness: changeThemeModel.darkMode
+                ? Brightness.dark
+                : Brightness.light,
             colorSchemeSeed: Colors.blue,
           ),
           home: CalendarWidget(),

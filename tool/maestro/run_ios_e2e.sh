@@ -12,32 +12,12 @@ DERIVED_DATA_DIR="${DERIVED_DATA_DIR:-$ROOT_DIR/.derived-data}"
 XCODEBUILD_LOG="${XCODEBUILD_LOG:-$TMPDIR/xcodebuild-$FLAVOR.log}"
 IB_SUPPORT_DIR="${IB_SUPPORT_DIR:-$ROOT_DIR/.e2e-home/Library/Developer/Xcode/UserData/IB Support}"
 MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
-E2E_DISABLE_FIREBASE="${E2E_DISABLE_FIREBASE:-true}"
 ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
 TRASH_SEARCH_API_KEY="${TRASH_SEARCH_API_KEY:-}"
-if command -v fvm >/dev/null 2>&1; then
-  FLUTTER_CMD=(fvm flutter)
-elif command -v flutter >/dev/null 2>&1; then
-  FLUTTER_CMD=(flutter)
-else
-  echo "flutter command was not found" >&2
-  exit 1
-fi
-require_command() {
-  local name="$1"
-  local resolved
-  resolved="$(command -v "$name" || true)"
-  if [[ -z "$resolved" ]]; then
-    echo "::error file=tool/maestro/run_ios_e2e.sh::$name command was not found" >&2
-    echo "$name command was not found" >&2
-    exit 127
-  fi
-  printf '%s' "$resolved"
-}
-
-MAESTRO_BIN="$(require_command maestro)"
-POD_BIN="$(require_command pod)"
-XCODEBUILD_BIN="$(require_command xcodebuild)"
+FVM_BIN="$(command -v fvm)"
+MAESTRO_BIN="$(command -v maestro)"
+POD_BIN="$(command -v pod)"
+XCODEBUILD_BIN="$(command -v xcodebuild)"
 GOOGLE_SERVICE_INFO_PLIST_PATH="$ROOT_DIR/ios/$FLAVOR/GoogleService-Info.plist"
 FIREBASE_INFO_PATH="$ROOT_DIR/ios/$FLAVOR/firebase.json"
 
@@ -74,21 +54,15 @@ if ! grep -q '<key>API_KEY</key>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
   exit 1
 fi
 
-if [[ "$E2E_DISABLE_FIREBASE" != true ]] && grep -q '<string>local-e2e-placeholder</string>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
+if grep -q '<string>local-e2e-placeholder</string>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
   echo "ios/$FLAVOR/GoogleService-Info.plist contains placeholder API_KEY; restore a real Firebase config before running Maestro E2E" >&2
   exit 1
 fi
 
-if [[ "$E2E_DISABLE_FIREBASE" != true ]] && [[ "$(tr -d '[:space:]' < "$FIREBASE_INFO_PATH")" == "{}" ]]; then
+if [[ "$(tr -d '[:space:]' < "$FIREBASE_INFO_PATH")" == "{}" ]]; then
   echo "ios/$FLAVOR/firebase.json is empty; restore a real Firebase config before running Maestro E2E" >&2
   exit 1
 fi
-
-encode_dart_define() {
-  printf '%s' "$1" | base64 | tr -d '\n'
-}
-
-DART_DEFINES="$(encode_dart_define "E2E_DISABLE_FIREBASE=$E2E_DISABLE_FIREBASE")"
 
 resolve_simulator_id() {
   if [[ -n "${SIMULATOR_ID:-}" ]]; then
@@ -117,7 +91,7 @@ xcrun simctl bootstatus "$SIMULATOR_ID" -b >/dev/null 2>&1 || {
 }
 open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || true
 
-"${FLUTTER_CMD[@]}" pub get
+"$FVM_BIN" flutter pub get
 (
   cd "$ROOT_DIR/ios"
   "$POD_BIN" install
@@ -132,7 +106,6 @@ open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || t
   -destination "id=$SIMULATOR_ID" \
   -derivedDataPath "$DERIVED_DATA_DIR" \
   FLAVOR="$FLAVOR" \
-  DART_DEFINES="$DART_DEFINES" \
   TARGETED_DEVICE_FAMILY=1 \
   build >"$XCODEBUILD_LOG" 2>&1 || {
     tail -200 "$XCODEBUILD_LOG" >&2
