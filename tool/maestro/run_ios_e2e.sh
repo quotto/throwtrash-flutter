@@ -14,10 +14,17 @@ IB_SUPPORT_DIR="${IB_SUPPORT_DIR:-$ROOT_DIR/.e2e-home/Library/Developer/Xcode/Us
 MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
 ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
 TRASH_SEARCH_API_KEY="${TRASH_SEARCH_API_KEY:-}"
-FVM_BIN="$(command -v fvm)"
 MAESTRO_BIN="$(command -v maestro)"
 POD_BIN="$(command -v pod)"
 XCODEBUILD_BIN="$(command -v xcodebuild)"
+if command -v fvm >/dev/null 2>&1; then
+  FLUTTER_CMD=(fvm flutter)
+elif command -v flutter >/dev/null 2>&1; then
+  FLUTTER_CMD=(flutter)
+else
+  echo "flutter command was not found" >&2
+  exit 1
+fi
 GOOGLE_SERVICE_INFO_PLIST_PATH="$ROOT_DIR/ios/$FLAVOR/GoogleService-Info.plist"
 FIREBASE_INFO_PATH="$ROOT_DIR/ios/$FLAVOR/firebase.json"
 
@@ -91,7 +98,7 @@ xcrun simctl bootstatus "$SIMULATOR_ID" -b >/dev/null 2>&1 || {
 }
 open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || true
 
-"$FVM_BIN" flutter pub get
+"${FLUTTER_CMD[@]}" pub get
 (
   cd "$ROOT_DIR/ios"
   "$POD_BIN" install
