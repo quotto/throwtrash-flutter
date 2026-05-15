@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   maestro-e2e:
-    runs-on: macos-latest
+    runs-on: macos-15
     timeout-minutes: 60
     env:
       FLAVOR: development
