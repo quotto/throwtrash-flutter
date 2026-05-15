@@ -49,8 +49,6 @@ jobs:
 
       - name: Run Maestro iOS E2E
         run: chmod +x tool/maestro/run_ios_e2e.sh && tool/maestro/run_ios_e2e.sh
-        env:
-          PATH: $HOME/.pub-cache/bin:$PATH
 
       - name: Upload Maestro artifacts
         if: always()
