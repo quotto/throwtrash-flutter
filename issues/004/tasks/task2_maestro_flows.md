@@ -22,6 +22,7 @@ developer
 - `maestro/flows/common/` に共通遷移フロー、`maestro/flows/scenarios/` に 4 シナリオの個別フローを追加した。
 - `tool/maestro/run_ios_e2e.sh` を追加し、iOS Simulator 起動、アプリ install、Maestro 実行、JUnit / debug 出力を一括実行できるようにした。
 - `README.md` にローカル実行手順と必要な環境変数を追記した。
+- CI artifact の再分析を受け、カレンダー上のゴミ名検証はテキスト直指定ではなく `calendar-trash-*` の Semantics id を使う形に更新した。
 
 ## 完了条件
 

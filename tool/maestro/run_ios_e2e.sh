@@ -49,7 +49,11 @@ STATUS_LOG="$REPORT_DIR/status.txt"
 touch "$RUNNER_LOG" "$STATUS_LOG"
 printf 'started\n' > "$STATUS_LOG"
 
-exec > >(tee -a "$RUNNER_LOG") 2>&1
+if [[ "${DISABLE_RUNNER_LOG_TEE:-false}" == "true" ]]; then
+  exec >>"$RUNNER_LOG" 2>&1
+else
+  exec > >(tee -a "$RUNNER_LOG") 2>&1
+fi
 
 log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
@@ -167,7 +171,7 @@ done < <(
     | .value[]
     | select(.isAvailable == true and .state == "Booted")
     | .udid
-  '
+  ' || true
 )
 
 notice "Booting simulator"
@@ -252,8 +256,10 @@ run_maestro_flow() {
     sleep 30
   done
 
-  wait "$maestro_pid"
+  local maestro_status=0
+  wait "$maestro_pid" || maestro_status=$?
   notice "Maestro test completed: $flow_name"
+  return "$maestro_status"
 }
 
 FLOW_PATHS=()

@@ -26,6 +26,9 @@ workflows:
       events:
         - push
       branch_patterns:
+        - pattern: 'refactor/e2e-test'
+          include: false
+          source: true
         - pattern: '*'
           include: true
           source: true

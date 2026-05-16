@@ -68,7 +68,7 @@ Maestro を用いた iOS 向け E2E テスト基盤を追加し、ローカル�
 - [x] task4: GitHub Actions workflow の追加  
   完了条件: macOS ランナー上で iOS シミュレータ + Maestro CLI により E2E を実行し、レポートを 7 日保持で保存できる。  
   期待成果物: `.github/workflows/*`、artifact 出力定義、必要な補助 script
-- [x] task5: 検証と運用切替  
+- [ ] task5: 検証と運用切替
   完了条件: ローカル実行結果、一時的な開発ブランチ trigger での CI 検証結果、最終 `release` trigger 反映方針が記録される。  
   期待成果物: `issues/004/tasks/task5_verification.md`、必要に応じた `work/reports/*`
 
@@ -108,8 +108,13 @@ GitHub Actions では一時的に開発ブランチ push で workflow を確認�
 
 - ローカル検証で利用するシミュレータ機種 / OS バージョンの最終固定
  
-## 完了メモ
+## 進捗修正メモ
 
-- GitHub Actions `iOS Maestro E2E` は `refactor/e2e-test` の run `25959379109` で成功した。
-- CI 検証用に一時追加した `refactor/e2e-test` trigger は削除し、workflow は `release` push のみへ戻した。
-- 一時停止していた Codemagic `ios-development` の push trigger も復帰した。
+- GitHub Actions `iOS Maestro E2E` の run `25959379109` は workflow 上は success だったが、artifact の JUnit では 4 flow すべて失敗していた。
+- 原因は `tool/maestro/run_ios_e2e.sh` で Maestro の終了コードが `notice` に上書きされ、CI が偽陽性になっていたこと。
+- task5 は未完了に戻し、終了コード伝播修正後の再検証が必要。
+- artifact のスクリーンショットではゴミ名が表示されていたため、追加失敗原因は iOS accessibility hierarchy 上でカレンダー内ゴミ名が単独要素ではなくカレンダー全体のラベルに結合されることと判断した。
+- カレンダー内ゴミ表示へ `calendar-trash-{type}` の Semantics identifier を追加し、Maestro フローはゴミ名テキストではなく id で検証する方針へ変更した。
+- CI 再検証のため、GitHub Actions は一時的に `refactor/e2e-test` push でも起動させ、Codemagic `ios-development` は同ブランチ push を除外する。
+- XcodeBuildMCP 経由の simulator build / install / launch は成功済み。Maestro MCP 経由で 4 flow の個別実行もすべて成功した。
+- 現在の shell 実行環境では `xcrun simctl` が断続的に CoreSimulatorService に接続できず、`tool/maestro/run_ios_e2e.sh` の shell からのローカル完走確認は未完了。

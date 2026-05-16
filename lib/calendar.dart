@@ -150,6 +150,26 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     });
   }
 
+  List<String> _trashTypes(List<List<DisplayTrashData>> trashList) {
+    return trashList
+        .expand((trashListByDate) => trashListByDate)
+        .map((trash) => trash.trashType)
+        .toSet()
+        .toList();
+  }
+
+  Widget _trashTypeMarker(String trashType) {
+    return SizedBox(
+      width: 1,
+      height: 1,
+      child: Semantics(
+        container: true,
+        identifier: 'calendar-trash-$trashType',
+        label: 'calendar-trash-$trashType',
+      ),
+    );
+  }
+
   Flexible _flexibleRowWeek(
     int week,
     List<int> dateList,
@@ -157,8 +177,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   ) {
     List<Widget> calendarCellColumn = [];
     dateList.asMap().forEach((index, date) {
-      double opacity =
-          week == 1 && date > 7 || week == 5 && date <= 7 ? 0.5 : 1.0;
+      double opacity = week == 1 && date > 7 || week == 5 && date <= 7
+          ? 0.5
+          : 1.0;
       calendarCellColumn.add(
         Expanded(
           child: Column(
@@ -170,12 +191,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   color: index == 0
                       ? Colors.red.shade600.withValues(alpha: opacity)
                       : (index == 6
-                          ? Colors.blue.shade600.withValues(alpha: opacity)
-                          : Theme.of(context)
-                              .textTheme
-                              .bodyLarge!
-                              .color
-                              ?.withValues(alpha: opacity)),
+                            ? Colors.blue.shade600.withValues(alpha: opacity)
+                            : Theme.of(context).textTheme.bodyLarge!.color
+                                  ?.withValues(alpha: opacity)),
                 ),
               ),
               Wrap(
@@ -187,7 +205,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         color: trashColor(
                           trashList[index][i].trashType,
                           Theme.of(context).brightness,
-                        ), //_trashColorMap[trashList[index][i].trashType],
+                        ),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       alignment: Alignment.topCenter,
@@ -261,6 +279,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     return Column(
       key: Key('calendar_column_$pageIndex'),
       children: [
+        ..._trashTypes(allTrashList).map(_trashTypeMarker),
         Flexible(
           flex: 1,
           child: FractionallySizedBox(
@@ -276,8 +295,8 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       color: weekday == '日'
                           ? Colors.red.shade600
                           : (weekday == '土'
-                              ? Colors.blue.shade600
-                              : Theme.of(context).textTheme.bodyLarge!.color),
+                                ? Colors.blue.shade600
+                                : Theme.of(context).textTheme.bodyLarge!.color),
                     ),
                   ),
                 );
@@ -348,14 +367,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               MaterialPageRoute(
                                 builder: (context) =>
                                     ChangeNotifierProvider<EditModel>(
-                                  create: (context) => EditModel(
-                                    Provider.of<TrashDataServiceInterface>(
-                                      context,
-                                      listen: false,
+                                      create: (context) => EditModel(
+                                        Provider.of<TrashDataServiceInterface>(
+                                          context,
+                                          listen: false,
+                                        ),
+                                      ),
+                                      child: EditItemMain(),
                                     ),
-                                  ),
-                                  child: EditItemMain(),
-                                ),
                               ),
                             ).then((result) {
                               if (result != null && result) {
@@ -381,14 +400,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               MaterialPageRoute(
                                 builder: (context) =>
                                     ChangeNotifierProvider<ListModel>(
-                                  create: (context) => ListModel(
-                                    Provider.of<TrashDataServiceInterface>(
-                                      context,
-                                      listen: false,
+                                      create: (context) => ListModel(
+                                        Provider.of<TrashDataServiceInterface>(
+                                          context,
+                                          listen: false,
+                                        ),
+                                      ),
+                                      child: TrashList(),
                                     ),
-                                  ),
-                                  child: TrashList(),
-                                ),
                               ),
                             ).then((result) {
                               // 編集・削除ではデータの更新有無が判別できないためリロード処理を強制実行する
@@ -410,29 +429,31 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                             Navigator.of(context).pop();
                             final trashDataService =
                                 Provider.of<TrashDataServiceInterface>(
-                              context,
-                              listen: false,
-                            );
+                                  context,
+                                  listen: false,
+                                );
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
                                     ChangeNotifierProvider<ExcludeViewModel>(
-                                  create: (context) => ExcludeViewModel.load(
-                                    trashDataService.globalExcludeDates,
-                                  ),
-                                  child: ExcludeDateView(
-                                    showGlobalDescription: true,
-                                  ),
-                                ),
+                                      create: (context) =>
+                                          ExcludeViewModel.load(
+                                            trashDataService.globalExcludeDates,
+                                          ),
+                                      child: ExcludeDateView(
+                                        showGlobalDescription: true,
+                                      ),
+                                    ),
                               ),
                             ).then((result) async {
                               if (result != null) {
                                 final viewModel = result as ExcludeViewModel;
-                                final newExcludeDates =
-                                    viewModel.excludeDates.map((value) {
-                                  return ExcludeDate(value[0], value[1]);
-                                }).toList();
+                                final newExcludeDates = viewModel.excludeDates
+                                    .map((value) {
+                                      return ExcludeDate(value[0], value[1]);
+                                    })
+                                    .toList();
                                 final updateResult = await trashDataService
                                     .updateGlobalExcludeDates(newExcludeDates);
                                 if (updateResult) {
@@ -513,9 +534,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       ChangeNotifierProvider<AccountLinkModel>(
-                                    create: (context) => accountLinkModel,
-                                    child: AccountLink(),
-                                  ),
+                                        create: (context) => accountLinkModel,
+                                        child: AccountLink(),
+                                      ),
                                 ),
                               );
                             }
@@ -551,9 +572,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                               builder: (context) => OtherPage(
                                 applicationVersion:
                                     Provider.of<AppConfigProviderInterface>(
-                                  context,
-                                  listen: false,
-                                ).version,
+                                      context,
+                                      listen: false,
+                                    ).version,
                               ),
                             ),
                           );

@@ -21,6 +21,7 @@ devops
 - `.github/workflows/ios-maestro-e2e.yml` を追加し、`release` ブランチ push を最終トリガーとして定義した。
 - workflow から `tool/maestro/prepare_ios_ci_env.sh` と `tool/maestro/run_ios_e2e.sh` を呼び出す構成にし、設定復元から実行までを分離した。
 - `.maestro-results` を artifact として収集し、保持期間を 7 日に設定した。
+- CI 再検証の間だけ `refactor/e2e-test` push でも GitHub Actions が起動するよう一時 trigger を追加し、同ブランチでは Codemagic `ios-development` が起動しないよう `codemagic.yaml` に除外条件を追加する方針とした。
 
 ## 完了条件
 

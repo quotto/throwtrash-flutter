@@ -20,6 +20,7 @@ developer
 - `lib/calendar.dart` `lib/edit.dart` `lib/list.dart` に E2E 用の安定した識別子を追加した。
 - `launchApp: { clearState: true }` と install 前提の実行スクリプトにより、SharedPreferences に依存しないクリーン起動方針を反映した。
 - `test/widget/widget_test.dart` `test/widget/edit_item_main_test.dart` `test/widget/trash_list_copy_test.dart` を更新し、追加した識別子の存在を検証できるようにした。
+- iOS accessibility でカレンダー全体のラベルへ結合されるゴミ名を Maestro が単独テキストとして検出できないため、カレンダーの各ゴミ表示に `calendar-trash-{type}` の Semantics identifier を追加した。
 
 ## 完了条件
 

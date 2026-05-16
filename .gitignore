@@ -64,6 +64,7 @@ android/app/google-services.json
 coverage/
 work/
 .maestro-results/
+.maestro-home/
 .derived-data/
 .e2e-home/
 .tmp/
