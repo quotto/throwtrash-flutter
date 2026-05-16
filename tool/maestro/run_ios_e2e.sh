@@ -37,12 +37,17 @@ FIREBASE_INFO_PATH="$ROOT_DIR/ios/$FLAVOR/firebase.json"
 mkdir -p \
   "$REPORT_DIR/debug" \
   "$REPORT_DIR/artifacts" \
+  "$REPORT_DIR/junit" \
   "$TMPDIR" \
   "$DERIVED_DATA_DIR" \
   "$IB_SUPPORT_DIR"
 export TMPDIR
 export MAESTRO_DRIVER_STARTUP_TIMEOUT
 RUNNER_LOG="$REPORT_DIR/runner.log"
+STATUS_LOG="$REPORT_DIR/status.txt"
+
+touch "$RUNNER_LOG" "$STATUS_LOG"
+printf 'started\n' > "$STATUS_LOG"
 
 exec > >(tee -a "$RUNNER_LOG") 2>&1
 
@@ -55,7 +60,7 @@ notice() {
   printf '::notice::%s\n' "$*"
 }
 
-trap 'status=$?; log "run_ios_e2e.sh exiting with status $status"' EXIT
+trap 'status=$?; printf "exit_status=%s\n" "$status" > "$STATUS_LOG"; log "run_ios_e2e.sh exiting with status $status"' EXIT
 
 notice "Starting Maestro iOS E2E runner"
 notice "Using flavor=$FLAVOR appId=$APP_ID preferredIosMajor=$PREFERRED_IOS_MAJOR"
@@ -209,23 +214,66 @@ xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
 
 CURRENT_MONTH_LABEL="$(date '+%Y年%-m月')"
 
-notice "Running maestro test"
-"$MAESTRO_BIN" test \
-  "$FLOW_DIR" \
-  --format JUNIT \
-  --output "$REPORT_DIR/junit.xml" \
-  --debug-output "$REPORT_DIR/debug" \
-  --flatten-debug-output \
-  --test-output-dir "$REPORT_DIR/artifacts" \
-  --udid "$SIMULATOR_ID" \
-  -e APP_ID="$APP_ID" \
-  -e CURRENT_MONTH_LABEL="$CURRENT_MONTH_LABEL" &
-maestro_pid=$!
+reset_app_state() {
+  xcrun simctl terminate "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
+  xcrun simctl uninstall "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
+  xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+}
 
-while kill -0 "$maestro_pid" >/dev/null 2>&1; do
-  log "Maestro test still running"
-  sleep 30
+run_maestro_flow() {
+  local flow_path="$1"
+  local flow_name="$2"
+  local debug_dir="$REPORT_DIR/debug/$flow_name"
+  local artifact_dir="$REPORT_DIR/artifacts/$flow_name"
+  local junit_path="$REPORT_DIR/junit/$flow_name.xml"
+  local heartbeat_count=0
+
+  mkdir -p "$debug_dir" "$artifact_dir"
+  notice "Running maestro test: $flow_name"
+  "$MAESTRO_BIN" test \
+    "$flow_path" \
+    --format JUNIT \
+    --output "$junit_path" \
+    --debug-output "$debug_dir" \
+    --flatten-debug-output \
+    --test-output-dir "$artifact_dir" \
+    --udid "$SIMULATOR_ID" \
+    -e APP_ID="$APP_ID" \
+    -e CURRENT_MONTH_LABEL="$CURRENT_MONTH_LABEL" &
+  local maestro_pid=$!
+
+  while kill -0 "$maestro_pid" >/dev/null 2>&1; do
+    heartbeat_count=$((heartbeat_count + 1))
+    if (( heartbeat_count % 10 == 0 )); then
+      notice "Maestro test still running: $flow_name"
+    else
+      log "Maestro test still running: $flow_name"
+    fi
+    sleep 30
+  done
+
+  wait "$maestro_pid"
+  notice "Maestro test completed: $flow_name"
+}
+
+mapfile -t FLOW_PATHS < <(find "$FLOW_DIR" -maxdepth 1 -type f -name '*.yaml' | sort)
+if [[ "${#FLOW_PATHS[@]}" -eq 0 ]]; then
+  echo "Maestro flow was not found under $FLOW_DIR" >&2
+  exit 1
+fi
+
+failed_flows=()
+for flow_path in "${FLOW_PATHS[@]}"; do
+  flow_name="$(basename "$flow_path" .yaml)"
+  notice "Resetting app state: $flow_name"
+  reset_app_state
+
+  if ! run_maestro_flow "$flow_path" "$flow_name"; then
+    failed_flows+=("$flow_name")
+  fi
 done
 
-wait "$maestro_pid"
-notice "Maestro test completed"
+if [[ "${#failed_flows[@]}" -gt 0 ]]; then
+  echo "Maestro test failed: ${failed_flows[*]}" >&2
+  exit 1
+fi
