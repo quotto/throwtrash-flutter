@@ -18,12 +18,17 @@ PREFERRED_IOS_MAJOR="${PREFERRED_IOS_MAJOR:-18}"
 MAESTRO_BIN="$(command -v maestro)"
 POD_BIN="$(command -v pod)"
 XCODEBUILD_BIN="$(command -v xcodebuild)"
+JQ_BIN="$(command -v jq)"
 if command -v fvm >/dev/null 2>&1; then
   FLUTTER_CMD=(fvm flutter)
 elif command -v flutter >/dev/null 2>&1; then
   FLUTTER_CMD=(flutter)
 else
   echo "flutter command was not found" >&2
+  exit 1
+fi
+if [[ -z "$JQ_BIN" ]]; then
+  echo "jq command was not found" >&2
   exit 1
 fi
 GOOGLE_SERVICE_INFO_PLIST_PATH="$ROOT_DIR/ios/$FLAVOR/GoogleService-Info.plist"
@@ -97,9 +102,15 @@ resolve_simulator_id() {
 
   local preferred_id
   preferred_id="$(
-    xcrun simctl list devices available | awk -F '[()]' -v major="$PREFERRED_IOS_MAJOR" '
-      /iPhone/ && $0 !~ /unavailable/ && $2 ~ ("^" major "\\.") { print $4; exit }
-    '
+    xcrun simctl list devices available -j | "$JQ_BIN" -r --arg major "$PREFERRED_IOS_MAJOR" '
+      .devices
+      | to_entries
+      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-\($major)-")))
+      | .[]
+      | .value[]
+      | select(.isAvailable == true and (.name | startswith("iPhone")))
+      | .udid
+    ' | head -n 1
   )"
   if [[ -n "$preferred_id" ]]; then
     echo "$preferred_id"
@@ -107,16 +118,29 @@ resolve_simulator_id() {
   fi
 
   preferred_id="$(
-    xcrun simctl list devices available | awk -F '[()]' '
-      /iPhone/ && $0 !~ /unavailable/ && $2 ~ /^17\./ { print $4; exit }
-    '
+    xcrun simctl list devices available -j | "$JQ_BIN" -r '
+      .devices
+      | to_entries
+      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-17-")))
+      | .[]
+      | .value[]
+      | select(.isAvailable == true and (.name | startswith("iPhone")))
+      | .udid
+    ' | head -n 1
   )"
   if [[ -n "$preferred_id" ]]; then
     echo "$preferred_id"
     return
   fi
 
-  xcrun simctl list devices available | awk -F '[()]' '/iPhone/ && $0 !~ /unavailable/ { print $4; exit }'
+  xcrun simctl list devices available -j | "$JQ_BIN" -r '
+    .devices
+    | to_entries
+    | .[]
+    | .value[]
+    | select(.isAvailable == true and (.name | startswith("iPhone")))
+    | .udid
+  ' | head -n 1
 }
 
 SIMULATOR_ID="$(resolve_simulator_id)"
@@ -130,7 +154,16 @@ while IFS= read -r booted_id; do
   if [[ -n "$booted_id" && "$booted_id" != "$SIMULATOR_ID" ]]; then
     xcrun simctl shutdown "$booted_id" >/dev/null 2>&1 || true
   fi
-done < <(xcrun simctl list devices available | awk -F '[()]' '/Booted/ { print $4 }')
+done < <(
+  xcrun simctl list devices available -j | "$JQ_BIN" -r '
+    .devices
+    | to_entries
+    | .[]
+    | .value[]
+    | select(.isAvailable == true and .state == "Booted")
+    | .udid
+  '
+)
 
 notice "Booting simulator"
 xcrun simctl bootstatus "$SIMULATOR_ID" -b >/dev/null 2>&1 || {
