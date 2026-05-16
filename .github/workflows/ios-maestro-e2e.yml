@@ -56,4 +56,5 @@ jobs:
         with:
           name: ios-maestro-e2e
           path: ${{ env.REPORT_DIR }}
+          include-hidden-files: true
           retention-days: 7

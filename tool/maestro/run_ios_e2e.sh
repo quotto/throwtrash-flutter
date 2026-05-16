@@ -256,7 +256,10 @@ run_maestro_flow() {
   notice "Maestro test completed: $flow_name"
 }
 
-mapfile -t FLOW_PATHS < <(find "$FLOW_DIR" -maxdepth 1 -type f -name '*.yaml' | sort)
+FLOW_PATHS=()
+while IFS= read -r flow_path; do
+  FLOW_PATHS+=("$flow_path")
+done < <(find "$FLOW_DIR" -maxdepth 1 -type f -name '*.yaml' | sort)
 if [[ "${#FLOW_PATHS[@]}" -eq 0 ]]; then
   echo "Maestro flow was not found under $FLOW_DIR" >&2
   exit 1
