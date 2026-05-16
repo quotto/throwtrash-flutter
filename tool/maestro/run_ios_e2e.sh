@@ -45,10 +45,15 @@ log() {
   printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
 }
 
+notice() {
+  log "$*"
+  printf '::notice::%s\n' "$*"
+}
+
 trap 'status=$?; log "run_ios_e2e.sh exiting with status $status"' EXIT
 
-log "Starting Maestro iOS E2E runner"
-log "Using flavor=$FLAVOR appId=$APP_ID preferredIosMajor=$PREFERRED_IOS_MAJOR"
+notice "Starting Maestro iOS E2E runner"
+notice "Using flavor=$FLAVOR appId=$APP_ID preferredIosMajor=$PREFERRED_IOS_MAJOR"
 
 if [[ -d "${HOME:-}/Library/Developer/CoreSimulator/Devices" ]]; then
   ln -sfn "$HOME/Library/Developer/CoreSimulator/Devices" "$IB_SUPPORT_DIR/Simulator Devices"
@@ -119,7 +124,7 @@ if [[ -z "$SIMULATOR_ID" ]]; then
   echo "available iPhone simulator was not found" >&2
   exit 1
 fi
-log "Resolved simulator id: $SIMULATOR_ID"
+notice "Resolved simulator id: $SIMULATOR_ID"
 
 while IFS= read -r booted_id; do
   if [[ -n "$booted_id" && "$booted_id" != "$SIMULATOR_ID" ]]; then
@@ -127,23 +132,23 @@ while IFS= read -r booted_id; do
   fi
 done < <(xcrun simctl list devices available | awk -F '[()]' '/Booted/ { print $4 }')
 
-log "Booting simulator"
+notice "Booting simulator"
 xcrun simctl bootstatus "$SIMULATOR_ID" -b >/dev/null 2>&1 || {
   xcrun simctl boot "$SIMULATOR_ID"
   xcrun simctl bootstatus "$SIMULATOR_ID" -b
 }
 open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || true
 
-log "Running flutter pub get"
+notice "Running flutter pub get"
 "${FLUTTER_CMD[@]}" pub get
 (
-  log "Running pod install"
+  notice "Running pod install"
   cd "$ROOT_DIR/ios"
   "$POD_BIN" install
 )
 
 # flutter build ios は環境によって停止することがあるため、xcodebuild を直接利用する。
-log "Running xcodebuild"
+notice "Running xcodebuild"
 "$XCODEBUILD_BIN" \
   -workspace "$ROOT_DIR/ios/Runner.xcworkspace" \
   -scheme "$FLAVOR" \
@@ -156,21 +161,22 @@ log "Running xcodebuild"
   build 2>&1 | tee "$XCODEBUILD_LOG" || {
     tail -200 "$XCODEBUILD_LOG" >&2
     exit 1
-  }
+}
 
+notice "xcodebuild completed"
 APP_PATH="$DERIVED_DATA_DIR/Build/Products/Debug-$FLAVOR-iphonesimulator/Runner.app"
 if [[ ! -d "$APP_PATH" ]]; then
   echo "Runner.app was not found at $APP_PATH" >&2
   exit 1
 fi
 
-log "Installing app to simulator"
+notice "Installing app to simulator"
 xcrun simctl uninstall "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
 xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
 
 CURRENT_MONTH_LABEL="$(date '+%Y年%-m月')"
 
-log "Running maestro test"
+notice "Running maestro test"
 "$MAESTRO_BIN" test \
   "$FLOW_DIR" \
   --format JUNIT \
@@ -189,3 +195,4 @@ while kill -0 "$maestro_pid" >/dev/null 2>&1; do
 done
 
 wait "$maestro_pid"
+notice "Maestro test completed"

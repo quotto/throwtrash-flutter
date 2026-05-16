@@ -55,6 +55,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-maestro-e2e
-          path: |
-            .maestro-results
+          path: ${{ env.REPORT_DIR }}
           retention-days: 7
