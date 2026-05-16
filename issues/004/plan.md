@@ -68,7 +68,7 @@ Maestro を用いた iOS 向け E2E テスト基盤を追加し、ローカル�
 - [x] task4: GitHub Actions workflow の追加  
   完了条件: macOS ランナー上で iOS シミュレータ + Maestro CLI により E2E を実行し、レポートを 7 日保持で保存できる。  
   期待成果物: `.github/workflows/*`、artifact 出力定義、必要な補助 script
-- [ ] task5: 検証と運用切替（CI 実行確認待ち）  
+- [x] task5: 検証と運用切替  
   完了条件: ローカル実行結果、一時的な開発ブランチ trigger での CI 検証結果、最終 `release` trigger 反映方針が記録される。  
   期待成果物: `issues/004/tasks/task5_verification.md`、必要に応じた `work/reports/*`
 
@@ -106,5 +106,10 @@ GitHub Actions では一時的に開発ブランチ push で workflow を確認�
 
 ## 未確定事項
 
-- GitHub Actions 上での実行結果と artifact 内容の実確認
 - ローカル検証で利用するシミュレータ機種 / OS バージョンの最終固定
+ 
+## 完了メモ
+
+- GitHub Actions `iOS Maestro E2E` は `refactor/e2e-test` の run `25959379109` で成功した。
+- CI 検証用に一時追加した `refactor/e2e-test` trigger は削除し、workflow は `release` push のみへ戻した。
+- 一時停止していた Codemagic `ios-development` の push trigger も復帰した。

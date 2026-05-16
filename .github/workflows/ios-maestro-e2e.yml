@@ -3,7 +3,6 @@ name: iOS Maestro E2E
 on:
   push:
     branches:
-      - refactor/e2e-test
       - release
 
 permissions:
