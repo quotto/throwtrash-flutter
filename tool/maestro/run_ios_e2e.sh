@@ -37,6 +37,18 @@ mkdir -p \
   "$IB_SUPPORT_DIR"
 export TMPDIR
 export MAESTRO_DRIVER_STARTUP_TIMEOUT
+RUNNER_LOG="$REPORT_DIR/runner.log"
+
+exec > >(tee -a "$RUNNER_LOG") 2>&1
+
+log() {
+  printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+}
+
+trap 'status=$?; log "run_ios_e2e.sh exiting with status $status"' EXIT
+
+log "Starting Maestro iOS E2E runner"
+log "Using flavor=$FLAVOR appId=$APP_ID preferredIosMajor=$PREFERRED_IOS_MAJOR"
 
 if [[ -d "${HOME:-}/Library/Developer/CoreSimulator/Devices" ]]; then
   ln -sfn "$HOME/Library/Developer/CoreSimulator/Devices" "$IB_SUPPORT_DIR/Simulator Devices"
@@ -107,26 +119,31 @@ if [[ -z "$SIMULATOR_ID" ]]; then
   echo "available iPhone simulator was not found" >&2
   exit 1
 fi
+log "Resolved simulator id: $SIMULATOR_ID"
 
 while IFS= read -r booted_id; do
   if [[ -n "$booted_id" && "$booted_id" != "$SIMULATOR_ID" ]]; then
     xcrun simctl shutdown "$booted_id" >/dev/null 2>&1 || true
   fi
-done < <(xcrun simctl list devices available | awk -F '[()]' '/Booted/ { print $2 }')
+done < <(xcrun simctl list devices available | awk -F '[()]' '/Booted/ { print $4 }')
 
+log "Booting simulator"
 xcrun simctl bootstatus "$SIMULATOR_ID" -b >/dev/null 2>&1 || {
   xcrun simctl boot "$SIMULATOR_ID"
   xcrun simctl bootstatus "$SIMULATOR_ID" -b
 }
 open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || true
 
+log "Running flutter pub get"
 "${FLUTTER_CMD[@]}" pub get
 (
+  log "Running pod install"
   cd "$ROOT_DIR/ios"
   "$POD_BIN" install
 )
 
 # flutter build ios は環境によって停止することがあるため、xcodebuild を直接利用する。
+log "Running xcodebuild"
 "$XCODEBUILD_BIN" \
   -workspace "$ROOT_DIR/ios/Runner.xcworkspace" \
   -scheme "$FLAVOR" \
@@ -147,11 +164,13 @@ if [[ ! -d "$APP_PATH" ]]; then
   exit 1
 fi
 
+log "Installing app to simulator"
 xcrun simctl uninstall "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
 xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
 
 CURRENT_MONTH_LABEL="$(date '+%Y年%-m月')"
 
+log "Running maestro test"
 "$MAESTRO_BIN" test \
   "$FLOW_DIR" \
   --format JUNIT \
@@ -161,4 +180,12 @@ CURRENT_MONTH_LABEL="$(date '+%Y年%-m月')"
   --test-output-dir "$REPORT_DIR/artifacts" \
   --udid "$SIMULATOR_ID" \
   -e APP_ID="$APP_ID" \
-  -e CURRENT_MONTH_LABEL="$CURRENT_MONTH_LABEL"
+  -e CURRENT_MONTH_LABEL="$CURRENT_MONTH_LABEL" &
+maestro_pid=$!
+
+while kill -0 "$maestro_pid" >/dev/null 2>&1; do
+  log "Maestro test still running"
+  sleep 30
+done
+
+wait "$maestro_pid"
