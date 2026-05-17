@@ -6,9 +6,7 @@ class UserService extends UserServiceInterface {
   User _user = User('');
   final UserRepositoryInterface _userRepository;
 
-  UserService(
-      this._userRepository,
-  );
+  UserService(this._userRepository);
 
   @override
   User get user => _user;
@@ -16,7 +14,7 @@ class UserService extends UserServiceInterface {
   @override
   Future<void> refreshUser() async {
     await _userRepository.readUser().then((value) {
-      if(value != null) {
+      if (value != null) {
         _user = value;
       }
     });
@@ -25,7 +23,7 @@ class UserService extends UserServiceInterface {
   @override
   Future<bool> registerUser(String id) async {
     User newUser = User(id);
-    if(await _userRepository.writeUser(newUser)) {
+    if (await _userRepository.writeUser(newUser)) {
       await refreshUser();
       return true;
     }

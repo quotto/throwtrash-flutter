@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/viewModels/activation_model.dart';
 
 class Activate extends StatefulWidget {
+  const Activate({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _Activate();
@@ -13,7 +14,7 @@ class Activate extends StatefulWidget {
 
 class _Activate extends State<Activate> {
   late ActivationModel _activationModel;
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -38,35 +39,33 @@ class _Activate extends State<Activate> {
     _activationModel = Provider.of<ActivationModel>(context);
     return Scaffold(
       appBar: AppBar(title: Text('スケジュールの取り込み')),
-      body: Container(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 16.0),
-          child: Column(
-            children: [
-              TextField(
-                enabled: _activationModel.status != ActivationStatus.SENDING,
-                controller: _controller,
-                keyboardType: TextInputType.number,
-                maxLength: 10,
-                style: TextStyle(
-                  fontSize: 32.0,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  labelText: '共有コードを入力',
-                  hintText: '10桁の数字を入力',
-                  border: OutlineInputBorder(),
-                  labelStyle: TextStyle(fontSize: 20.0),
-                ),
-                onChanged: (value) {
-                  _activationModel.activateCode(value);
-                },
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 16.0),
+        child: Column(
+          children: [
+            TextField(
+              enabled: _activationModel.status != ActivationStatus.SENDING,
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              maxLength: 10,
+              style: TextStyle(
+                fontSize: 32.0,
+                color: Theme.of(context).colorScheme.primary,
               ),
-              if (_activationModel.status == ActivationStatus.SENDING)
-                CircularProgressIndicator(),
-            ],
-          ),
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                labelText: '共有コードを入力',
+                hintText: '10桁の数字を入力',
+                border: OutlineInputBorder(),
+                labelStyle: TextStyle(fontSize: 20.0),
+              ),
+              onChanged: (value) {
+                _activationModel.activateCode(value);
+              },
+            ),
+            if (_activationModel.status == ActivationStatus.SENDING)
+              CircularProgressIndicator(),
+          ],
         ),
       ),
     );

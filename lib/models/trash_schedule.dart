@@ -1,4 +1,3 @@
-
 import 'package:json_annotation/json_annotation.dart';
 import 'package:logger/logger.dart';
 
@@ -6,12 +5,12 @@ part 'trash_schedule.g.dart';
 
 @JsonSerializable()
 class TrashSchedule {
-  TrashSchedule(this.type,this.value);
+  TrashSchedule(this.type, this.value);
   String type;
   dynamic value;
   final _logger = Logger();
 
-  bool isMatch(int year, int month, int date){
+  bool isMatch(int year, int month, int date) {
     String strMonth = month < 10 ? "0$month" : month.toString();
     String strDate = date < 10 ? "0$date" : date.toString();
 
@@ -20,7 +19,7 @@ class TrashSchedule {
       DateTime targetDt = DateTime.parse("$year-$strMonth-$strDate");
       // DartのDateTimeは月曜日が1、日曜日が7のためバックエンドAPIに合わせて日曜は0に修正する
       int dayOfWeek = targetDt.weekday == 7 ? 0 : targetDt.weekday;
-      switch (this.type) {
+      switch (type) {
         case "weekday":
           match = int.parse(value) == dayOfWeek;
           break;
@@ -36,16 +35,18 @@ class TrashSchedule {
           break;
         case "evweek":
           Map<String, dynamic> vMap = value as Map<String, dynamic>;
-          int interval = vMap["interval"] != null ? vMap["interval"] : 2;
-          match = vMap["weekday"]!! == dayOfWeek.toString() && _isEvWeek(
-              vMap["start"] as String,
-              "$year-$strMonth-$strDate",
-              dayOfWeek,
-              interval
-          );
+          int interval = vMap["interval"] ?? 2;
+          match =
+              vMap["weekday"]!! == dayOfWeek.toString() &&
+              _isEvWeek(
+                vMap["start"] as String,
+                "$year-$strMonth-$strDate",
+                dayOfWeek,
+                interval,
+              );
           break;
       }
-    } on FormatException catch(e) {
+    } on FormatException catch (e) {
       _logger.e(e.message);
     }
     return match;
@@ -61,6 +62,7 @@ class TrashSchedule {
     return diffDate % interval == 0;
   }
 
-  factory TrashSchedule.fromJson(Map<String,dynamic> json) => _$TrashScheduleFromJson(json);
-  Map<String,dynamic> toJson() => _$TrashScheduleToJson(this);
+  factory TrashSchedule.fromJson(Map<String, dynamic> json) =>
+      _$TrashScheduleFromJson(json);
+  Map<String, dynamic> toJson() => _$TrashScheduleToJson(this);
 }

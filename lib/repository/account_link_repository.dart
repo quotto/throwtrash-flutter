@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/models/account_link_info.dart';
@@ -6,7 +8,8 @@ import 'package:throwtrash/usecase/repository/account_link_repository_interface.
 class AccountLinkRepository implements AccountLinkRepositoryInterface {
   static const String ACCOUNT_LINK_TOKEN_KEY = "ACCOUNT_LINK_TOKEN";
   static const String ACCOUNT_LINK_URL_KEY = "ACCOUNT_LINK_URL";
-  static const String ACCOUNT_LINK_REDIRECT_URI_KEY = "ACCOUNT_LINK_REDIRECT_URI";
+  static const String ACCOUNT_LINK_REDIRECT_URI_KEY =
+      "ACCOUNT_LINK_REDIRECT_URI";
   static AccountLinkRepository? _instance;
 
   final SharedPreferences _preferences;
@@ -15,14 +18,14 @@ class AccountLinkRepository implements AccountLinkRepositoryInterface {
   AccountLinkRepository._(this._preferences);
 
   static void initialize(SharedPreferences preferences) {
-    if(_instance != null) {
+    if (_instance != null) {
       throw StateError('AccountLinkRepository is already initialized');
     }
     _instance = AccountLinkRepository._(preferences);
   }
 
   factory AccountLinkRepository() {
-    if(_instance == null) {
+    if (_instance == null) {
       throw StateError('AccountLinkRepository is not initialized');
     }
     return _instance!;
@@ -30,9 +33,9 @@ class AccountLinkRepository implements AccountLinkRepositoryInterface {
 
   @override
   Future<AccountLinkInfo?> readAccountLinkInfo() async {
-    String? token = this._preferences.getString(ACCOUNT_LINK_TOKEN_KEY);
-    String? url = this._preferences.getString(ACCOUNT_LINK_URL_KEY);
-    if(token != null && url != null) {
+    String? token = _preferences.getString(ACCOUNT_LINK_TOKEN_KEY);
+    String? url = _preferences.getString(ACCOUNT_LINK_URL_KEY);
+    if (token != null && url != null) {
       AccountLinkInfo accountLinkInfo = AccountLinkInfo(url, token);
       return accountLinkInfo;
     }
@@ -42,8 +45,9 @@ class AccountLinkRepository implements AccountLinkRepositoryInterface {
 
   @override
   Future<bool> writeAccountLinkInfo(AccountLinkInfo info) async {
-    bool result = await this._preferences.setString(ACCOUNT_LINK_TOKEN_KEY, info.token)
-      && await this._preferences.setString(ACCOUNT_LINK_URL_KEY, info.linkUrl);
+    bool result =
+        await _preferences.setString(ACCOUNT_LINK_TOKEN_KEY, info.token) &&
+        await _preferences.setString(ACCOUNT_LINK_URL_KEY, info.linkUrl);
     return result;
   }
 }

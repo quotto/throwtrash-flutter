@@ -49,15 +49,19 @@ workflows:
           echo "FIREBASE_APP_ID=${FIREBASE_APP_ID}" >> ios/.env
       - name: Install flutterfire cli
         script: dart pub global activate flutterfire_cli
-      # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
+      # iOSプロジェクト操作に必要なgemをCI設定のバージョンに揃える。
       - name: Install xcodeproj
-        script: gem install xcodeproj cocoapods
+        script: |
+          gem install xcodeproj -v 1.27.0
+          gem install cocoapods -v 1.16.2
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Install dependencies
         script: flutter pub get
       - name: Run linter
         script: flutter analyze --no-fatal-infos
+      - name: Precache iOS artifacts
+        script: flutter precache --ios
       - name: Install pods
         script: |
           find . -name "Podfile" -execdir pod install \;
@@ -143,13 +147,19 @@ workflows:
         script: |
           #!/bin/bash
           find **/*.xcodeproj -type f | xargs sed -i "" -E 's/PRODUCT_BUNDLE_IDENTIFIER = ".+";/PRODUCT_BUNDLE_IDENTIFIER = net.mythrowaway;/g'
-      # XCode15化に伴いあらかじめxcodeprojとcocoapodsをインストールしておく
+      # iOSプロジェクト操作に必要なgemをCI設定のバージョンに揃える。
       - name: Install xcodeproj
-        script: gem install xcodeproj cocoapods
+        script: |
+          gem install xcodeproj -v 1.27.0
+          gem install cocoapods -v 1.16.2
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Install dependencies
         script: flutter pub get
+      - name: Run linter
+        script: flutter analyze --no-fatal-infos
+      - name: Precache iOS artifacts
+        script: flutter precache --ios
       - name: Install pods
         script: |
            find . -name "Podfile" -execdir pod install \;

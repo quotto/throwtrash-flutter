@@ -1,15 +1,14 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/cupertino.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
 import '../models/account_link_info.dart';
 
-enum AccountLinkType {
-  iOS,
-  Web
-}
+enum AccountLinkType { iOS, Web }
 
 extension AccountLinkTypeExtension on AccountLinkType {
   String toStringValue() {
-    switch(this) {
+    switch (this) {
       case AccountLinkType.iOS:
         return "ios";
       case AccountLinkType.Web:
@@ -19,7 +18,7 @@ extension AccountLinkTypeExtension on AccountLinkType {
 }
 
 class AccountLinkModel extends ChangeNotifier {
-  late AccountLinkServiceInterface _accountLinkService;
+  late final AccountLinkServiceInterface _accountLinkService;
   AccountLinkModel(this._accountLinkService);
 
   late AccountLinkInfo _accountLinkInfo;
@@ -29,8 +28,10 @@ class AccountLinkModel extends ChangeNotifier {
   AccountLinkType get accountLinkType => _accountLinkType;
 
   Future<void> prepareAccountLinkInfo(String code) async {
-    return _accountLinkService.getAccountLinkInfoWithCode(code).then((accountLinkInfo){
-      if(accountLinkInfo != null) {
+    return _accountLinkService.getAccountLinkInfoWithCode(code).then((
+      accountLinkInfo,
+    ) {
+      if (accountLinkInfo != null) {
         _accountLinkInfo = accountLinkInfo;
       }
     });

@@ -7,8 +7,10 @@ import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/viewModels/activation_model.dart';
 
 class GetActivationCodeView extends StatefulWidget {
+  const GetActivationCodeView({super.key});
+
   @override
-  _GetActivationCodeWidget createState() => _GetActivationCodeWidget();
+  State<GetActivationCodeView> createState() => _GetActivationCodeWidget();
 }
 
 class _GetActivationCodeWidget extends State<GetActivationCodeView> {
@@ -31,7 +33,7 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
 
   @override
   Widget build(BuildContext context) {
-    final UserServiceInterface _userService = Provider.of<UserServiceInterface>(
+    final UserServiceInterface userService = Provider.of<UserServiceInterface>(
       context,
     );
 
@@ -39,7 +41,7 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(centerTitle: false, title: Text("スケジュールを共有する")),
-      body: _userService.user.id.isEmpty
+      body: userService.user.id.isEmpty
           ? AlertDialog(
               content: Text("スケジュールを共有するためにはゴミ出しの予定を登録してください"),
               actions: [
@@ -79,7 +81,7 @@ class _GetActivationCodeWidget extends State<GetActivationCodeView> {
                             onPressed: (() {}),
                             child: Text(
                               _activationModel.publishedCode,
-                              textScaleFactor: 3,
+                              textScaler: TextScaler.linear(3),
                               textAlign: TextAlign.center,
                               style: TextStyle(wordSpacing: 2),
                             ),

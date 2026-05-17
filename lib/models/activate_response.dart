@@ -8,6 +8,7 @@ class ActivateResponse {
   int timestamp;
 
   ActivateResponse(this.description, this.timestamp);
-  factory ActivateResponse.fromJson(Map<String,dynamic> json) => _$ActivateResponseFromJson(json);
-  Map<String,dynamic> toJson() => _$ActivateResponseToJson(this);
+  factory ActivateResponse.fromJson(Map<String, dynamic> json) =>
+      _$ActivateResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$ActivateResponseToJson(this);
 }

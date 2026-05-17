@@ -17,28 +17,43 @@ class AlarmService implements AlarmServiceInterface {
   final UserRepositoryInterface _userRepository;
   final Logger _logger = Logger();
 
-  AlarmService(this._alarmRepository, this._api, this._configRepository, this._fcm, this._userRepository);
+  AlarmService(
+    this._alarmRepository,
+    this._api,
+    this._configRepository,
+    this._fcm,
+    this._userRepository,
+  );
 
   @override
   Future<Alarm> getAlarm() async {
     Alarm? currentAlarm = await _alarmRepository.readAlarm();
 
-    return currentAlarm == null  ? Alarm(0, 0, false) : currentAlarm;
+    return currentAlarm ?? Alarm(0, 0, false);
   }
 
   @override
-  Future<bool> changeAlarmTime({required int hour, required int minute, required bool nextDayNotificationEnabled}) async {
+  Future<bool> changeAlarmTime({
+    required int hour,
+    required int minute,
+    required bool nextDayNotificationEnabled,
+  }) async {
     final alarm = await _alarmRepository.readAlarm();
-    if(alarm == null || !alarm.isEnable) {
+    if (alarm == null || !alarm.isEnable) {
       final errMessage = 'アラームが設定されていないか無効です。';
       _logger.e(errMessage);
       throw Exception(errMessage);
     }
 
-    final newAlarm = Alarm(hour, minute, alarm.isEnable, nextDayNotificationEnabled);
+    final newAlarm = Alarm(
+      hour,
+      minute,
+      alarm.isEnable,
+      nextDayNotificationEnabled,
+    );
     final deviceToken = await _fcm.refreshDeviceToken();
     return await _api.changeAlarm(newAlarm, deviceToken).then((result) async {
-        return result && await _alarmRepository.saveAlarm(newAlarm);
+      return result && await _alarmRepository.saveAlarm(newAlarm);
     });
   }
 
@@ -49,7 +64,7 @@ class AlarmService implements AlarmServiceInterface {
     final deviceToken = await _configRepository.getDeviceToken();
 
     // リモート側の更新はローカルに登録済みのデバイストークンが存在する場合のみ実行する
-    if(deviceToken != null) {
+    if (deviceToken != null) {
       _logger.e('リモートのアラームをキャンセルします');
       await _api.cancelAlarm(deviceToken);
     }
@@ -58,18 +73,27 @@ class AlarmService implements AlarmServiceInterface {
     // アラームが未設定でも翌日通知の状態はローカルに保存する
     if (currentAlarm == null) {
       _logger.w('アラームが設定されていないためデフォルト値で保存します');
-      return await _alarmRepository.saveAlarm(Alarm(0, 0, false, nextDayNotificationEnabled ?? false));
+      return await _alarmRepository.saveAlarm(
+        Alarm(0, 0, false, nextDayNotificationEnabled ?? false),
+      );
     }
-    final nextDayEnabled = nextDayNotificationEnabled ?? currentAlarm.nextDayNotificationEnabled;
+    final nextDayEnabled =
+        nextDayNotificationEnabled ?? currentAlarm.nextDayNotificationEnabled;
     return await _alarmRepository.saveAlarm(
-      currentAlarm.changeEnable(false).changeNextDayNotificationEnabled(nextDayEnabled),
+      currentAlarm
+          .changeEnable(false)
+          .changeNextDayNotificationEnabled(nextDayEnabled),
     );
   }
 
   @override
-  Future<bool> enableAlarm({required int hour, required int minute, required bool nextDayNotificationEnabled}) async {
+  Future<bool> enableAlarm({
+    required int hour,
+    required int minute,
+    required bool nextDayNotificationEnabled,
+  }) async {
     User? user = await _userRepository.readUser();
-    if(user == null) {
+    if (user == null) {
       throw Exception('ユーザー情報が取得できませんでした');
     }
 
@@ -83,14 +107,14 @@ class AlarmService implements AlarmServiceInterface {
 
   @override
   Future<void> reRegisterAlarm() async {
-    User? user  = await _userRepository.readUser();
-    if(user == null) {
+    User? user = await _userRepository.readUser();
+    if (user == null) {
       _logger.w('ユーザー情報が取得できませんでした');
       return;
     }
 
     Alarm? alarm = await _alarmRepository.readAlarm();
-    if(alarm == null || !alarm.isEnable) {
+    if (alarm == null || !alarm.isEnable) {
       _logger.w('アラームは設定されていないか無効です');
       return;
     }
@@ -99,10 +123,10 @@ class AlarmService implements AlarmServiceInterface {
     final newToken = await _fcm.refreshDeviceToken();
     _logger.i('古いデバイストークン: $oldToken');
     _logger.i('新しいデバイストークン: $newToken');
-    if(oldToken != newToken) {
+    if (oldToken != newToken) {
       _logger.i('デバイストークンが変更されました');
       _logger.i('古いデバイストークンのアラームをキャンセルします: $oldToken');
-      if(oldToken != null) {
+      if (oldToken != null) {
         await _api.cancelAlarm(oldToken);
       }
       _logger.i('新しいデバイストークンでアラームを登録します: $newToken');

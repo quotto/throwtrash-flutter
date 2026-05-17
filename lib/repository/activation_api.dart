@@ -7,21 +7,24 @@ import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart
 
 import '../models/activate_response.dart';
 
-class ActivationApi implements ActivationApiInterface{
+class ActivationApi implements ActivationApiInterface {
   final AppConfigProviderInterface _config;
   final Logger _logger = Logger();
   final http.Client _httpClient;
   static ActivationApi? _instance;
 
-  static initialize(AppConfigProviderInterface config, http.Client httpClient) {
-    if(_instance != null) {
+  static void initialize(
+    AppConfigProviderInterface config,
+    http.Client httpClient,
+  ) {
+    if (_instance != null) {
       throw StateError("ActivationApi is already initialized");
     }
     _instance = ActivationApi._(config, httpClient);
   }
 
   factory ActivationApi() {
-    if(_instance == null) {
+    if (_instance == null) {
       throw StateError("ActivationApi is not initialized");
     }
     return _instance!;
@@ -31,39 +34,45 @@ class ActivationApi implements ActivationApiInterface{
 
   @override
   Future<String> requestActivationCode(String userId) async {
-    _logger.d("[GET]${this._config.mobileApiUrl}/publish_activation_code?user_id=$userId");
-     Uri endpointUri = Uri.parse(
-         this._config.mobileApiUrl + "/publish_activation_code?user_id=$userId");
-     http.Response response = await this._httpClient.get(
-       endpointUri,
-       headers: {
-         "content-type": "application/json;charset=utf-8",
-         "Accept": "application/json"
-       }
-     );
-     if(response.statusCode == 200) {
-       Map<String,dynamic> responseBody = jsonDecode(response.body);
-       return responseBody.containsKey("code") ? responseBody["code"] : "";
-     }
-     _logger.e("Error request activation code");
-     _logger.e(response.body);
-     return "";
-
+    _logger.d(
+      "[GET]${_config.mobileApiUrl}/publish_activation_code?user_id=$userId",
+    );
+    Uri endpointUri = Uri.parse(
+      "${_config.mobileApiUrl}/publish_activation_code?user_id=$userId",
+    );
+    http.Response response = await _httpClient.get(
+      endpointUri,
+      headers: {
+        "content-type": "application/json;charset=utf-8",
+        "Accept": "application/json",
+      },
+    );
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseBody = jsonDecode(response.body);
+      return responseBody.containsKey("code") ? responseBody["code"] : "";
+    }
+    _logger.e("Error request activation code");
+    _logger.e(response.body);
+    return "";
   }
 
   @override
-  Future<ActivateResponse?> requestAuthorizationActivationCode(String code, String userId) async{
+  Future<ActivateResponse?> requestAuthorizationActivationCode(
+    String code,
+    String userId,
+  ) async {
     Uri endpointUri = Uri.parse(
-      this._config.mobileApiUrl + "/activate?code=$code&user_id=$userId"
+      "${_config.mobileApiUrl}/activate?code=$code&user_id=$userId",
     );
-    http.Response response = await this._httpClient.get(endpointUri);
-    if(response.statusCode == 200) {
-      ActivateResponse activateResponse = ActivateResponse.fromJson(jsonDecode(response.body));
+    http.Response response = await _httpClient.get(endpointUri);
+    if (response.statusCode == 200) {
+      ActivateResponse activateResponse = ActivateResponse.fromJson(
+        jsonDecode(response.body),
+      );
       return activateResponse;
     }
     _logger.e("Error request authorization code");
     _logger.e(response.body);
     return null;
   }
-
 }

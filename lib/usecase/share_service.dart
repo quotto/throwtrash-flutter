@@ -15,27 +15,42 @@ class ShareService implements ShareServiceInterface {
   final TrashRepositoryInterface _trashRepository;
   final _logger = Logger();
   final CrashReportInterface _crashReport;
-  ShareService(this._activationApi, this._userService, this._trashRepository, this._crashReport);
+  ShareService(
+    this._activationApi,
+    this._userService,
+    this._trashRepository,
+    this._crashReport,
+  );
 
   @override
   Future<String> getActivationCode() async {
-    return await _activationApi.requestActivationCode(this._userService.user.id);
+    return await _activationApi.requestActivationCode(_userService.user.id);
   }
 
   @override
   Future<bool> importSchedule(String activationCode) async {
-    ActivateResponse? activateResponse = await this._activationApi.requestAuthorizationActivationCode(activationCode, _userService.user.id);
-    if(activateResponse != null) {
+    ActivateResponse? activateResponse = await _activationApi
+        .requestAuthorizationActivationCode(
+          activationCode,
+          _userService.user.id,
+        );
+    if (activateResponse != null) {
       await _trashRepository.truncateAllTrashData();
       List<Future> insertList = [];
-      (jsonDecode(activateResponse.description) as List<dynamic>).forEach((element) {
-        insertList.add(_trashRepository.insertTrashData(TrashDataResponse.fromJson(element).toTrashData()));
-      });
+      for (var element
+          in (jsonDecode(activateResponse.description) as List<dynamic>)) {
+        insertList.add(
+          _trashRepository.insertTrashData(
+            TrashDataResponse.fromJson(element).toTrashData(),
+          ),
+        );
+      }
       try {
         await Future.wait(insertList);
         final updateResult = await _trashRepository.updateLastUpdateTime(
-            activateResponse.timestamp);
-        if(!updateResult) {
+          activateResponse.timestamp,
+        );
+        if (!updateResult) {
           _logger.e("最終更新日時の更新に失敗しました。");
           _crashReport.reportCrash(Exception("最終更新日時の更新に失敗しました。"), fatal: true);
         }

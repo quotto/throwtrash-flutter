@@ -19,75 +19,82 @@ class AlarmApi implements AlarmApiInterface {
 
   static AlarmApi? _instance;
 
-  AlarmApi._(this._configProvider, this._environmentProvider, this._httpClient) {
-    this._alarmApiUrl = this._configProvider.alarmApiUrl;
-    this._alarmApiKey = this._environmentProvider.alarmApiKey;
+  AlarmApi._(
+    this._configProvider,
+    this._environmentProvider,
+    this._httpClient,
+  ) {
+    _alarmApiUrl = _configProvider.alarmApiUrl;
+    _alarmApiKey = _environmentProvider.alarmApiKey;
   }
 
-  static initialize(AppConfigProviderInterface configProvider, EnvironmentProviderInterface environmentProvider,http.Client httpClient) {
-    if(_instance != null) {
+  static void initialize(
+    AppConfigProviderInterface configProvider,
+    EnvironmentProviderInterface environmentProvider,
+    http.Client httpClient,
+  ) {
+    if (_instance != null) {
       throw StateError("AlarmApi is already initialized");
     }
-    _instance = AlarmApi._(configProvider, environmentProvider,httpClient);
+    _instance = AlarmApi._(configProvider, environmentProvider, httpClient);
   }
 
   factory AlarmApi() {
-    if(_instance == null) {
+    if (_instance == null) {
       throw StateError("AlarmApi is not initialized");
     }
     return _instance!;
   }
 
   @override
-  Future<bool> setAlarm(Alarm alarm, String deviceToken ,User user) async {
-    Uri endpointUri = Uri.parse("${this._alarmApiUrl}/create");
-    _logger.d("nextDayNotificationEnabled: ${alarm.nextDayNotificationEnabled}");
+  Future<bool> setAlarm(Alarm alarm, String deviceToken, User user) async {
+    Uri endpointUri = Uri.parse("$_alarmApiUrl/create");
+    _logger.d(
+      "nextDayNotificationEnabled: ${alarm.nextDayNotificationEnabled}",
+    );
     try {
-      http.Response response = await this._httpClient.post(
-          endpointUri,
-          body: jsonEncode({
-            "device_token": deviceToken,
-            "alarm_time": {
-              "hour": alarm.hour,
-              "minute": alarm.minute
-            },
-            "user_id": user.id,
-            "platform": "ios",
-            "next_day_notification_enabled": alarm.nextDayNotificationEnabled
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-KEY": this._alarmApiKey
-          }
+      http.Response response = await _httpClient.post(
+        endpointUri,
+        body: jsonEncode({
+          "device_token": deviceToken,
+          "alarm_time": {"hour": alarm.hour, "minute": alarm.minute},
+          "user_id": user.id,
+          "platform": "ios",
+          "next_day_notification_enabled": alarm.nextDayNotificationEnabled,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": _alarmApiKey,
+        },
       );
 
       _logger.d(response.request?.headers.toString());
       _logger.d(response.request.toString());
-      if(response.statusCode == 200) {
+      if (response.statusCode == 200) {
         return true;
       } else {
-        _logger.e("アラームの設定でエラーが発生しました: ${response.statusCode},${response.body.toString()}");
+        _logger.e(
+          "アラームの設定でエラーが発生しました: ${response.statusCode},${response.body.toString()}",
+        );
         return false;
       }
     } catch (e) {
       _logger.e(e.toString());
-      throw e;
+      rethrow;
     }
   }
 
   @override
   Future<bool> cancelAlarm(deviceToken) async {
-    Uri endpointUri = Uri.parse("${this._alarmApiUrl}/delete");
+    Uri endpointUri = Uri.parse("$_alarmApiUrl/delete");
     try {
-      http.Response response = await this._httpClient.delete(
-          endpointUri,
-          body: jsonEncode({
-            "device_token": deviceToken
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-KEY": this._alarmApiKey
-          }
+      http.Response response = await _httpClient.delete(
+        endpointUri,
+        body: jsonEncode({"device_token": deviceToken}),
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": _alarmApiKey,
+        },
       );
 
       _logger.d(response.request?.headers.toString());
@@ -95,33 +102,32 @@ class AlarmApi implements AlarmApiInterface {
       if (response.statusCode == 200) {
         return true;
       } else {
-        _logger.e("アラームの削除でエラーが発生しました: ${response.statusCode},${response.body.toString()}");
+        _logger.e(
+          "アラームの削除でエラーが発生しました: ${response.statusCode},${response.body.toString()}",
+        );
         return false;
       }
     } catch (e) {
       _logger.e(e.toString());
-      throw e;
+      rethrow;
     }
   }
 
   @override
   Future<bool> changeAlarm(Alarm alarm, String deviceToken) async {
-    Uri endpointUri = Uri.parse("${this._alarmApiUrl}/update");
+    Uri endpointUri = Uri.parse("$_alarmApiUrl/update");
     try {
-      http.Response response = await this._httpClient.put(
-          endpointUri,
-          body: jsonEncode({
-            "device_token": deviceToken,
-            "alarm_time": {
-              "hour": alarm.hour,
-              "minute": alarm.minute
-            },
-            "next_day_notification_enabled": alarm.nextDayNotificationEnabled
-          }),
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-KEY": this._alarmApiKey
-          }
+      http.Response response = await _httpClient.put(
+        endpointUri,
+        body: jsonEncode({
+          "device_token": deviceToken,
+          "alarm_time": {"hour": alarm.hour, "minute": alarm.minute},
+          "next_day_notification_enabled": alarm.nextDayNotificationEnabled,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": _alarmApiKey,
+        },
       );
 
       _logger.d(response.request?.headers.toString());
@@ -129,12 +135,14 @@ class AlarmApi implements AlarmApiInterface {
       if (response.statusCode == 200) {
         return true;
       } else {
-        _logger.e("アラームの更新でエラーが発生しました: ${response.statusCode},${response.body.toString()}");
+        _logger.e(
+          "アラームの更新でエラーが発生しました: ${response.statusCode},${response.body.toString()}",
+        );
         return false;
       }
     } catch (e) {
       _logger.e(e.toString());
-      throw e;
+      rethrow;
     }
   }
 }

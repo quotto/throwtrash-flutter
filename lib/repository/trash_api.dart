@@ -37,14 +37,14 @@ class TrashApi implements TrashApiInterface {
     } else if (Platform.isIOS) {
       _platform = "ios";
     }
-    this._mobileApiEndpoint = this._configProvider.mobileApiUrl;
-    this._trashSearchApiEndpoint = this._configProvider.trashSearchApiEndpoint;
-    this._trashSearchApiKey = _environmentProvider?.trashSearchApiKey ?? '';
+    _mobileApiEndpoint = _configProvider.mobileApiUrl;
+    _trashSearchApiEndpoint = _configProvider.trashSearchApiEndpoint;
+    _trashSearchApiKey = _environmentProvider?.trashSearchApiKey ?? '';
   }
 
   static TrashApi? _instance;
 
-  static initialize(
+  static void initialize(
     AppConfigProviderInterface configProvider,
     http.Client httpClient, [
     EnvironmentProviderInterface? environmentProvider,
@@ -74,12 +74,10 @@ class TrashApi implements TrashApiInterface {
   Future<RegisterResponse?> registerUserAndTrashData(
     List<TrashData> allTrashData,
   ) async {
-    _logger.d(
-      "Register user and trash data@${this._mobileApiEndpoint}/register",
-    );
+    _logger.d("Register user and trash data@$_mobileApiEndpoint/register");
     _logger.d(jsonEncode(allTrashData));
-    Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/register");
-    http.Response response = await this._httpClient.post(
+    Uri endpointUri = Uri.parse("$_mobileApiEndpoint/register");
+    http.Response response = await _httpClient.post(
       endpointUri,
       headers: {"content-type": "application/json;charset=utf-8"},
       body: json.encode({"platform": _platform}),
@@ -87,12 +85,12 @@ class TrashApi implements TrashApiInterface {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
-      _logger.d("Success register: " + body.toString());
+      _logger.d("Success register: $body");
       return body.containsKey("id") && body.containsKey("timestamp")
           ? RegisterResponse(body["id"] as String, body["timestamp"] as int)
           : null;
     }
-    _logger.d("Error register: " + response.body);
+    _logger.d("Error register: ${response.body}");
     return null;
   }
 
@@ -104,8 +102,8 @@ class TrashApi implements TrashApiInterface {
     int timestamp,
   ) async {
     _logger.d("Update trash data");
-    Uri endpointUri = Uri.parse("${this._mobileApiEndpoint}/update");
-    http.Response response = await this._httpClient.post(
+    Uri endpointUri = Uri.parse("$_mobileApiEndpoint/update");
+    http.Response response = await _httpClient.post(
       endpointUri,
       headers: {
         "content-type": "application/json;charset=utf-8",
@@ -122,24 +120,22 @@ class TrashApi implements TrashApiInterface {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
-      _logger.d("Success update: " + body.toString());
+      _logger.d("Success update: $body");
       return body.containsKey("timestamp")
           ? TrashUpdateResult(body["timestamp"] as int, UpdateResult.SUCCESS)
           : TrashUpdateResult(-1, UpdateResult.ERROR);
     } else if (response.statusCode == 400) {
       return TrashUpdateResult(-1, UpdateResult.NO_MATCH);
     } else {
-      _logger.d("Error update: " + response.body);
+      _logger.d("Error update: ${response.body}");
       return TrashUpdateResult(-1, UpdateResult.ERROR);
     }
   }
 
   @override
   Future<TrashSyncResult> syncTrashData(String userId) async {
-    Uri endpointUri = Uri.parse(
-      "${this._mobileApiEndpoint}/sync?user_id=$userId",
-    );
-    http.Response response = await this._httpClient.get(
+    Uri endpointUri = Uri.parse("$_mobileApiEndpoint/sync?user_id=$userId");
+    http.Response response = await _httpClient.get(
       endpointUri,
       headers: {
         "content-type": "text/html;charset=utf8",
