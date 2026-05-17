@@ -9,7 +9,7 @@ REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/.maestro-results}"
 FLOW_DIR="${FLOW_DIR:-$ROOT_DIR/maestro/flows/scenarios}"
 TMPDIR="${TMPDIR:-$ROOT_DIR/.tmp}"
 DERIVED_DATA_DIR="${DERIVED_DATA_DIR:-$ROOT_DIR/.derived-data}"
-XCODEBUILD_LOG="${XCODEBUILD_LOG:-$TMPDIR/xcodebuild-$FLAVOR.log}"
+XCODEBUILD_LOG="${XCODEBUILD_LOG:-$REPORT_DIR/debug/xcodebuild-$FLAVOR.log}"
 IB_SUPPORT_DIR="${IB_SUPPORT_DIR:-$ROOT_DIR/.e2e-home/Library/Developer/Xcode/UserData/IB Support}"
 MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
 ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
@@ -191,6 +191,7 @@ notice "Running flutter pub get"
 
 # flutter build ios は環境によって停止することがあるため、xcodebuild を直接利用する。
 notice "Running xcodebuild"
+log "xcodebuild output is being written to $XCODEBUILD_LOG"
 "$XCODEBUILD_BIN" \
   -workspace "$ROOT_DIR/ios/Runner.xcworkspace" \
   -scheme "$FLAVOR" \
@@ -200,7 +201,8 @@ notice "Running xcodebuild"
   -derivedDataPath "$DERIVED_DATA_DIR" \
   FLAVOR="$FLAVOR" \
   TARGETED_DEVICE_FAMILY=1 \
-  build 2>&1 | tee "$XCODEBUILD_LOG" || {
+  build >"$XCODEBUILD_LOG" 2>&1 || {
+    echo "xcodebuild failed; showing last 200 lines from $XCODEBUILD_LOG" >&2
     tail -200 "$XCODEBUILD_LOG" >&2
     exit 1
 }
