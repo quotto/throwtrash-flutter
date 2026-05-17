@@ -65,6 +65,27 @@ class _TrashListState extends State<TrashList> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_importMessageLoaded) {
+      return;
+    }
+    _importMessageLoaded = true;
+    final trashDataService = Provider.of<TrashDataServiceInterface>(
+      context,
+      listen: false,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final message = await trashDataService.consumeImportMessage();
+      if (message != null && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(AppFeedbackSnackBar.importMessage(message));
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('登録されているゴミ出し予定')),
@@ -167,6 +188,7 @@ class _TrashListState extends State<TrashList> {
                                   },
                                 ),
                               ),
+                              fontSize: 24,
                             ),
                           ),
                         ),
