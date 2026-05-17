@@ -156,4 +156,54 @@ void main() {
     final textField = tester.widget<TextFormField>(find.byType(TextFormField));
     expect(textField.controller?.text, '家電');
   });
+
+  testWidgets('一覧画面に E2E 向け key が配置される', (tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+    when(trashDataService.allTrashList).thenReturn([
+      TrashData(
+        id: '001',
+        type: 'other',
+        trashVal: '家電',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [],
+      ),
+    ]);
+    when(trashDataService.consumeImportMessage()).thenAnswer((_) async => null);
+    when(
+      trashDataService.getTrashName(
+        type: anyNamed('type'),
+        trashVal: anyNamed('trashVal'),
+      ),
+    ).thenReturn('家電');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MultiProvider(
+          providers: [
+            Provider<TrashDataServiceInterface>.value(value: trashDataService),
+            ChangeNotifierProvider<ListModel>(
+              create: (_) => ListModel(trashDataService),
+            ),
+          ],
+          child: TrashList(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('trash-row-001')), findsOneWidget);
+    expect(find.byKey(Key('edit-trash-001')), findsOneWidget);
+    expect(find.byKey(Key('copy-trash-001')), findsOneWidget);
+    expect(find.byKey(Key('delete-trash-001')), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.identifier == 'trash-list-other',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byTooltip('編集'), findsOneWidget);
+    expect(find.byTooltip('削除'), findsOneWidget);
+  });
 }

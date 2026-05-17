@@ -108,14 +108,29 @@ class TrashDataService implements TrashDataServiceInterface {
   /// 新しいゴミ出し予定を追加する
   @override
   Future<bool> addTrashData(TrashData trashData) async {
-    return await _trashRepository.insertTrashData(trashData) &&
-        await _changeSyncStatusToSyncing(); //&&
+    final result =
+        await _trashRepository.insertTrashData(trashData) &&
+        await _changeSyncStatusToSyncing();
+    if (result) {
+      _schedule.add(trashData);
+    }
+    return result;
   }
 
   @override
   Future<bool> updateTrashData(TrashData trashData) async {
-    return await _trashRepository.updateTrashData(trashData) &&
-        await _changeSyncStatusToSyncing(); //&&
+    final result =
+        await _trashRepository.updateTrashData(trashData) &&
+        await _changeSyncStatusToSyncing();
+    if (result) {
+      final index = _schedule.indexWhere(
+        (element) => element.id == trashData.id,
+      );
+      if (index >= 0) {
+        _schedule[index] = trashData;
+      }
+    }
+    return result;
   }
 
   @override
@@ -133,8 +148,13 @@ class TrashDataService implements TrashDataServiceInterface {
 
   @override
   Future<bool> deleteTrashData(String id) async {
-    return await _trashRepository.deleteTrashData(id) &&
-        await _changeSyncStatusToSyncing(); //&&
+    final result =
+        await _trashRepository.deleteTrashData(id) &&
+        await _changeSyncStatusToSyncing();
+    if (result) {
+      _schedule.removeWhere((element) => element.id == id);
+    }
+    return result;
   }
 
   Future<bool> _changeSyncStatusToSyncing() async {

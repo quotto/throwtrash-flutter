@@ -17,3 +17,19 @@ iOS用のゴミ出しアプリです。Flutterで作成していますが訳あ�
 ### その他
 - Mockの追加やJsonSerializableの追加時: `dart run build_runner build --delete-conflicting-outputs`を実行
 - アイコンの生成: `dart run flutter_launcher_icons`
+
+### E2E テスト（Maestro）
+- ローカル実行前に以下を準備してください。
+  - `ios/.env`
+  - `ios/development/GoogleService-Info.plist`
+  - `ios/development/firebase.json`
+- `GoogleService-Info.plist` や `firebase.json` にプレースホルダーや空の設定を置くと、Firebase 初期化でアプリが起動直後にクラッシュします。ローカル実行時も実在する Firebase 設定が必要です。
+- ローカル実行は `tool/maestro/run_ios_e2e.sh` を利用します。
+- GitHub Actions では `.github/workflows/ios-maestro-e2e.yml` が `release` ブランチ push をトリガーに実行されます。
+- GitHub Actions / CI では以下の secrets が必要です。
+  - `FIREBASE_INFO`
+  - `GOOGLE_SERVICE_INFO_PLIST`
+  - `FIREBASE_OPTIONS`
+  - `FIREBASE_APP_ID`
+  - `ALARM_API_KEY`
+  - `TRASH_SEARCH_API_KEY`
