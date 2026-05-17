@@ -14,6 +14,7 @@ Done
 - [x] `flutter analyze` と既存テスト結果を確認する。
 - [x] 一時的な開発ブランチ trigger による GitHub Actions 実行結果を確認する。
 - [x] 最終的に `release` push のみに trigger を戻したことを確認する。
+- [x] Codemagic の iOS Release Build が `release` push で起動する設定であることを確認する。
 - [x] 残課題、運用上の注意点、必要な secrets の整備状況を記録する。
 
 ## 検証結果
@@ -42,6 +43,7 @@ Done
 - run `25977275880` の artifact は `work/ios-maestro-e2e-run-25977275880` に展開し、`01_basic_registration`、`02_edit_registered_data`、`03_delete_registered_data`、`04_copy_registered_data` の JUnit がすべて `failures="0"` / `status="SUCCESS"` であることを確認した。
 - run `25977275880` の `runner.log` では 4 flow すべて `[Passed]`、`status.txt` は `exit_status=0` だった。
 - CI 検証完了後、`.github/workflows/ios-maestro-e2e.yml` は `release` push のみに戻し、`codemagic.yaml` の `refactor/e2e-test` 一時除外も削除した。
+- Codemagic `ios-release` は `pull_request` 起動から `release` ブランチ push 起動へ変更した。
 - 現在の shell 実行環境では `xcrun simctl` が断続的に CoreSimulatorService に接続できず、Maestro CLI も boot 済み simulator を connected として認識できないため、`tool/maestro/run_ios_e2e.sh` の shell からのローカル完走確認は未完了。
 - ユーザー側でシミュレーター起動後に再確認し、`xcrun simctl list devices booted` は一度成功したが、その後の `simctl -j` / `maestro test --udid` は CoreSimulatorService 接続エラーまたは `0 devices connected` で実行できなかった。
 - 過去のローカル検証では、`tool/maestro/run_ios_e2e.sh` が `xcodebuild -derivedDataPath` を使う構成に切り替えたことで iOS Simulator 向け build / install まで到達した。

@@ -22,6 +22,7 @@ Maestro を用いた iOS 向け E2E テスト基盤を追加し、ローカル�
 1. ローカル環境で同一シナリオが再実行できること。
 2. GitHub Actions 検証時のみ一時的に開発ブランチ push をトリガーに使い、確認後は `release` ブランチ push に戻すこと。
 3. iOS 実行環境は macOS ランナー + iOS シミュレータを前提とする。
+4. Codemagic の iOS Release Build は、プルリクエスト作成時ではなく `release` ブランチへの push で実行すること。
 
 ### 現状整理
 
@@ -124,3 +125,4 @@ GitHub Actions では一時的に開発ブランチ push で workflow を確認�
 - 修正後、`fvm flutter analyze`、`TMPDIR=$PWD/.tmp fvm flutter test`、Maestro syntax check、XcodeBuildMCP の iOS Simulator build は成功した。ローカル install / Maestro 再実行はホスト側 `/System/Volumes/Data` の空き容量不足で未完了。
 - GitHub Actions run `25977275880` は success で完了し、artifact の JUnit でも 4 flow すべて `failures="0"`、`status="SUCCESS"` だった。`runner.log` も各 flow Passed、`status.txt` は `exit_status=0` だった。
 - CI 検証完了後、GitHub Actions の一時的な `refactor/e2e-test` push trigger を削除して `release` push のみに戻し、Codemagic `ios-development` の一時的な同ブランチ除外も削除した。
+- Codemagic `ios-release` は `pull_request` 起動から `release` ブランチ push 起動へ変更した。

@@ -121,11 +121,11 @@ workflows:
         - ~/Library/Caches/CocoaPods
     triggering:
       events:
-        - pull_request
+        - push
       branch_patterns:
         - pattern: 'release'
           include: true
-          source: false
+          source: true
       cancel_previous_builds: false
     scripts:
       # Firebaseに必要な設定ファイルを環境変数から復元する。

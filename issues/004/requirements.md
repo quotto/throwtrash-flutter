@@ -8,6 +8,7 @@
 4. 実行トリガーはreleaseブランチへのプッシュとする。
 5. GitHub Actions上の実行は、Maestro CLIを利用して行う。
 6. テスト実行結果をレポートとしてGitHub Actionsのアーティファクトに保存する。保存期間は7日とする。
+7. Codemagic の iOS Release Build は、プルリクエスト作成時ではなく `release` ブランチへの push で実行する。
 
 ## 完了条件
 
@@ -62,4 +63,4 @@
   - ローカル環境での実行: Maestro CLIを利用して、ローカル環境でテストシナリオが正常に実行されることを確認する。
   - GitHub Actionsでの実行: 一時的に開発ブランチpushをトリガーにして、GitHub Actions上でテストが正常に実行されることを確認する。
   - トリガー条件をreleaseブランチプッシュに変更する。テストは実行しない。
-
+  - Codemagic の iOS Release Build が `release` ブランチ push をトリガーにする設定であることを確認する。
