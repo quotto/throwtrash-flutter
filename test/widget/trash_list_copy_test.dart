@@ -195,6 +195,14 @@ void main() {
     expect(find.byKey(Key('edit-trash-001')), findsOneWidget);
     expect(find.byKey(Key('copy-trash-001')), findsOneWidget);
     expect(find.byKey(Key('delete-trash-001')), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.identifier == 'trash-list-other',
+      ),
+      findsOneWidget,
+    );
     expect(find.byTooltip('編集'), findsOneWidget);
     expect(find.byTooltip('削除'), findsOneWidget);
   });

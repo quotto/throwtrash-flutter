@@ -23,6 +23,7 @@ developer
 - `tool/maestro/run_ios_e2e.sh` を追加し、iOS Simulator 起動、アプリ install、Maestro 実行、JUnit / debug 出力を一括実行できるようにした。
 - `README.md` にローカル実行手順と必要な環境変数を追記した。
 - CI artifact の再分析を受け、カレンダー上のゴミ名検証はテキスト直指定ではなく `calendar-trash-*` の Semantics id を使う形に更新した。
+- 一覧画面のゴミ名検証も iOS accessibility では単独テキストとして安定しないため、編集・コピー scenario の最終確認を `trash-list-*` の Semantics id 指定へ変更した。
 
 ## 完了条件
 

@@ -118,3 +118,7 @@ GitHub Actions では一時的に開発ブランチ push で workflow を確認�
 - CI 再検証のため、GitHub Actions は一時的に `refactor/e2e-test` push でも起動させ、Codemagic `ios-development` は同ブランチ push を除外する。
 - XcodeBuildMCP 経由の simulator build / install / launch は成功済み。Maestro MCP 経由で 4 flow の個別実行もすべて成功した。
 - 現在の shell 実行環境では `xcrun simctl` が断続的に CoreSimulatorService に接続できず、`tool/maestro/run_ios_e2e.sh` の shell からのローカル完走確認は未完了。
+- GitHub Actions run `25976322829` は終了コード伝播修正により failure として正しく終了し、`02_edit_registered_data` と `04_copy_registered_data` の追加課題を検出した。
+- `02_edit_registered_data` は一覧行のゴミ名が iOS accessibility 上で単独要素にならないことが原因だったため、一覧行に `trash-list-{type}` の Semantics identifier を追加した。
+- `04_copy_registered_data` はコピー登録後に repository へ保存したデータが in-memory の予定一覧へ反映されない不整合も原因だったため、`TrashDataService` の追加・更新・削除成功時に `_schedule` を同期するよう修正した。
+- 修正後、`fvm flutter analyze`、`TMPDIR=$PWD/.tmp fvm flutter test`、Maestro syntax check、XcodeBuildMCP の iOS Simulator build は成功した。ローカル install / Maestro 再実行はホスト側 `/System/Volumes/Data` の空き容量不足で未完了。

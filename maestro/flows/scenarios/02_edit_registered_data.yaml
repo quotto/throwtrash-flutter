@@ -28,4 +28,5 @@ appId: ${APP_ID}
 - tapOn: もえないゴミ
 - tapOn:
     id: submit-trash-data
-- assertVisible: もえないゴミ
+- assertVisible:
+    id: trash-list-unburn

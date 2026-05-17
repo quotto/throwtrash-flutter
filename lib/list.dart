@@ -31,6 +31,18 @@ class _TrashListState extends State<TrashList> {
     return Semantics(identifier: id, child: child);
   }
 
+  Widget _trashTypeMarker(String trashType) {
+    return SizedBox(
+      width: 1,
+      height: 1,
+      child: Semantics(
+        container: true,
+        identifier: 'trash-list-$trashType',
+        label: 'trash-list-$trashType',
+      ),
+    );
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -87,6 +99,7 @@ class _TrashListState extends State<TrashList> {
                   Row(
                     key: Key('trash-row-${trashData.id}'),
                     children: [
+                      _trashTypeMarker(trashData.type),
                       Expanded(
                         child: _identified(
                           'edit-trash-index-$index',
@@ -125,15 +138,16 @@ class _TrashListState extends State<TrashList> {
                                   onTap: () {
                                     final trashDataService =
                                         Provider.of<TrashDataServiceInterface>(
-                                      context,
-                                      listen: false,
-                                    );
+                                          context,
+                                          listen: false,
+                                        );
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) {
                                           return ChangeNotifierProvider<
-                                              EditModel>(
+                                            EditModel
+                                          >(
                                             create: (context) =>
                                                 EditModel(trashDataService),
                                             child: EditItemMain.update(
@@ -172,9 +186,9 @@ class _TrashListState extends State<TrashList> {
                               onPressed: () {
                                 final trashDataService =
                                     Provider.of<TrashDataServiceInterface>(
-                                  context,
-                                  listen: false,
-                                );
+                                      context,
+                                      listen: false,
+                                    );
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

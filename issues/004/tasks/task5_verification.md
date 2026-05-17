@@ -6,13 +6,13 @@ reviewer
 
 ## 状態
 
-In Progress（ローカル再確認完了、CI 再検証待ち）
+In Progress（CI 再検証 2 回目の修正中）
 
 ## 内容
 
 - [x] ローカルの Maestro 実行結果を確認する。
 - [x] `flutter analyze` と既存テスト結果を確認する。
-- [ ] 一時的な開発ブランチ trigger による GitHub Actions 実行結果を確認する。
+- [x] 一時的な開発ブランチ trigger による GitHub Actions 実行結果を確認する。
 - [ ] 最終的に `release` push のみに trigger を戻したことを確認する。
 - [x] 残課題、運用上の注意点、必要な secrets の整備状況を記録する。
 
@@ -26,9 +26,18 @@ In Progress（ローカル再確認完了、CI 再検証待ち）
 - `bash -n tool/maestro/prepare_ios_ci_env.sh tool/maestro/run_ios_e2e.sh` は成功した。
 - `JAVA_OPTS="-Duser.home=$PWD/.maestro-home" maestro check-syntax` は common / scenario の全 6 flow で成功した。
 - `fvm flutter analyze` は成功した。
-- `TMPDIR=$PWD/.tmp fvm flutter test` は成功し、全 264 件が通過した。
+- `TMPDIR=$PWD/.tmp fvm flutter test` は成功し、全 267 件が通過した。
 - XcodeBuildMCP 経由で iOS Simulator build / install / launch は成功した。
 - Maestro MCP 経由で `01_basic_registration`、`02_edit_registered_data`、`03_delete_registered_data`、`04_copy_registered_data` の 4 flow を個別実行し、すべて成功した。
+- GitHub Actions `iOS Maestro E2E` の run `25976322829` は `tool/maestro/run_ios_e2e.sh` の終了コード伝播により failure として正しく終了した。
+- run `25976322829` では `01_basic_registration` と `03_delete_registered_data` は成功し、`02_edit_registered_data` と `04_copy_registered_data` は `Assertion is false: "もえないゴミ" is visible` で失敗した。
+- run `25976322829` の artifact では、編集後の一覧スクリーンショット上に `もえないゴミ` が表示されていたが、iOS accessibility hierarchy では行全体の `accessibilityText` に結合され、Maestro のテキスト単独検証が失敗していた。
+- 同 artifact により、コピー作成後は `TrashDataService.addTrashData()` が repository には保存する一方で in-memory の `_schedule` を更新せず、一覧へ戻っても新規行が表示されないことを確認した。
+- 対策として `lib/list.dart` に `trash-list-{type}` の Semantics identifier を追加し、一覧画面のゴミ種別検証を id ベースへ変更した。
+- 対策として `lib/usecase/trash_data_service.dart` の追加・更新・削除成功時に in-memory の `_schedule` も同期するよう修正した。
+- `test/widget/trash_list_copy_test.dart` に一覧 marker の検証、`test/unit/usecase/trash_data_service_test.dart` に追加・更新・削除時の in-memory 反映テストを追加した。
+- 修正後、`fvm flutter analyze`、`TMPDIR=$PWD/.tmp fvm flutter test`、Maestro syntax check、XcodeBuildMCP の iOS Simulator build は成功した。
+- 修正後の Simulator install / Maestro ローカル再実行は、ホスト側 `/System/Volumes/Data` の空き容量が 154Mi しかなく `No space left on device` でブロックされた。
 - 現在の shell 実行環境では `xcrun simctl` が断続的に CoreSimulatorService に接続できず、Maestro CLI も boot 済み simulator を connected として認識できないため、`tool/maestro/run_ios_e2e.sh` の shell からのローカル完走確認は未完了。
 - ユーザー側でシミュレーター起動後に再確認し、`xcrun simctl list devices booted` は一度成功したが、その後の `simctl -j` / `maestro test --udid` は CoreSimulatorService 接続エラーまたは `0 devices connected` で実行できなかった。
 - 過去のローカル検証では、`tool/maestro/run_ios_e2e.sh` が `xcodebuild -derivedDataPath` を使う構成に切り替えたことで iOS Simulator 向け build / install まで到達した。
@@ -45,8 +54,7 @@ In Progress（ローカル再確認完了、CI 再検証待ち）
 ## 未完了項目
 
 - shell からの `tool/maestro/run_ios_e2e.sh` ローカル完走確認
-- Maestro の失敗終了コードを CI に正しく伝播させる修正の CI 上での再検証
-- `refactor/e2e-test` での再実行結果確認
+- `refactor/e2e-test` での修正後 2 回目の再実行結果確認
 - CI 再検証後に `.github/workflows/ios-maestro-e2e.yml` を `release` push のみに戻し、`codemagic.yaml` の一時除外を戻すこと
 
 ## 完了条件
