@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - release
-      - refactor/e2e-test
 
 permissions:
   contents: read

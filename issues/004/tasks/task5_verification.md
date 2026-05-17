@@ -6,14 +6,14 @@ reviewer
 
 ## 状態
 
-In Progress（CI 再検証 2 回目の修正中）
+Done
 
 ## 内容
 
 - [x] ローカルの Maestro 実行結果を確認する。
 - [x] `flutter analyze` と既存テスト結果を確認する。
 - [x] 一時的な開発ブランチ trigger による GitHub Actions 実行結果を確認する。
-- [ ] 最終的に `release` push のみに trigger を戻したことを確認する。
+- [x] 最終的に `release` push のみに trigger を戻したことを確認する。
 - [x] 残課題、運用上の注意点、必要な secrets の整備状況を記録する。
 
 ## 検証結果
@@ -38,6 +38,10 @@ In Progress（CI 再検証 2 回目の修正中）
 - `test/widget/trash_list_copy_test.dart` に一覧 marker の検証、`test/unit/usecase/trash_data_service_test.dart` に追加・更新・削除時の in-memory 反映テストを追加した。
 - 修正後、`fvm flutter analyze`、`TMPDIR=$PWD/.tmp fvm flutter test`、Maestro syntax check、XcodeBuildMCP の iOS Simulator build は成功した。
 - 修正後の Simulator install / Maestro ローカル再実行は、ホスト側 `/System/Volumes/Data` の空き容量が 154Mi しかなく `No space left on device` でブロックされた。
+- GitHub Actions `iOS Maestro E2E` の run `25977275880` は success で完了した。
+- run `25977275880` の artifact は `work/ios-maestro-e2e-run-25977275880` に展開し、`01_basic_registration`、`02_edit_registered_data`、`03_delete_registered_data`、`04_copy_registered_data` の JUnit がすべて `failures="0"` / `status="SUCCESS"` であることを確認した。
+- run `25977275880` の `runner.log` では 4 flow すべて `[Passed]`、`status.txt` は `exit_status=0` だった。
+- CI 検証完了後、`.github/workflows/ios-maestro-e2e.yml` は `release` push のみに戻し、`codemagic.yaml` の `refactor/e2e-test` 一時除外も削除した。
 - 現在の shell 実行環境では `xcrun simctl` が断続的に CoreSimulatorService に接続できず、Maestro CLI も boot 済み simulator を connected として認識できないため、`tool/maestro/run_ios_e2e.sh` の shell からのローカル完走確認は未完了。
 - ユーザー側でシミュレーター起動後に再確認し、`xcrun simctl list devices booted` は一度成功したが、その後の `simctl -j` / `maestro test --udid` は CoreSimulatorService 接続エラーまたは `0 devices connected` で実行できなかった。
 - 過去のローカル検証では、`tool/maestro/run_ios_e2e.sh` が `xcodebuild -derivedDataPath` を使う構成に切り替えたことで iOS Simulator 向け build / install まで到達した。
@@ -53,9 +57,7 @@ In Progress（CI 再検証 2 回目の修正中）
 
 ## 未完了項目
 
-- shell からの `tool/maestro/run_ios_e2e.sh` ローカル完走確認
-- `refactor/e2e-test` での修正後 2 回目の再実行結果確認
-- CI 再検証後に `.github/workflows/ios-maestro-e2e.yml` を `release` push のみに戻し、`codemagic.yaml` の一時除外を戻すこと
+- shell からの `tool/maestro/run_ios_e2e.sh` ローカル完走確認は、ホスト側 `/System/Volumes/Data` の空き容量不足により未完了。代替として `flutter analyze`、全体 `flutter test`、Maestro syntax check、XcodeBuildMCP の simulator build、GitHub Actions run `25977275880` の E2E success と artifact を確認済み。
 
 ## 完了条件
 

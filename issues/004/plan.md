@@ -68,7 +68,7 @@ Maestro を用いた iOS 向け E2E テスト基盤を追加し、ローカル�
 - [x] task4: GitHub Actions workflow の追加  
   完了条件: macOS ランナー上で iOS シミュレータ + Maestro CLI により E2E を実行し、レポートを 7 日保持で保存できる。  
   期待成果物: `.github/workflows/*`、artifact 出力定義、必要な補助 script
-- [ ] task5: 検証と運用切替
+- [x] task5: 検証と運用切替
   完了条件: ローカル実行結果、一時的な開発ブランチ trigger での CI 検証結果、最終 `release` trigger 反映方針が記録される。  
   期待成果物: `issues/004/tasks/task5_verification.md`、必要に応じた `work/reports/*`
 
@@ -122,3 +122,5 @@ GitHub Actions では一時的に開発ブランチ push で workflow を確認�
 - `02_edit_registered_data` は一覧行のゴミ名が iOS accessibility 上で単独要素にならないことが原因だったため、一覧行に `trash-list-{type}` の Semantics identifier を追加した。
 - `04_copy_registered_data` はコピー登録後に repository へ保存したデータが in-memory の予定一覧へ反映されない不整合も原因だったため、`TrashDataService` の追加・更新・削除成功時に `_schedule` を同期するよう修正した。
 - 修正後、`fvm flutter analyze`、`TMPDIR=$PWD/.tmp fvm flutter test`、Maestro syntax check、XcodeBuildMCP の iOS Simulator build は成功した。ローカル install / Maestro 再実行はホスト側 `/System/Volumes/Data` の空き容量不足で未完了。
+- GitHub Actions run `25977275880` は success で完了し、artifact の JUnit でも 4 flow すべて `failures="0"`、`status="SUCCESS"` だった。`runner.log` も各 flow Passed、`status.txt` は `exit_status=0` だった。
+- CI 検証完了後、GitHub Actions の一時的な `refactor/e2e-test` push trigger を削除して `release` push のみに戻し、Codemagic `ios-development` の一時的な同ブランチ除外も削除した。
