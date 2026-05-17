@@ -54,10 +54,22 @@ Future<void> _initializeRepository() async {
   ActivationApi.initialize(AppConfigProvider(), http.Client());
   AccountLinkApi.initialize(AppConfigProvider(), http.Client());
   AlarmRepository.initialize(await SharedPreferences.getInstance());
-  AlarmApi.initialize(AppConfigProvider(), EnvironmentProvider(), http.Client());
-  TrashApi.initialize(AppConfigProvider(), http.Client());
+  AlarmApi.initialize(
+    AppConfigProvider(),
+    EnvironmentProvider(),
+    http.Client(),
+  );
+  TrashApi.initialize(
+    AppConfigProvider(),
+    http.Client(),
+    EnvironmentProvider(),
+  );
   ConfigRepository.initialize(await SharedPreferences.getInstance());
-  FcmService.initialize(FirebaseMessaging.instance, ConfigRepository(), navigatorKey);
+  FcmService.initialize(
+    FirebaseMessaging.instance,
+    ConfigRepository(),
+    navigatorKey,
+  );
 }
 
 Future<void> main() async {
@@ -73,79 +85,80 @@ Future<void> main() async {
 
   await _initializeRepository();
 
-  UserServiceInterface userService = UserService(
-      UserRepository()
-  );
+  UserServiceInterface userService = UserService(UserRepository());
   await userService.refreshUser();
 
-  TrashDataServiceInterface trashDataService =
-  TrashDataService(
-      userService,
-      TrashRepository(),
-      TrashApi(),
-      CrashlyticsReport()
+  TrashDataServiceInterface trashDataService = TrashDataService(
+    userService,
+    TrashRepository(),
+    TrashApi(),
+    CrashlyticsReport(),
+    FcmService(),
   );
   AccountLinkServiceInterface accountLinkService = AccountLinkService(
-      AppConfigProvider(),
-      AccountLinkApi(),
-      AccountLinkRepository(),
-      UserRepository(),
-      CrashlyticsReport()
+    AppConfigProvider(),
+    AccountLinkApi(),
+    AccountLinkRepository(),
+    UserRepository(),
+    CrashlyticsReport(),
   );
 
   AlarmServiceInterface alarmService = AlarmService(
-      AlarmRepository(),
-      AlarmApi(),
-      ConfigRepository(),
-      FcmService(),
-      UserRepository()
+    AlarmRepository(),
+    AlarmApi(),
+    ConfigRepository(),
+    FcmService(),
+    UserRepository(),
   );
 
   // デバイスの更新やアプリアップデート時にデバイストークンが更新されるため、アラームの再登録を行う
   alarmService.reRegisterAlarm();
 
-  ChangeThemeModel changeThemeModel = ChangeThemeModel(ChangeThemeService(ConfigRepository()));
+  ChangeThemeModel changeThemeModel = ChangeThemeModel(
+    ChangeThemeService(ConfigRepository()),
+  );
   await changeThemeModel.init();
 
   runApp(
-      MultiProvider(
-          providers: [
-            Provider<TrashDataServiceInterface>(
-              create: (context) => trashDataService,
-            ),
-            Provider<AppConfigProviderInterface>(
-                create: (context)=> AppConfigProvider()
-            ),
-            Provider<AccountLinkApiInterface>(
-                create: (context)=> AccountLinkApi()
-            ),
-            Provider<AccountLinkRepositoryInterface>(
-              create: (context)=> AccountLinkRepository(),
-            ) ,
-            Provider<UserServiceInterface>(create: (context)=>userService),
-            Provider<UserRepositoryInterface>(
-              create: (context)=> UserRepository(),
-            ),
-            Provider<ChangeThemeServiceInterface>(
-                create: (context)=> ChangeThemeService(ConfigRepository())
-            ),
-            Provider<AccountLinkServiceInterface>(
-                create: (context)=> accountLinkService
-            ),
-            Provider<ShareServiceInterface>(create: (context) => ShareService(
-                ActivationApi(),
-                userService,
-                TrashRepository(),
-                CrashlyticsReport()
-            )),
-            Provider<AlarmServiceInterface>(
-                create: (context) => alarmService
-            ),
-            ChangeNotifierProvider<ChangeThemeModel>(
-                create: (context)=> changeThemeModel
-            )],
-          child: MyApp()
-      )
+    MultiProvider(
+      providers: [
+        Provider<TrashDataServiceInterface>(
+          create: (context) => trashDataService,
+        ),
+        Provider<AppConfigProviderInterface>(
+          create: (context) => AppConfigProvider(),
+        ),
+        Provider<AccountLinkApiInterface>(
+          create: (context) => AccountLinkApi(),
+        ),
+        Provider<AccountLinkRepositoryInterface>(
+          create: (context) => AccountLinkRepository(),
+        ),
+        Provider<UserServiceInterface>(create: (context) => userService),
+        Provider<UserRepositoryInterface>(
+          create: (context) => UserRepository(),
+        ),
+        Provider<ChangeThemeServiceInterface>(
+          create: (context) => ChangeThemeService(ConfigRepository()),
+        ),
+        Provider<AccountLinkServiceInterface>(
+          create: (context) => accountLinkService,
+        ),
+        Provider<ShareServiceInterface>(
+          create: (context) => ShareService(
+            ActivationApi(),
+            userService,
+            TrashRepository(),
+            CrashlyticsReport(),
+          ),
+        ),
+        Provider<AlarmServiceInterface>(create: (context) => alarmService),
+        ChangeNotifierProvider<ChangeThemeModel>(
+          create: (context) => changeThemeModel,
+        ),
+      ],
+      child: MyApp(),
+    ),
   );
 }
 
@@ -153,26 +166,25 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<CalendarModel>(
-        create: (context) => CalendarModel(
-            CalendarService(),
-            Provider.of<TrashDataServiceInterface>(
-                context,
-                listen: false),
-            DateTime.now()
+      create: (context) => CalendarModel(
+        CalendarService(),
+        Provider.of<TrashDataServiceInterface>(context, listen: false),
+        DateTime.now(),
+      ),
+      child: Consumer<ChangeThemeModel>(
+        builder: (context, changeThemeModel, child) => MaterialApp(
+          theme: ThemeData(
+            brightness: changeThemeModel.darkMode
+                ? Brightness.dark
+                : Brightness.light,
+            colorSchemeSeed: Colors.blue,
+          ),
+          home: CalendarWidget(),
+          // フォアグラウンドでプッシュ通知を受けた際にトップ画面に戻る。
+          // この実装にはトップレベルメソッドでBuildContextを取得する必要があるため,グローバル宣言したNavigatorStateを渡す
+          navigatorKey: navigatorKey,
         ),
-        child: Consumer<ChangeThemeModel>(
-            builder: (context, changeThemeModel, child) =>
-                MaterialApp (
-                  theme: ThemeData(
-                    brightness: changeThemeModel.darkMode ? Brightness.dark : Brightness.light,
-                    colorSchemeSeed: Colors.blue,
-                  ),
-                  home: CalendarWidget(),
-                  // フォアグラウンドでプッシュ通知を受けた際にトップ画面に戻る。
-                  // この実装にはトップレベルメソッドでBuildContextを取得する必要があるため,グローバル宣言したNavigatorStateを渡す
-                  navigatorKey: navigatorKey,
-                )
-        )
+      ),
     );
   }
 }

@@ -51,6 +51,8 @@ flutter:
   assets:
     - json/development/config.json
     - json/production/config.json
+    - assets/legal/term_of_service.txt
+    - assets/legal/privacy_policy.txt
 
 flutter_native_splash:
   color: "#ffffff"

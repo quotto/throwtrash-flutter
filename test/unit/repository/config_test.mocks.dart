@@ -57,4 +57,19 @@ class MockEnvironmentProviderInterface extends _i1.Mock
             ),
           )
           as String);
+
+  @override
+  String get trashSearchApiKey =>
+      (super.noSuchMethod(
+            Invocation.getter(#trashSearchApiKey),
+            returnValue: _i3.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiKey),
+            ),
+            returnValueForMissingStub: _i3.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiKey),
+            ),
+          )
+          as String);
 }

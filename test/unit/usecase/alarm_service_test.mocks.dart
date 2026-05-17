@@ -157,6 +157,15 @@ class MockFcmInterface extends _i1.Mock implements _i8.FcmInterface {
             ),
           )
           as _i3.Future<String>);
+
+  @override
+  _i3.Future<void> showLocalNotification(String? title, String? body) =>
+      (super.noSuchMethod(
+            Invocation.method(#showLocalNotification, [title, body]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }
 
 /// A class which mocks [UserRepositoryInterface].

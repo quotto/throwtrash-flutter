@@ -26,7 +26,9 @@ jobs:
         run: flutter pub get
 
       - name: Run unit tests with coverage
-        run: flutter test test/unit --coverage
+        run: |
+          flutter test test/unit --coverage \
+            --dart-define=trashSearchApiKey="${{ secrets.TRASH_SEARCH_API_KEY }}"
 
       - name: Calculate coverage
         id: coverage

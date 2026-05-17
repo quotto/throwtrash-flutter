@@ -14,37 +14,41 @@ import 'package:throwtrash/usecase/repository/environment_provider_interface.dar
 import 'config_test.mocks.dart';
 
 @GenerateNiceMocks([MockSpec<EnvironmentProviderInterface>()])
-void main(){
+void main() {
   group("Config", () {
-    MockEnvironmentProviderInterface environmentProvider = MockEnvironmentProviderInterface();
+    MockEnvironmentProviderInterface environmentProvider =
+        MockEnvironmentProviderInterface();
     setUpAll(() {
       TestWidgetsFlutterBinding.ensureInitialized();
     });
 
     setUp(() {
       // ユニットテストでrootBundle.loadString()が使えないため、メッセージハンドラをモック化して返す値を指定する
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(
-        'flutter/assets',
-            (ByteData? message) async {
-          return ByteData.sublistView(
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMessageHandler('flutter/assets', (ByteData? message) async {
+            return ByteData.sublistView(
               Uint8List.fromList(
-                  '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com"}'.codeUnits
-              )
-          );
-        },
-      );
+                '{"apiEndpoint": "https://example.com", "mobileApiEndpoint": "https://example.com", "apiErrorUrl": "https://example.com", "alarmApiUrl": "https://alarm.com", "trashSearchApiEndpoint": "https://search.example.com"}'
+                    .codeUnits,
+              ),
+            );
+          });
       // ユニットテストではPackageInfo.fromPlatform()が使えないため、MethodChannelをモック化して返す値を指定する
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel('dev.fluttercommunity.plus/package_info'),  (MethodCall methodCall) async {
-        if (methodCall.method == 'getAll') {
-          return <String, dynamic>{
-            'appName': 'net.mythrowaway',
-            'packageName': 'net.mythrowaway',
-            'version': '1.0.0',
-            'buildNumber': '1',
-          };
-        }
-        return null;
-      });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            MethodChannel('dev.fluttercommunity.plus/package_info'),
+            (MethodCall methodCall) async {
+              if (methodCall.method == 'getAll') {
+                return <String, dynamic>{
+                  'appName': 'net.mythrowaway',
+                  'packageName': 'net.mythrowaway',
+                  'version': '1.0.0',
+                  'buildNumber': '1',
+                };
+              }
+              return null;
+            },
+          );
     });
     tearDown(() {
       AppConfigProvider.reset();
@@ -58,14 +62,14 @@ void main(){
       AppConfigProviderInterface config2 = AppConfigProvider();
       expect(config1, config2);
     });
-    test("flavorがproductionの場合はバージョンにサフィックスが付与されないこと",() async{
+    test("flavorがproductionの場合はバージョンにサフィックスが付与されないこと", () async {
       when(environmentProvider.flavor).thenReturn("production");
       when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
       await AppConfigProvider.initialize(environmentProvider);
       AppConfigProvider config = AppConfigProvider();
       expect(config.version, "1.0.0");
     });
-    test("flavorがdevelopmentの場合はバージョン表示にサフィックスが付与されること",() async{
+    test("flavorがdevelopmentの場合はバージョン表示にサフィックスが付与されること", () async {
       when(environmentProvider.flavor).thenReturn("development");
       when(environmentProvider.alarmApiKey).thenReturn("alarmApiKey");
       await AppConfigProvider.initialize(environmentProvider);
@@ -74,6 +78,7 @@ void main(){
       expect(config.mobileApiUrl, "https://example.com");
       expect(config.accountLinkErrorUrl, "https://example.com");
       expect(config.alarmApiUrl, "https://alarm.com");
+      expect(config.trashSearchApiEndpoint, "https://search.example.com");
       expect(config.version, "1.0.0-dev");
     });
   });

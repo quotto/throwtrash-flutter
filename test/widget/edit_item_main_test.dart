@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:throwtrash/edit.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/viewModels/edit_model.dart';
 
@@ -55,5 +56,34 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('データの読み込みに失敗しました'), findsOneWidget);
+  });
+
+  testWidgets('編集画面では取り込み結果メッセージを表示しない', (WidgetTester tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+    final trashData = TrashData(
+      id: '001',
+      type: 'other',
+      trashVal: '家電',
+      schedules: [TrashSchedule('weekday', '0')],
+      excludes: [],
+    );
+    when(trashDataService.getTrashDataById('001')).thenReturn(trashData);
+    when(
+      trashDataService.consumeImportMessage(),
+    ).thenAnswer((_) async => TrashImportMessage.success('ゴミ出し予定を取り込みました'));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChangeNotifierProvider<EditModel>(
+          create: (context) => EditModel(trashDataService),
+          child: EditItemMain.update('001'),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('ゴミ出し予定を取り込みました'), findsNothing);
+    verifyNever(trashDataService.consumeImportMessage());
   });
 }

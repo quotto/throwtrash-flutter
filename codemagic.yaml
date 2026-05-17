@@ -71,6 +71,7 @@ workflows:
           flutter build ipa --release \
             --flavor development \
             --dart-define=alarmApiKey=${ALARM_API_KEY} \
+            --dart-define=trashSearchApiKey=${TRASH_SEARCH_API_KEY} \
             --dart-define=flavor=development \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
@@ -163,6 +164,7 @@ workflows:
             --flavor production \
             --dart-define=flavor=production \
             --dart-define=alarmApiKey=${ALARM_API_KEY} \
+            --dart-define=trashSearchApiKey=${TRASH_SEARCH_API_KEY} \
             --build-name=${MAJOR}.${MINOR}.${BUILD_NUMBER} \
             --build-number=${BUILD_NUMBER} \
             --export-options-plist=/Users/builder/export_options.plist
