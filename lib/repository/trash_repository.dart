@@ -84,15 +84,6 @@ class TrashRepository implements TrashRepositoryInterface {
   }
 
   @override
-  Future<bool> replaceAllTrashData(List<TrashData> allTrashData) async {
-    _logger.d('Replace all trash data: ${allTrashData.length}');
-    final rawList = allTrashData.map((trashData) {
-      return jsonEncode(trashData.toJson());
-    }).toList();
-    return _preferences.setStringList(TRASH_DATA_KEY, rawList);
-  }
-
-  @override
   Future<bool> updateTrashData(TrashData trashData) async {
     _logger.d("Update trash data: ${json.encode(trashData.toJson())}");
     List<String>? allTrashData = _preferences.getStringList(TRASH_DATA_KEY);
