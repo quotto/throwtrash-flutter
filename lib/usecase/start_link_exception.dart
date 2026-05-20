@@ -3,5 +3,5 @@ class StartLinkException implements Exception {
   const StartLinkException(this._message);
 
   @override
-  String toString()=>_message;
+  String toString() => _message;
 }

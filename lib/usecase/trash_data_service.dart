@@ -48,7 +48,7 @@ class TrashDataService implements TrashDataServiceInterface {
     [6, 13, 20, 27, 34],
   ];
 
-  static Map<String, String> _trashNameMap = {
+  static final Map<String, String> _trashNameMap = {
     "burn": "もえるゴミ",
     "unburn": "もえないゴミ",
     "plastic": "プラスチック",
@@ -108,14 +108,29 @@ class TrashDataService implements TrashDataServiceInterface {
   /// 新しいゴミ出し予定を追加する
   @override
   Future<bool> addTrashData(TrashData trashData) async {
-    return await _trashRepository.insertTrashData(trashData) &&
-        await _changeSyncStatusToSyncing(); //&&
+    final result =
+        await _trashRepository.insertTrashData(trashData) &&
+        await _changeSyncStatusToSyncing();
+    if (result) {
+      _schedule.add(trashData);
+    }
+    return result;
   }
 
   @override
   Future<bool> updateTrashData(TrashData trashData) async {
-    return await _trashRepository.updateTrashData(trashData) &&
-        await _changeSyncStatusToSyncing(); //&&
+    final result =
+        await _trashRepository.updateTrashData(trashData) &&
+        await _changeSyncStatusToSyncing();
+    if (result) {
+      final index = _schedule.indexWhere(
+        (element) => element.id == trashData.id,
+      );
+      if (index >= 0) {
+        _schedule[index] = trashData;
+      }
+    }
+    return result;
   }
 
   @override
@@ -133,8 +148,13 @@ class TrashDataService implements TrashDataServiceInterface {
 
   @override
   Future<bool> deleteTrashData(String id) async {
-    return await _trashRepository.deleteTrashData(id) &&
-        await _changeSyncStatusToSyncing(); //&&
+    final result =
+        await _trashRepository.deleteTrashData(id) &&
+        await _changeSyncStatusToSyncing();
+    if (result) {
+      _schedule.removeWhere((element) => element.id == id);
+    }
+    return result;
   }
 
   Future<bool> _changeSyncStatusToSyncing() async {
@@ -212,18 +232,17 @@ class TrashDataService implements TrashDataServiceInterface {
     required int month,
     required List<int> targetDateList,
   }) {
-    List<List<TrashData>> resultArray = new List.generate(35, (index) => []);
+    List<List<TrashData>> resultArray = List.generate(35, (index) => []);
 
-    _schedule.forEach((trash) {
+    for (var trash in _schedule) {
       List<String> excludeList = trash.excludes.map((excludeDate) {
         return "${excludeDate.month}-${excludeDate.date}";
       }).toList();
-      trash.schedules.forEach((schedule) {
+      for (var schedule in trash.schedules) {
         switch (schedule.type) {
           case 'weekday':
-            _weekdayOfPosition[int.parse((schedule.value as String))].forEach((
-              pos,
-            ) {
+            for (var pos
+                in _weekdayOfPosition[int.parse((schedule.value as String))]) {
               final actualMonth = _getActualMonth(
                 month: month,
                 date: targetDateList[pos],
@@ -236,11 +255,11 @@ class TrashDataService implements TrashDataServiceInterface {
               )) {
                 resultArray[pos].add(trash);
               }
-            });
+            }
             break;
           case 'month':
             int pos = 0;
-            targetDateList.forEach((date) {
+            for (var date in targetDateList) {
               if (int.parse(schedule.value) == date) {
                 final actualMonth = _getActualMonth(
                   month: month,
@@ -252,12 +271,12 @@ class TrashDataService implements TrashDataServiceInterface {
                 }
               }
               pos++;
-            });
+            }
             break;
           case 'biweek':
             List<String> dayOfWeek = schedule.value.split("-");
             if (dayOfWeek.length == 2) {
-              _weekdayOfPosition[int.parse(dayOfWeek[0])].forEach((pos) {
+              for (var pos in _weekdayOfPosition[int.parse(dayOfWeek[0])]) {
                 DateTime computeCalendar = _getComputeCalendar(
                   year: year,
                   month: month,
@@ -279,7 +298,7 @@ class TrashDataService implements TrashDataServiceInterface {
                     resultArray[pos].add(trash);
                   }
                 }
-              });
+              }
             }
             break;
           case 'evweek':
@@ -287,10 +306,8 @@ class TrashDataService implements TrashDataServiceInterface {
                 schedule.value['weekday'] != null) {
               String startDate = schedule.value['start'];
               int weekday = int.parse(schedule.value['weekday']);
-              _weekdayOfPosition[weekday].forEach((pos) {
-                int interval = schedule.value['interval'] != null
-                    ? schedule.value['interval']
-                    : 2;
+              for (var pos in _weekdayOfPosition[weekday]) {
+                int interval = schedule.value['interval'] ?? 2;
 
                 // カレンダーの1週目および5週目は月が変わっている日にちがあるため
                 // カレンダー上のインデックスと日付の関係からカレンダー上の日付の実際の月を求める
@@ -317,12 +334,12 @@ class TrashDataService implements TrashDataServiceInterface {
                     )) {
                   resultArray[pos].add(trash);
                 }
-              });
+              }
             }
             break;
         }
-      });
-    });
+      }
+    }
     return resultArray;
   }
 
@@ -340,7 +357,7 @@ class TrashDataService implements TrashDataServiceInterface {
       actualMonth = month + 1;
     }
 
-    return new DateTime(year, actualMonth, date);
+    return DateTime(year, actualMonth, date);
   }
 
   /// dateとposの情報から当該月の前月/当月/翌月を判定してその月を返す
@@ -456,9 +473,9 @@ class TrashDataService implements TrashDataServiceInterface {
     await _trashRepository.truncateAllTrashData();
     await _trashRepository.writeGlobalExcludeDates(remoteGlobalExcludes);
     List<Future> insertFutures = [];
-    remoteTrashDataList.forEach((trashData) {
+    for (var trashData in remoteTrashDataList) {
       insertFutures.add(_trashRepository.insertTrashData(trashData));
-    });
+    }
     await Future.wait(insertFutures);
   }
 

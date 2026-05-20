@@ -4,7 +4,7 @@ description: 今日のゴミ出し
 version: 1.0.0+1
 environment:
   sdk: ">=3.10.0 <4.0.0"
-  flutter: "^3.38.1"
+  flutter: "^3.41.0"
 
 dependencies:
   flutter:
@@ -24,20 +24,20 @@ dependencies:
   json_serializable: ^6.11.2
   logger: ^2.0.2+1
   url_launcher: ^6.1.5
-  uni_links: ^0.5.1
   fluttertoast: ^9.0.0
   firebase_crashlytics: ^5.0.6
   webview_flutter: ^4.13.1
   flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.7
-  package_info_plus: ^9.0.0
+  package_info_plus: ^10.1.0
   firebase_messaging: ^16.1.0
-  flutter_local_notifications: ^19.5.0
+  flutter_local_notifications: ^21.0.0
+  app_links: ^7.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: 2.10.4
+  build_runner: ^2.15.0
   mockito: ^5.6.3
   test: ^1.26.3
   code_builder: ^4.11.1

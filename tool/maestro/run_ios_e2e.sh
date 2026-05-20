@@ -1,0 +1,290 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+FLAVOR="${FLAVOR:-development}"
+APP_ID="${APP_ID:-net.mythrowaway.dev}"
+REPORT_DIR="${REPORT_DIR:-$ROOT_DIR/.maestro-results}"
+FLOW_DIR="${FLOW_DIR:-$ROOT_DIR/maestro/flows/scenarios}"
+TMPDIR="${TMPDIR:-$ROOT_DIR/.tmp}"
+DERIVED_DATA_DIR="${DERIVED_DATA_DIR:-$ROOT_DIR/.derived-data}"
+XCODEBUILD_LOG="${XCODEBUILD_LOG:-$REPORT_DIR/debug/xcodebuild-$FLAVOR.log}"
+IB_SUPPORT_DIR="${IB_SUPPORT_DIR:-$ROOT_DIR/.e2e-home/Library/Developer/Xcode/UserData/IB Support}"
+MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
+ALARM_API_KEY="${ALARM_API_KEY:-local-e2e-placeholder}"
+TRASH_SEARCH_API_KEY="${TRASH_SEARCH_API_KEY:-}"
+PREFERRED_IOS_MAJOR="${PREFERRED_IOS_MAJOR:-18}"
+MAESTRO_BIN="$(command -v maestro)"
+POD_BIN="$(command -v pod)"
+XCODEBUILD_BIN="$(command -v xcodebuild)"
+JQ_BIN="$(command -v jq)"
+if command -v fvm >/dev/null 2>&1; then
+  FLUTTER_CMD=(fvm flutter)
+elif command -v flutter >/dev/null 2>&1; then
+  FLUTTER_CMD=(flutter)
+else
+  echo "flutter command was not found" >&2
+  exit 1
+fi
+if [[ -z "$JQ_BIN" ]]; then
+  echo "jq command was not found" >&2
+  exit 1
+fi
+GOOGLE_SERVICE_INFO_PLIST_PATH="$ROOT_DIR/ios/$FLAVOR/GoogleService-Info.plist"
+FIREBASE_INFO_PATH="$ROOT_DIR/ios/$FLAVOR/firebase.json"
+
+mkdir -p \
+  "$REPORT_DIR/debug" \
+  "$REPORT_DIR/artifacts" \
+  "$REPORT_DIR/junit" \
+  "$TMPDIR" \
+  "$DERIVED_DATA_DIR" \
+  "$IB_SUPPORT_DIR"
+export TMPDIR
+export MAESTRO_DRIVER_STARTUP_TIMEOUT
+RUNNER_LOG="$REPORT_DIR/runner.log"
+STATUS_LOG="$REPORT_DIR/status.txt"
+
+touch "$RUNNER_LOG" "$STATUS_LOG"
+printf 'started\n' > "$STATUS_LOG"
+
+if [[ "${DISABLE_RUNNER_LOG_TEE:-false}" == "true" ]]; then
+  exec >>"$RUNNER_LOG" 2>&1
+else
+  exec > >(tee -a "$RUNNER_LOG") 2>&1
+fi
+
+log() {
+  printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+}
+
+notice() {
+  log "$*"
+  printf '::notice::%s\n' "$*"
+}
+
+trap 'status=$?; printf "exit_status=%s\n" "$status" > "$STATUS_LOG"; log "run_ios_e2e.sh exiting with status $status"' EXIT
+
+notice "Starting Maestro iOS E2E runner"
+notice "Using flavor=$FLAVOR appId=$APP_ID preferredIosMajor=$PREFERRED_IOS_MAJOR"
+
+if [[ -d "${HOME:-}/Library/Developer/CoreSimulator/Devices" ]]; then
+  ln -sfn "$HOME/Library/Developer/CoreSimulator/Devices" "$IB_SUPPORT_DIR/Simulator Devices"
+fi
+
+if [[ ! -f "$ROOT_DIR/ios/.env" ]]; then
+  echo "ios/.env is required" >&2
+  exit 1
+fi
+
+if [[ ! -f "$GOOGLE_SERVICE_INFO_PLIST_PATH" ]]; then
+  echo "ios/$FLAVOR/GoogleService-Info.plist is required" >&2
+  exit 1
+fi
+
+if [[ ! -f "$FIREBASE_INFO_PATH" ]]; then
+  echo "ios/$FLAVOR/firebase.json is required" >&2
+  exit 1
+fi
+
+if ! grep -q '<key>API_KEY</key>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
+  echo "ios/$FLAVOR/GoogleService-Info.plist must contain API_KEY" >&2
+  exit 1
+fi
+
+if grep -q '<string>local-e2e-placeholder</string>' "$GOOGLE_SERVICE_INFO_PLIST_PATH"; then
+  echo "ios/$FLAVOR/GoogleService-Info.plist contains placeholder API_KEY; restore a real Firebase config before running Maestro E2E" >&2
+  exit 1
+fi
+
+if [[ "$(tr -d '[:space:]' < "$FIREBASE_INFO_PATH")" == "{}" ]]; then
+  echo "ios/$FLAVOR/firebase.json is empty; restore a real Firebase config before running Maestro E2E" >&2
+  exit 1
+fi
+
+resolve_simulator_id() {
+  if [[ -n "${SIMULATOR_ID:-}" ]]; then
+    echo "$SIMULATOR_ID"
+    return
+  fi
+
+  local preferred_id
+  preferred_id="$(
+    xcrun simctl list devices available -j | "$JQ_BIN" -r --arg major "$PREFERRED_IOS_MAJOR" '
+      .devices
+      | to_entries
+      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-\($major)-")))
+      | .[]
+      | .value[]
+      | select(.isAvailable == true and (.name | startswith("iPhone")))
+      | .udid
+    ' | head -n 1
+  )"
+  if [[ -n "$preferred_id" ]]; then
+    echo "$preferred_id"
+    return
+  fi
+
+  preferred_id="$(
+    xcrun simctl list devices available -j | "$JQ_BIN" -r '
+      .devices
+      | to_entries
+      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS-17-")))
+      | .[]
+      | .value[]
+      | select(.isAvailable == true and (.name | startswith("iPhone")))
+      | .udid
+    ' | head -n 1
+  )"
+  if [[ -n "$preferred_id" ]]; then
+    echo "$preferred_id"
+    return
+  fi
+
+  xcrun simctl list devices available -j | "$JQ_BIN" -r '
+    .devices
+    | to_entries
+    | .[]
+    | .value[]
+    | select(.isAvailable == true and (.name | startswith("iPhone")))
+    | .udid
+  ' | head -n 1
+}
+
+SIMULATOR_ID="$(resolve_simulator_id)"
+if [[ -z "$SIMULATOR_ID" ]]; then
+  echo "available iPhone simulator was not found" >&2
+  exit 1
+fi
+notice "Resolved simulator id: $SIMULATOR_ID"
+
+while IFS= read -r booted_id; do
+  if [[ -n "$booted_id" && "$booted_id" != "$SIMULATOR_ID" ]]; then
+    xcrun simctl shutdown "$booted_id" >/dev/null 2>&1 || true
+  fi
+done < <(
+  xcrun simctl list devices available -j | "$JQ_BIN" -r '
+    .devices
+    | to_entries
+    | .[]
+    | .value[]
+    | select(.isAvailable == true and .state == "Booted")
+    | .udid
+  ' || true
+)
+
+notice "Booting simulator"
+xcrun simctl bootstatus "$SIMULATOR_ID" -b >/dev/null 2>&1 || {
+  xcrun simctl boot "$SIMULATOR_ID"
+  xcrun simctl bootstatus "$SIMULATOR_ID" -b
+}
+open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID" >/dev/null 2>&1 || true
+
+notice "Running flutter pub get"
+"${FLUTTER_CMD[@]}" pub get
+(
+  notice "Running pod install"
+  cd "$ROOT_DIR/ios"
+  "$POD_BIN" install
+)
+
+# flutter build ios は環境によって停止することがあるため、xcodebuild を直接利用する。
+notice "Running xcodebuild"
+log "xcodebuild output is being written to $XCODEBUILD_LOG"
+"$XCODEBUILD_BIN" \
+  -workspace "$ROOT_DIR/ios/Runner.xcworkspace" \
+  -scheme "$FLAVOR" \
+  -configuration "Debug-$FLAVOR" \
+  -sdk iphonesimulator \
+  -destination "id=$SIMULATOR_ID" \
+  -derivedDataPath "$DERIVED_DATA_DIR" \
+  FLAVOR="$FLAVOR" \
+  TARGETED_DEVICE_FAMILY=1 \
+  build >"$XCODEBUILD_LOG" 2>&1 || {
+    echo "xcodebuild failed; showing last 200 lines from $XCODEBUILD_LOG" >&2
+    tail -200 "$XCODEBUILD_LOG" >&2
+    exit 1
+}
+
+notice "xcodebuild completed"
+APP_PATH="$DERIVED_DATA_DIR/Build/Products/Debug-$FLAVOR-iphonesimulator/Runner.app"
+if [[ ! -d "$APP_PATH" ]]; then
+  echo "Runner.app was not found at $APP_PATH" >&2
+  exit 1
+fi
+
+notice "Installing app to simulator"
+xcrun simctl uninstall "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
+xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+
+CURRENT_MONTH_LABEL="$(date '+%Y年%-m月')"
+
+reset_app_state() {
+  xcrun simctl terminate "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
+  xcrun simctl uninstall "$SIMULATOR_ID" "$APP_ID" >/dev/null 2>&1 || true
+  xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+}
+
+run_maestro_flow() {
+  local flow_path="$1"
+  local flow_name="$2"
+  local debug_dir="$REPORT_DIR/debug/$flow_name"
+  local artifact_dir="$REPORT_DIR/artifacts/$flow_name"
+  local junit_path="$REPORT_DIR/junit/$flow_name.xml"
+  local heartbeat_count=0
+
+  mkdir -p "$debug_dir" "$artifact_dir"
+  notice "Running maestro test: $flow_name"
+  "$MAESTRO_BIN" test \
+    "$flow_path" \
+    --format JUNIT \
+    --output "$junit_path" \
+    --debug-output "$debug_dir" \
+    --flatten-debug-output \
+    --test-output-dir "$artifact_dir" \
+    --udid "$SIMULATOR_ID" \
+    -e APP_ID="$APP_ID" \
+    -e CURRENT_MONTH_LABEL="$CURRENT_MONTH_LABEL" &
+  local maestro_pid=$!
+
+  while kill -0 "$maestro_pid" >/dev/null 2>&1; do
+    heartbeat_count=$((heartbeat_count + 1))
+    if (( heartbeat_count % 10 == 0 )); then
+      notice "Maestro test still running: $flow_name"
+    else
+      log "Maestro test still running: $flow_name"
+    fi
+    sleep 30
+  done
+
+  local maestro_status=0
+  wait "$maestro_pid" || maestro_status=$?
+  notice "Maestro test completed: $flow_name"
+  return "$maestro_status"
+}
+
+FLOW_PATHS=()
+while IFS= read -r flow_path; do
+  FLOW_PATHS+=("$flow_path")
+done < <(find "$FLOW_DIR" -maxdepth 1 -type f -name '*.yaml' | sort)
+if [[ "${#FLOW_PATHS[@]}" -eq 0 ]]; then
+  echo "Maestro flow was not found under $FLOW_DIR" >&2
+  exit 1
+fi
+
+failed_flows=()
+for flow_path in "${FLOW_PATHS[@]}"; do
+  flow_name="$(basename "$flow_path" .yaml)"
+  notice "Resetting app state: $flow_name"
+  reset_app_state
+
+  if ! run_maestro_flow "$flow_path" "$flow_name"; then
+    failed_flows+=("$flow_name")
+  fi
+done
+
+if [[ "${#failed_flows[@]}" -gt 0 ]]; then
+  echo "Maestro test failed: ${failed_flows[*]}" >&2
+  exit 1
+fi

@@ -9,7 +9,7 @@ class ChangeThemeService implements ChangeThemeServiceInterface {
 
   @override
   Future<void> switchDarkMode(bool darkMode) async {
-    if(!await _themeRepository.saveDarkMode(darkMode)) {
+    if (!await _themeRepository.saveDarkMode(darkMode)) {
       throw Exception("DarkModeの保存に失敗しました");
     }
   }
@@ -17,6 +17,6 @@ class ChangeThemeService implements ChangeThemeServiceInterface {
   @override
   Future<bool> readDarkMode() async {
     bool? darkMode = await _themeRepository.readDarkMode();
-    return darkMode != null ? darkMode : false;
+    return darkMode ?? false;
   }
 }

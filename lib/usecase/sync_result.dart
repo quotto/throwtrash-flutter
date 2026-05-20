@@ -1,6 +1,1 @@
-enum SyncResult {
-  skipped,
-  rollback,
-  success,
-  failed
-}
+enum SyncResult { skipped, rollback, success, failed }

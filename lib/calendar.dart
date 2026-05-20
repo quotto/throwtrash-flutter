@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
@@ -21,7 +22,6 @@ import 'package:throwtrash/viewModels/exclude_date_model.dart';
 import 'package:throwtrash/viewModels/list_model.dart';
 import 'package:throwtrash/view_common/app_feedback.dart';
 import 'package:throwtrash/view_common/trash_color.dart';
-import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'account_link.dart';
@@ -31,12 +31,14 @@ import 'exclude_date.dart';
 import 'list.dart';
 
 class CalendarWidget extends StatefulWidget {
+  const CalendarWidget({super.key});
+
   @override
-  _CalendarWidgetState createState() => _CalendarWidgetState();
+  State<CalendarWidget> createState() => _CalendarWidgetState();
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  Logger _logger = Logger();
+  final Logger _logger = Logger();
   final _rollbackSnackBar = AppFeedbackSnackBar.warning(
     '他の端末でスケジュールが更新されました。',
     duration: Duration(seconds: 1),
@@ -49,23 +51,31 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   final List<String> _weekdayLabel = ['日', '月', '火', '水', '木', '金', '土'];
 
   PageController controller = PageController(initialPage: 0);
-  StreamSubscription? _sub;
+  final AppLinks _appLinks = AppLinks();
+  StreamSubscription<Uri>? _sub;
+
+  Widget _identified(String id, Widget child) {
+    return Semantics(identifier: id, child: child);
+  }
 
   Future<void> initUniLinks(AccountLinkServiceInterface service) async {
     try {
-      final initialLink = await getInitialLink();
+      final initialLink = await _appLinks.getInitialLink();
       _logger.d("start via App Links: $initialLink");
     } on PlatformException {
       _logger.e("failed start via App Links");
     }
-    _sub = uriLinkStream.listen(
-      (Uri? link) {
+    _sub = _appLinks.uriLinkStream.listen(
+      (Uri link) {
         _logger.d("change link stream: $link");
-        String? code = link?.queryParameters["code"];
-        String? state = link?.queryParameters["state"];
+        String? code = link.queryParameters["code"];
+        String? state = link.queryParameters["state"];
         if (code != null && state != null) {
           AccountLinkModel accountLinkModel = AccountLinkModel(service);
           accountLinkModel.prepareAccountLinkInfo(code).then((_) {
+            if (!mounted) {
+              return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -140,6 +150,26 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     });
   }
 
+  List<String> _trashTypes(List<List<DisplayTrashData>> trashList) {
+    return trashList
+        .expand((trashListByDate) => trashListByDate)
+        .map((trash) => trash.trashType)
+        .toSet()
+        .toList();
+  }
+
+  Widget _trashTypeMarker(String trashType) {
+    return SizedBox(
+      width: 1,
+      height: 1,
+      child: Semantics(
+        container: true,
+        identifier: 'calendar-trash-$trashType',
+        label: 'calendar-trash-$trashType',
+      ),
+    );
+  }
+
   Flexible _flexibleRowWeek(
     int week,
     List<int> dateList,
@@ -159,11 +189,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: index == 0
-                      ? Colors.red.shade600.withOpacity(opacity)
+                      ? Colors.red.shade600.withValues(alpha: opacity)
                       : (index == 6
-                            ? Colors.blue.shade600.withOpacity(opacity)
+                            ? Colors.blue.shade600.withValues(alpha: opacity)
                             : Theme.of(context).textTheme.bodyLarge!.color
-                                  ?.withOpacity(opacity)),
+                                  ?.withValues(alpha: opacity)),
                 ),
               ),
               Wrap(
@@ -175,7 +205,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         color: trashColor(
                           trashList[index][i].trashType,
                           Theme.of(context).brightness,
-                        ), //_trashColorMap[trashList[index][i].trashType],
+                        ),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       alignment: Alignment.topCenter,
@@ -249,6 +279,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     return Column(
       key: Key('calendar_column_$pageIndex'),
       children: [
+        ..._trashTypes(allTrashList).map(_trashTypeMarker),
         Flexible(
           flex: 1,
           child: FractionallySizedBox(
@@ -288,6 +319,19 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       builder: (context, calendar, child) {
         return Scaffold(
           appBar: AppBar(
+            leading: Builder(
+              builder: (context) => _identified(
+                'open-drawer',
+                IconButton(
+                  key: Key('open-drawer'),
+                  tooltip: 'メニューを開く',
+                  icon: Icon(Icons.menu),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+              ),
+            ),
             title: Text('${calendar.year}年${calendar.month}月'),
             // リロードボタン
             actions: <Widget>[
@@ -307,105 +351,118 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     // スクロールは無効化する
                     physics: NeverScrollableScrollPhysics(),
                     children: <Widget>[
-                      ListTile(
-                        title: Text("追加"),
-                        leading: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Icon(Icons.add),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<EditModel>(
-                                    create: (context) => EditModel(
-                                      Provider.of<TrashDataServiceInterface>(
-                                        context,
-                                        listen: false,
+                      _identified(
+                        'drawer-add',
+                        ListTile(
+                          key: Key('drawer-add'),
+                          title: Text("追加"),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Icon(Icons.add),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<EditModel>(
+                                      create: (context) => EditModel(
+                                        Provider.of<TrashDataServiceInterface>(
+                                          context,
+                                          listen: false,
+                                        ),
                                       ),
+                                      child: EditItemMain(),
                                     ),
-                                    child: EditItemMain(),
-                                  ),
-                            ),
-                          ).then((result) {
-                            if (result != null && result) {
-                              calendar.reload();
-                            }
-                          });
-                        },
-                      ),
-                      ListTile(
-                        title: Text("編集"),
-                        leading: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Icon(Icons.edit),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<ListModel>(
-                                    create: (context) => ListModel(
-                                      Provider.of<TrashDataServiceInterface>(
-                                        context,
-                                        listen: false,
-                                      ),
-                                    ),
-                                    child: TrashList(),
-                                  ),
-                            ),
-                          ).then((result) {
-                            // 編集・削除ではデータの更新有無が判別できないためリロード処理を強制実行する
-                            calendar.reload();
-                          });
-                        },
-                      ),
-                      ListTile(
-                        title: Text("例外日"),
-                        leading: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Icon(Icons.event_busy),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          final trashDataService =
-                              Provider.of<TrashDataServiceInterface>(
-                                context,
-                                listen: false,
-                              );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChangeNotifierProvider<ExcludeViewModel>(
-                                    create: (context) => ExcludeViewModel.load(
-                                      trashDataService.globalExcludeDates,
-                                    ),
-                                    child: ExcludeDateView(
-                                      showGlobalDescription: true,
-                                    ),
-                                  ),
-                            ),
-                          ).then((result) async {
-                            if (result != null) {
-                              final viewModel = result as ExcludeViewModel;
-                              final newExcludeDates = viewModel.excludeDates
-                                  .map((value) {
-                                    return ExcludeDate(value[0], value[1]);
-                                  })
-                                  .toList();
-                              final updateResult = await trashDataService
-                                  .updateGlobalExcludeDates(newExcludeDates);
-                              if (updateResult) {
+                              ),
+                            ).then((result) {
+                              if (result != null && result) {
                                 calendar.reload();
                               }
-                            }
-                          });
-                        },
+                            });
+                          },
+                        ),
+                      ),
+                      _identified(
+                        'drawer-edit',
+                        ListTile(
+                          key: Key('drawer-edit'),
+                          title: Text("編集"),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Icon(Icons.edit),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<ListModel>(
+                                      create: (context) => ListModel(
+                                        Provider.of<TrashDataServiceInterface>(
+                                          context,
+                                          listen: false,
+                                        ),
+                                      ),
+                                      child: TrashList(),
+                                    ),
+                              ),
+                            ).then((result) {
+                              // 編集・削除ではデータの更新有無が判別できないためリロード処理を強制実行する
+                              calendar.reload();
+                            });
+                          },
+                        ),
+                      ),
+                      _identified(
+                        'drawer-global-exclude',
+                        ListTile(
+                          key: Key('drawer-global-exclude'),
+                          title: Text("例外日"),
+                          leading: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Icon(Icons.event_busy),
+                          ),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            final trashDataService =
+                                Provider.of<TrashDataServiceInterface>(
+                                  context,
+                                  listen: false,
+                                );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChangeNotifierProvider<ExcludeViewModel>(
+                                      create: (context) =>
+                                          ExcludeViewModel.load(
+                                            trashDataService.globalExcludeDates,
+                                          ),
+                                      child: ExcludeDateView(
+                                        showGlobalDescription: true,
+                                      ),
+                                    ),
+                              ),
+                            ).then((result) async {
+                              if (result != null) {
+                                final viewModel = result as ExcludeViewModel;
+                                final newExcludeDates = viewModel.excludeDates
+                                    .map((value) {
+                                      return ExcludeDate(value[0], value[1]);
+                                    })
+                                    .toList();
+                                final updateResult = await trashDataService
+                                    .updateGlobalExcludeDates(newExcludeDates);
+                                if (updateResult) {
+                                  calendar.reload();
+                                }
+                              }
+                            });
+                          },
+                        ),
                       ),
                       ListTile(
                         title: Text("通知設定"),
@@ -558,14 +615,12 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     ],
                   ),
                 ),
-                Container(
-                  child: Text(
-                    "Version ${Provider.of<AppConfigProviderInterface>(context).version}",
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
-                      height: 1.5,
-                    ),
+                Text(
+                  "Version ${Provider.of<AppConfigProviderInterface>(context).version}",
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                    height: 1.5,
                   ),
                 ),
               ],
@@ -583,7 +638,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       flex: 5,
                       child: PageView(
                         controller: controller,
-                        children: new List<Column>.generate(
+                        children: List<Column>.generate(
                           calendar.calendarsDateList.length,
                           (index) {
                             return _calendarColumn(
@@ -608,7 +663,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   Widget loadingContainer = Stack(
     children: [
-      Container(color: Colors.black.withOpacity(0.5)),
+      Container(color: Colors.black.withValues(alpha: 0.5)),
       Center(child: CircularProgressIndicator()),
     ],
   );

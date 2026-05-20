@@ -1,12 +1,14 @@
+// ignore_for_file: constant_identifier_names
+
 enum SyncStatus {
   NOT_YET, // ローカルに変更があり未同期
   SYNCING, // 同期処理中
-  COMPLETE // 同期済み
+  COMPLETE, // 同期済み
 }
 
 extension SyncStatusHelper on SyncStatus {
   static SyncStatus toSyncStatus(int index) {
-    switch(index) {
+    switch (index) {
       case 0:
         return SyncStatus.NOT_YET;
       case 1:
@@ -19,7 +21,7 @@ extension SyncStatusHelper on SyncStatus {
   }
 
   int toInt() {
-    switch(this) {
+    switch (this) {
       case SyncStatus.NOT_YET:
         return 0;
       case SyncStatus.SYNCING:

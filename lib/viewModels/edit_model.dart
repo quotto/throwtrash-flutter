@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -209,8 +211,8 @@ class EditModel extends ChangeNotifier {
 
   void setExcludeDate(List<List<int>> excludeDate) {
     _trashData.excludes.clear();
-    excludeDate.forEach((element) {
+    for (var element in excludeDate) {
       _trashData.excludes.add(ExcludeDate(element[0], element[1]));
-    });
+    }
   }
 }

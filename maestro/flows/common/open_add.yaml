@@ -1,0 +1,6 @@
+appId: ${APP_ID}
+---
+- tapOn:
+    id: open-drawer
+- tapOn:
+    id: drawer-add

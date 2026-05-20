@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 
@@ -8,6 +10,10 @@ class TrashSyncResult {
   final List<ExcludeDate> globalExcludes;
   final int timestamp;
   final TrashApiSyncStatus syncResult;
-  TrashSyncResult(this.allTrashDataList, this.globalExcludes, this.timestamp,
-      this.syncResult);
+  TrashSyncResult(
+    this.allTrashDataList,
+    this.globalExcludes,
+    this.timestamp,
+    this.syncResult,
+  );
 }
