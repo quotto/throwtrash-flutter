@@ -5,6 +5,7 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
+import 'package:throwtrash/usecase/repository/background_task_interface.dart';
 import 'package:throwtrash/usecase/repository/fcm_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
@@ -25,13 +26,24 @@ class FakeFcmService implements FcmInterface {
   }
 }
 
+class FakeBackgroundTaskService implements BackgroundTaskInterface {
+  int taskCount = 0;
+
+  @override
+  Future<T> runTask<T>(String name, Future<T> Function() task) async {
+    taskCount++;
+    return task();
+  }
+}
+
 void main() {
-  group('自動取り込み', () {
+  group('AI取り込み', () {
     late MockCrashReportInterface crashReport;
     late MockTrashRepositoryInterface trashRepository;
     late MockTrashApiInterface trashApi;
     late MockUserServiceInterface userService;
     late FakeFcmService fcmService;
+    late FakeBackgroundTaskService backgroundTaskService;
     late TrashDataService service;
 
     setUp(() {
@@ -40,6 +52,7 @@ void main() {
       trashApi = MockTrashApiInterface();
       userService = MockUserServiceInterface();
       fcmService = FakeFcmService();
+      backgroundTaskService = FakeBackgroundTaskService();
       when(trashRepository.readAllTrashData()).thenAnswer((_) async => []);
       when(
         trashRepository.readGlobalExcludeDates(),
@@ -56,6 +69,7 @@ void main() {
         trashApi,
         crashReport,
         fcmService,
+        backgroundTaskService,
       );
     });
 
@@ -108,7 +122,8 @@ void main() {
         ),
       ).called(1);
       verify(trashRepository.setSyncStatus(SyncStatus.SYNCING)).called(1);
-      expect(fcmService.title, '自動取り込み');
+      expect(backgroundTaskService.taskCount, 1);
+      expect(fcmService.title, 'AI取り込み');
       expect(fcmService.body, 'ゴミ出し予定を取り込みました');
       verify(
         trashRepository.saveImportMessage(
@@ -133,7 +148,8 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.replaceAllTrashData(any));
-      expect(fcmService.title, '自動取り込み');
+      expect(backgroundTaskService.taskCount, 1);
+      expect(fcmService.title, 'AI取り込み');
       expect(fcmService.body, '指定された住所に対応するゴミ出し予定を特定できませんでした。');
       verify(
         trashRepository.saveImportMessage(
@@ -170,7 +186,7 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.message, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
-      expect(fcmService.title, '自動取り込み');
+      expect(fcmService.title, 'AI取り込み');
       expect(fcmService.body, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
       verify(trashRepository.replaceAllTrashData(any)).called(1);
       verify(
@@ -211,8 +227,8 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.setSyncStatus(SyncStatus.SYNCING));
-      expect(fcmService.title, '自動取り込み');
-      expect(fcmService.body, '自動取り込み結果の保存に失敗しました。');
+      expect(fcmService.title, 'AI取り込み');
+      expect(fcmService.body, 'AI取り込み結果の保存に失敗しました。');
       verify(
         trashRepository.saveImportMessage(
           argThat(
@@ -220,7 +236,7 @@ void main() {
                 .having(
                   (value) => value.message,
                   'message',
-                  '自動取り込み結果の保存に失敗しました。',
+                  'AI取り込み結果の保存に失敗しました。',
                 )
                 .having((value) => value.isSuccess, 'isSuccess', isFalse),
           ),

@@ -23,6 +23,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('プライバシーポリシー'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('自動取り込みのために入力された郵便番号'), findsOneWidget);
+    expect(find.textContaining('AI取り込みのために入力された郵便番号'), findsOneWidget);
   });
 }

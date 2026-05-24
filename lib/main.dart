@@ -23,6 +23,7 @@ import 'package:throwtrash/viewModels/change_theme_model.dart';
 import 'package:throwtrash/repository/account_link_api.dart';
 import 'package:throwtrash/usecase/repository/account_link_api_interface.dart';
 import 'package:throwtrash/repository/account_link_repository.dart';
+import 'package:throwtrash/repository/background_task_service.dart';
 import 'package:throwtrash/usecase/repository/account_link_repository_interface.dart';
 import 'package:throwtrash/repository/trash_api.dart';
 import 'package:throwtrash/repository/trash_repository.dart';
@@ -94,6 +95,7 @@ Future<void> main() async {
     TrashApi(),
     CrashlyticsReport(),
     FcmService(),
+    BackgroundTaskService(),
   );
   AccountLinkServiceInterface accountLinkService = AccountLinkService(
     AppConfigProvider(),
