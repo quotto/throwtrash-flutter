@@ -81,7 +81,7 @@ class _TrashListState extends State<TrashList> {
                   child: ElevatedButton.icon(
                     key: Key('open-auto-import-dialog'),
                     icon: Icon(Icons.cloud_download),
-                    label: Text('自動取り込み（β）'),
+                    label: Text('AI取り込み（β）'),
                     onPressed: () {
                       showAutoImportDialog(context).then((_) {
                         list.reload();

@@ -84,7 +84,7 @@ class _AutoImportDialogState extends State<AutoImportDialog> {
     return PopScope(
       canPop: false,
       child: AlertDialog(
-        title: Text('自動取り込み（β）'),
+        title: Text('AI取り込み（β）'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -143,7 +143,7 @@ class _AutoImportDialogState extends State<AutoImportDialog> {
                     final input = _controller.text.trim();
                     unawaited(
                       service.importTrashSchedule(input).catchError((_) {
-                        return TrashImportResult.failure('自動取り込みに失敗しました。');
+                        return TrashImportResult.failure('AI取り込みに失敗しました。');
                       }),
                     );
                     if (context.mounted) {

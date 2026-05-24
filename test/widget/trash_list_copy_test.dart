@@ -51,16 +51,26 @@ void main() {
     verify(trashDataService.consumeImportMessage()).called(1);
   });
 
-  testWidgets('一覧画面で取り込み失敗メッセージが異常系背景色で一度だけ表示される', (tester) async {
+  testWidgets('一覧画面に AI取り込みボタンを表示する', (tester) async {
     final trashDataService = MockTrashDataServiceInterface();
-    when(
-      trashDataService.consumeImportMessage(),
-    ).thenAnswer((_) async => TrashImportMessage.error('自動取り込み結果の保存に失敗しました。'));
+    when(trashDataService.consumeImportMessage()).thenAnswer((_) async => null);
 
     await pumpTrashList(tester, trashDataService);
     await tester.pump();
 
-    expect(find.text('自動取り込み結果の保存に失敗しました。'), findsOneWidget);
+    expect(find.text('AI取り込み（β）'), findsOneWidget);
+  });
+
+  testWidgets('一覧画面で取り込み失敗メッセージが異常系背景色で一度だけ表示される', (tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+    when(
+      trashDataService.consumeImportMessage(),
+    ).thenAnswer((_) async => TrashImportMessage.error('AI取り込み結果の保存に失敗しました。'));
+
+    await pumpTrashList(tester, trashDataService);
+    await tester.pump();
+
+    expect(find.text('AI取り込み結果の保存に失敗しました。'), findsOneWidget);
     final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
     expect(snackBar.backgroundColor, AppFeedbackColors.errorBackground);
 

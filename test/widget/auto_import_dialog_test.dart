@@ -9,7 +9,7 @@ import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 import 'widget_test.mocks.dart';
 
 void main() {
-  testWidgets('自動取り込みダイアログは空入力時に実行できず50文字制限が効く', (tester) async {
+  testWidgets('AI取り込みダイアログは空入力時に実行できず50文字制限が効く', (tester) async {
     final service = MockTrashDataServiceInterface();
     await tester.pumpWidget(
       Provider<TrashDataServiceInterface>.value(
@@ -28,6 +28,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
+    expect(find.text('AI取り込み（β）'), findsOneWidget);
     final submitButton = tester.widget<ElevatedButton>(
       find.byKey(Key('auto-import-submit')),
     );
@@ -103,7 +104,7 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(service.markInitialSearchDialogShown()).called(1);
-    expect(find.text('自動取り込み（β）'), findsNothing);
+    expect(find.text('AI取り込み（β）'), findsNothing);
   });
 
   testWidgets('実行時に開始メッセージを表示し非同期取り込みを開始する', (tester) async {

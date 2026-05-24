@@ -178,7 +178,7 @@ class TrashApi implements TrashApiInterface {
     TrashSearchInputType inputType,
   ) async {
     if (_trashSearchApiEndpoint.isEmpty || _trashSearchApiKey.isEmpty) {
-      return TrashSearchResult.failure('自動取り込み API の設定が不足しています。');
+      return TrashSearchResult.failure('AI取り込み API の設定が不足しています。');
     }
     try {
       Uri endpointUri = Uri.parse("$_trashSearchApiEndpoint/search");

@@ -553,7 +553,7 @@ void main() {
       ).thenAnswer((_) async => true);
 
       final result = await repository.saveImportMessage(
-        TrashImportMessage.error('自動取り込み結果の保存に失敗しました。'),
+        TrashImportMessage.error('AI取り込み結果の保存に失敗しました。'),
       );
 
       expect(result, isTrue);
@@ -566,7 +566,7 @@ void main() {
               ).captured.single
               as String;
       final saved = jsonDecode(captured) as Map<String, dynamic>;
-      expect(saved['message'], '自動取り込み結果の保存に失敗しました。');
+      expect(saved['message'], 'AI取り込み結果の保存に失敗しました。');
       expect(saved['type'], 'error');
     });
 

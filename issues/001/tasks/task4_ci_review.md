@@ -10,7 +10,7 @@ devops, reviewer
 
 ## 内容
 
-- GitHub Actions と Codemagic に自動取り込み API の `--dart-define=trashSearchApiKey` を追加する。
+- GitHub Actions と Codemagic に AI取り込みで利用する API の `--dart-define=trashSearchApiKey` を追加する。
 - CI/CD のシークレット名は `TRASH_SEARCH_API_KEY` とする。
 - 実装後に Copilot review を実行する。
 - セキュリティ観点で API キー、入力情報、通知内容、ログ出力を確認する。

@@ -6,6 +6,7 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
 import 'package:throwtrash/models/trash_sync_result.dart';
 import 'package:throwtrash/models/trash_update_result.dart';
+import 'package:throwtrash/usecase/repository/background_task_interface.dart';
 import 'package:throwtrash/usecase/repository/fcm_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/repository/trash_api_interface.dart';
@@ -25,6 +26,7 @@ class TrashDataService implements TrashDataServiceInterface {
   final TrashRepositoryInterface _trashRepository;
   final TrashApiInterface _trashApiInterface;
   final FcmInterface? _fcmService;
+  final BackgroundTaskInterface? _backgroundTaskService;
   final _logger = Logger();
   final CrashReportInterface _crashReport;
 
@@ -34,6 +36,7 @@ class TrashDataService implements TrashDataServiceInterface {
     this._trashApiInterface,
     this._crashReport, [
     this._fcmService,
+    this._backgroundTaskService,
   ]) {
     refreshTrashData();
   }
@@ -171,6 +174,16 @@ class TrashDataService implements TrashDataServiceInterface {
 
   @override
   Future<TrashImportResult> importTrashSchedule(String input) async {
+    if (_backgroundTaskService != null) {
+      return _backgroundTaskService.runTask(
+        'trash_search_import',
+        () => _importTrashSchedule(input),
+      );
+    }
+    return _importTrashSchedule(input);
+  }
+
+  Future<TrashImportResult> _importTrashSchedule(String input) async {
     final trimmedInput = input.trim();
     final searchResult = await _trashApiInterface.searchTrashSchedule(
       trimmedInput,
@@ -180,7 +193,7 @@ class TrashDataService implements TrashDataServiceInterface {
       await _trashRepository.saveImportMessage(
         TrashImportMessage.error(searchResult.message),
       );
-      await _fcmService?.showLocalNotification('自動取り込み', searchResult.message);
+      await _fcmService?.showLocalNotification('AI取り込み', searchResult.message);
       return TrashImportResult.failure(searchResult.message);
     }
 
@@ -188,11 +201,11 @@ class TrashDataService implements TrashDataServiceInterface {
       searchResult.trashes,
     );
     if (!replaceResult) {
-      final message = '自動取り込み結果の保存に失敗しました。';
+      final message = 'AI取り込み結果の保存に失敗しました。';
       await _trashRepository.saveImportMessage(
         TrashImportMessage.error(message),
       );
-      await _fcmService?.showLocalNotification('自動取り込み', message);
+      await _fcmService?.showLocalNotification('AI取り込み', message);
       return TrashImportResult.failure(message);
     }
     await _changeSyncStatusToSyncing();
@@ -201,7 +214,7 @@ class TrashDataService implements TrashDataServiceInterface {
     await _trashRepository.saveImportMessage(
       TrashImportMessage.success(importResult.message),
     );
-    await _fcmService?.showLocalNotification('自動取り込み', importResult.message);
+    await _fcmService?.showLocalNotification('AI取り込み', importResult.message);
     return importResult;
   }
 
