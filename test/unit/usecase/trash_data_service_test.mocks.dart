@@ -319,20 +319,33 @@ class MockTrashApiInterface extends _i1.Mock implements _i13.TrashApiInterface {
   @override
   _i8.Future<_i4.TrashSearchResult> searchTrashSchedule(
     String? input,
-    _i4.TrashSearchInputType? inputType,
-  ) =>
+    _i4.TrashSearchInputType? inputType, {
+    String? fcmToken,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#searchTrashSchedule, [input, inputType]),
+            Invocation.method(
+              #searchTrashSchedule,
+              [input, inputType],
+              {#fcmToken: fcmToken},
+            ),
             returnValue: _i8.Future<_i4.TrashSearchResult>.value(
               _FakeTrashSearchResult_2(
                 this,
-                Invocation.method(#searchTrashSchedule, [input, inputType]),
+                Invocation.method(
+                  #searchTrashSchedule,
+                  [input, inputType],
+                  {#fcmToken: fcmToken},
+                ),
               ),
             ),
             returnValueForMissingStub: _i8.Future<_i4.TrashSearchResult>.value(
               _FakeTrashSearchResult_2(
                 this,
-                Invocation.method(#searchTrashSchedule, [input, inputType]),
+                Invocation.method(
+                  #searchTrashSchedule,
+                  [input, inputType],
+                  {#fcmToken: fcmToken},
+                ),
               ),
             ),
           )

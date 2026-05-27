@@ -5,7 +5,6 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
-import 'package:throwtrash/usecase/repository/background_task_interface.dart';
 import 'package:throwtrash/usecase/repository/fcm_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service.dart';
@@ -15,9 +14,13 @@ import 'trash_data_service_test.mocks.dart';
 class FakeFcmService implements FcmInterface {
   String? title;
   String? body;
+  int refreshTokenCount = 0;
 
   @override
-  Future<String> refreshDeviceToken() async => 'token';
+  Future<String> refreshDeviceToken() async {
+    refreshTokenCount++;
+    return 'fcm-token';
+  }
 
   @override
   Future<void> showLocalNotification(String title, String body) async {
@@ -26,14 +29,14 @@ class FakeFcmService implements FcmInterface {
   }
 }
 
-class FakeBackgroundTaskService implements BackgroundTaskInterface {
-  int taskCount = 0;
+class FailingFcmService implements FcmInterface {
+  @override
+  Future<String> refreshDeviceToken() async {
+    throw Exception('token error');
+  }
 
   @override
-  Future<T> runTask<T>(String name, Future<T> Function() task) async {
-    taskCount++;
-    return task();
-  }
+  Future<void> showLocalNotification(String title, String body) async {}
 }
 
 void main() {
@@ -43,7 +46,6 @@ void main() {
     late MockTrashApiInterface trashApi;
     late MockUserServiceInterface userService;
     late FakeFcmService fcmService;
-    late FakeBackgroundTaskService backgroundTaskService;
     late TrashDataService service;
 
     setUp(() {
@@ -52,7 +54,6 @@ void main() {
       trashApi = MockTrashApiInterface();
       userService = MockUserServiceInterface();
       fcmService = FakeFcmService();
-      backgroundTaskService = FakeBackgroundTaskService();
       when(trashRepository.readAllTrashData()).thenAnswer((_) async => []);
       when(
         trashRepository.readGlobalExcludeDates(),
@@ -69,7 +70,6 @@ void main() {
         trashApi,
         crashReport,
         fcmService,
-        backgroundTaskService,
       );
     });
 
@@ -93,6 +93,7 @@ void main() {
         trashApi.searchTrashSchedule(
           '160-0023',
           TrashSearchInputType.postalCode,
+          fcmToken: 'fcm-token',
         ),
       ).thenAnswer(
         (_) async => TrashSearchResult.success([
@@ -122,9 +123,9 @@ void main() {
         ),
       ).called(1);
       verify(trashRepository.setSyncStatus(SyncStatus.SYNCING)).called(1);
-      expect(backgroundTaskService.taskCount, 1);
-      expect(fcmService.title, 'AI取り込み');
-      expect(fcmService.body, 'ゴミ出し予定を取り込みました');
+      expect(fcmService.refreshTokenCount, 1);
+      expect(fcmService.title, isNull);
+      expect(fcmService.body, isNull);
       verify(
         trashRepository.saveImportMessage(
           argThat(
@@ -138,7 +139,11 @@ void main() {
 
     test('エラー時は既存データを削除しない', () async {
       when(
-        trashApi.searchTrashSchedule('東京都新宿区', TrashSearchInputType.address),
+        trashApi.searchTrashSchedule(
+          '東京都新宿区',
+          TrashSearchInputType.address,
+          fcmToken: 'fcm-token',
+        ),
       ).thenAnswer(
         (_) async =>
             TrashSearchResult.failure('指定された住所に対応するゴミ出し予定を特定できませんでした。'),
@@ -148,9 +153,9 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.replaceAllTrashData(any));
-      expect(backgroundTaskService.taskCount, 1);
-      expect(fcmService.title, 'AI取り込み');
-      expect(fcmService.body, '指定された住所に対応するゴミ出し予定を特定できませんでした。');
+      expect(fcmService.refreshTokenCount, 1);
+      expect(fcmService.title, isNull);
+      expect(fcmService.body, isNull);
       verify(
         trashRepository.saveImportMessage(
           argThat(
@@ -171,6 +176,7 @@ void main() {
         trashApi.searchTrashSchedule(
           '160-0023',
           TrashSearchInputType.postalCode,
+          fcmToken: 'fcm-token',
         ),
       ).thenAnswer(
         (_) async => TrashSearchResult.success([
@@ -186,8 +192,8 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.message, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
-      expect(fcmService.title, 'AI取り込み');
-      expect(fcmService.body, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
+      expect(fcmService.title, isNull);
+      expect(fcmService.body, isNull);
       verify(trashRepository.replaceAllTrashData(any)).called(1);
       verify(
         trashRepository.saveImportMessage(
@@ -212,6 +218,7 @@ void main() {
         trashApi.searchTrashSchedule(
           '160-0023',
           TrashSearchInputType.postalCode,
+          fcmToken: 'fcm-token',
         ),
       ).thenAnswer(
         (_) async => TrashSearchResult.success([
@@ -227,8 +234,8 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.setSyncStatus(SyncStatus.SYNCING));
-      expect(fcmService.title, 'AI取り込み');
-      expect(fcmService.body, 'AI取り込み結果の保存に失敗しました。');
+      expect(fcmService.title, isNull);
+      expect(fcmService.body, isNull);
       verify(
         trashRepository.saveImportMessage(
           argThat(
@@ -237,6 +244,38 @@ void main() {
                   (value) => value.message,
                   'message',
                   'AI取り込み結果の保存に失敗しました。',
+                )
+                .having((value) => value.isSuccess, 'isSuccess', isFalse),
+          ),
+        ),
+      ).called(1);
+    });
+
+    test('通知用トークンを取得できない場合はAPIを呼ばない', () async {
+      final tokenFailureService = TrashDataService(
+        userService,
+        trashRepository,
+        trashApi,
+        crashReport,
+        FailingFcmService(),
+      );
+
+      final result = await tokenFailureService.importTrashSchedule('160-0023');
+
+      expect(result.success, isFalse);
+      expect(result.message, '通知用トークンの取得に失敗しました。時間をおいて再度お試しください。');
+      verifyNever(
+        trashApi.searchTrashSchedule(any, any, fcmToken: anyNamed('fcmToken')),
+      );
+      verifyNever(trashRepository.replaceAllTrashData(any));
+      verify(
+        trashRepository.saveImportMessage(
+          argThat(
+            isA<TrashImportMessage>()
+                .having(
+                  (value) => value.message,
+                  'message',
+                  '通知用トークンの取得に失敗しました。時間をおいて再度お試しください。',
                 )
                 .having((value) => value.isSuccess, 'isSuccess', isFalse),
           ),

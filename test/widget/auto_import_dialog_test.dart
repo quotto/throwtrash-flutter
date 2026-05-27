@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -143,5 +145,48 @@ void main() {
     verify(service.markInitialSearchDialogShown()).called(1);
     verify(service.importTrashSchedule('160-0023')).called(1);
     expect(find.textContaining('取り込みには数分かかる可能性があります'), findsOneWidget);
+  });
+
+  testWidgets('初回表示状態の保存完了を待たずに取り込みを開始する', (tester) async {
+    final service = MockTrashDataServiceInterface();
+    final markCompleter = Completer<bool>();
+    when(
+      service.markInitialSearchDialogShown(),
+    ).thenAnswer((_) => markCompleter.future);
+    when(
+      service.importTrashSchedule('160-0023'),
+    ).thenAnswer((_) async => TrashImportResult.success());
+
+    await tester.pumpWidget(
+      Provider<TrashDataServiceInterface>.value(
+        value: service,
+        child: MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => showAutoImportDialog(
+                  context,
+                  updateInitialDisplayStatus: true,
+                ),
+                child: Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(Key('auto-import-input')), '160-0023');
+    await tester.pump();
+    await tester.tap(find.byKey(Key('auto-import-submit')));
+    await tester.pump();
+
+    verify(service.importTrashSchedule('160-0023')).called(1);
+    expect(find.textContaining('取り込みには数分かかる可能性があります'), findsOneWidget);
+
+    markCompleter.complete(true);
+    await tester.pumpAndSettle();
   });
 }

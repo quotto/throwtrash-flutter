@@ -152,8 +152,15 @@ class FcmService implements FcmInterface {
     final savedToken = await _configRepository.getDeviceToken();
     if (savedToken == null || savedToken != currentToken) {
       await _configRepository.saveDeviceToken(currentToken);
-      _logger.i('デバイストークンを更新しました: $currentToken');
+      _logger.i('デバイストークンを更新しました: ${_maskToken(currentToken)}');
     }
     return currentToken;
+  }
+
+  String _maskToken(String token) {
+    if (token.length <= 8) {
+      return '********';
+    }
+    return '${token.substring(0, 4)}...${token.substring(token.length - 4)}';
   }
 }

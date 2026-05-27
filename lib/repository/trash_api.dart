@@ -58,9 +58,14 @@ class TrashApi implements TrashApiInterface {
   factory TrashApi.createForTest(
     AppConfigProviderInterface configProvider,
     http.Client httpClient,
-    EnvironmentProviderInterface environmentProvider,
-  ) {
-    return TrashApi._(configProvider, httpClient, environmentProvider);
+    EnvironmentProviderInterface environmentProvider, {
+    String? platform,
+  }) {
+    final api = TrashApi._(configProvider, httpClient, environmentProvider);
+    if (platform != null) {
+      api._platform = platform;
+    }
+    return api;
   }
 
   factory TrashApi() {
@@ -175,16 +180,21 @@ class TrashApi implements TrashApiInterface {
   @override
   Future<TrashSearchResult> searchTrashSchedule(
     String input,
-    TrashSearchInputType inputType,
-  ) async {
+    TrashSearchInputType inputType, {
+    String? fcmToken,
+  }) async {
     if (_trashSearchApiEndpoint.isEmpty || _trashSearchApiKey.isEmpty) {
       return TrashSearchResult.failure('AI取り込み API の設定が不足しています。');
     }
     try {
       Uri endpointUri = Uri.parse("$_trashSearchApiEndpoint/search");
-      final body = inputType == TrashSearchInputType.postalCode
+      final Map<String, dynamic> body =
+          inputType == TrashSearchInputType.postalCode
           ? {'postal_code': input}
           : {'address': input};
+      if (fcmToken != null && fcmToken.isNotEmpty && _isSearchClientPlatform) {
+        body['client'] = {'platform': _platform, 'fcm_token': fcmToken};
+      }
       http.Response response = await _httpClient.post(
         endpointUri,
         headers: {
@@ -225,6 +235,9 @@ class TrashApi implements TrashApiInterface {
     }
     return TrashSearchResult.failure(_toSearchErrorMessage('unknown'));
   }
+
+  bool get _isSearchClientPlatform =>
+      _platform == 'ios' || _platform == 'android';
 
   String _toSearchErrorMessage(String errorType) {
     switch (errorType) {
