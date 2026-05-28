@@ -17,6 +17,7 @@ AI取り込み完了通知をサーバー FCM に一本化するため、アプ�
 - [x] 他用途がなければバックグラウンドタスク関連の不要コードを削除する。
 - [x] `_debugImportNotificationDelay` と `_debugNotifyOnlyImport` を削除する。
 - [x] API 応答後の `showLocalNotification('AI取り込み', ...)` 呼び出しを削除する。
+- [x] 呼び出し元がなくなった `FcmInterface.showLocalNotification` と `FcmService.showLocalNotification` を削除する。
 - [x] 取り込み結果保存、`TrashImportMessage` 保存、`refreshTrashData()` の動作は維持する。
 - [x] 関連する unit test / widget test の期待値を更新する。
 
@@ -44,4 +45,5 @@ AI取り込み完了通知をサーバー FCM に一本化するため、アプ�
 - `lib/repository/background_task_service.dart`、`lib/usecase/repository/background_task_interface.dart`、関連単体テスト、iOS の `throwtrash/background_task` MethodChannel 実装を削除した。
 - デバッグ用の 30 秒遅延通知処理を削除し、検索 API を迂回する経路をなくした。
 - API 応答後の完了/失敗ローカル通知を削除し、通知はサーバー FCM に一本化した。
+- FCM 受信時のフォアグラウンド表示用 `_showForegroundNotification` は維持し、旧ローカル通知用の公開メソッドだけを削除した。
 - 取り込み結果保存、`TrashImportMessage` 保存、`refreshTrashData()` の流れは維持している。

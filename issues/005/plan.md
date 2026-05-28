@@ -113,6 +113,7 @@ flutter build ios --simulator --debug --flavor development --dart-define=FLAVOR=
 - `TrashApi.searchTrashSchedule` に `fcmToken` を渡せるようにし、`ios` / `android` の場合だけ `/search` request body に `client.platform` と `client.fcm_token` を付加する実装にした。
 - `TrashDataService.importTrashSchedule` は検索前に `FcmInterface.refreshDeviceToken()` を呼び、トークン取得失敗時は検索 API を呼ばずに取り込み失敗メッセージを保存する。
 - AI取り込み経路から `BackgroundTaskService`、iOS MethodChannel、デバッグ用遅延通知、API 応答後のローカル完了/失敗通知を削除した。
+- API 応答後のローカル通知用途がなくなったため、`FcmInterface.showLocalNotification` と `FcmService.showLocalNotification` も削除した。
 - 既存の FCM 受信/タップ処理は変更せず、通知 payload の新規解釈も追加していない。
 - 自動検証として `fvm flutter test` と `fvm flutter analyze` は成功した。
 - 通常の `fvm flutter build ios --simulator` は `/Users/takah` 側の空き容量不足により `xcodebuild` error 66 で失敗した。

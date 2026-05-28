@@ -243,7 +243,7 @@ class TrashApi implements TrashApiInterface {
     switch (errorType) {
       case 'invalid_address':
         return '入力された住所に対応するゴミ出し予定を特定できませんでした。町名・丁目までのおおよその住所で再度お試しください。';
-      case 'invalid_postal_code':
+      case 'invalid_postalcode':
         return '入力された郵便番号に対応するゴミ出し予定を特定できませんでした。住所での取り込みをお試しください。';
       case 'unsupported_schedule':
         return '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。';

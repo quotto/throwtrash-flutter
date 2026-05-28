@@ -12,20 +12,12 @@ import 'package:throwtrash/usecase/trash_data_service.dart';
 import 'trash_data_service_test.mocks.dart';
 
 class FakeFcmService implements FcmInterface {
-  String? title;
-  String? body;
   int refreshTokenCount = 0;
 
   @override
   Future<String> refreshDeviceToken() async {
     refreshTokenCount++;
     return 'fcm-token';
-  }
-
-  @override
-  Future<void> showLocalNotification(String title, String body) async {
-    this.title = title;
-    this.body = body;
   }
 }
 
@@ -34,9 +26,6 @@ class FailingFcmService implements FcmInterface {
   Future<String> refreshDeviceToken() async {
     throw Exception('token error');
   }
-
-  @override
-  Future<void> showLocalNotification(String title, String body) async {}
 }
 
 void main() {
@@ -124,8 +113,6 @@ void main() {
       ).called(1);
       verify(trashRepository.setSyncStatus(SyncStatus.SYNCING)).called(1);
       expect(fcmService.refreshTokenCount, 1);
-      expect(fcmService.title, isNull);
-      expect(fcmService.body, isNull);
       verify(
         trashRepository.saveImportMessage(
           argThat(
@@ -154,8 +141,6 @@ void main() {
       expect(result.success, isFalse);
       verifyNever(trashRepository.replaceAllTrashData(any));
       expect(fcmService.refreshTokenCount, 1);
-      expect(fcmService.title, isNull);
-      expect(fcmService.body, isNull);
       verify(
         trashRepository.saveImportMessage(
           argThat(
@@ -192,8 +177,6 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.message, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
-      expect(fcmService.title, isNull);
-      expect(fcmService.body, isNull);
       verify(trashRepository.replaceAllTrashData(any)).called(1);
       verify(
         trashRepository.saveImportMessage(
@@ -234,8 +217,6 @@ void main() {
 
       expect(result.success, isFalse);
       verifyNever(trashRepository.setSyncStatus(SyncStatus.SYNCING));
-      expect(fcmService.title, isNull);
-      expect(fcmService.body, isNull);
       verify(
         trashRepository.saveImportMessage(
           argThat(

@@ -111,36 +111,6 @@ class FcmService implements FcmInterface {
   }
 
   @override
-  Future<void> showLocalNotification(String title, String body) async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: AndroidInitializationSettings('app_icon'),
-          iOS: initializationSettingsDarwin,
-        );
-
-    await flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-    );
-    const DarwinNotificationDetails notificationDetailsDarwin =
-        DarwinNotificationDetails();
-    const NotificationDetails notificationDetails = NotificationDetails(
-      iOS: notificationDetailsDarwin,
-    );
-    await flutterLocalNotificationsPlugin.show(
-      id: 1,
-      title: title,
-      body: body,
-      notificationDetails: notificationDetails,
-      payload: 'trash_search_import',
-    );
-  }
-
-  @override
   Future<String> refreshDeviceToken() async {
     final currentToken = await _firebaseMessaging.getToken();
     if (currentToken == null) {
