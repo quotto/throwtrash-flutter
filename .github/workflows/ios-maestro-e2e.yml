@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - release
-      - codex/fix-ios-maestro-flutterfire
 
 permissions:
   contents: read
