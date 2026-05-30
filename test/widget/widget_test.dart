@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:throwtrash/main.dart';
 import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/usecase/account_link_service_interface.dart';
+import 'package:throwtrash/usecase/calendar_service.dart';
 import 'package:throwtrash/usecase/repository/app_config_provider_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
@@ -289,6 +290,187 @@ void main() {
     expect(editIndex, isNonNegative);
     expect(globalExcludeIndex, isNonNegative);
     expect(globalExcludeIndex, editIndex + 1);
+  });
+
+  testWidgets('カレンダーの日付セルは4件目以降を省略し、タップで全件を表示する', (WidgetTester tester) async {
+    final result = List<List<TrashData>>.generate(
+      35,
+      (index) => [],
+      growable: false,
+    );
+    result[0].addAll([
+      TrashData(id: "01", type: "burn", trashVal: ""),
+      TrashData(id: "02", type: "unburn", trashVal: ""),
+      TrashData(id: "03", type: "other", trashVal: "資源ゴミ"),
+      TrashData(id: "04", type: "other", trashVal: "粗大ゴミ"),
+      TrashData(id: "05", type: "other", trashVal: "古紙"),
+    ]);
+    when(
+      trashDataService.getEnableTrashList(
+        year: anyNamed("year"),
+        month: anyNamed("month"),
+        targetDateList: anyNamed("targetDateList"),
+      ),
+    ).thenAnswer((_) => result);
+    when(
+      trashDataService.getTrashName(
+        type: anyNamed("type"),
+        trashVal: anyNamed("trashVal"),
+      ),
+    ).thenAnswer((realInvocation) {
+      final trashVal =
+          realInvocation.namedArguments[Symbol("trashVal")] as String;
+      if (trashVal.isNotEmpty) {
+        return trashVal;
+      }
+      return mockTrashNameMap[realInvocation.namedArguments[Symbol("type")]!]!;
+    });
+
+    final accountLinkService = MockAccountLinkServiceInterface();
+    final changeThemeModel = MockChangeThemeModel();
+    final appConfigProvider = MockAppConfigProviderInterface();
+    when(appConfigProvider.version).thenReturn("1.0.0");
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<TrashDataServiceInterface>(
+            create: (context) => trashDataService,
+          ),
+          Provider<AccountLinkServiceInterface>(
+            create: (context) => accountLinkService,
+          ),
+          Provider<AppConfigProviderInterface>(
+            create: (context) => appConfigProvider,
+          ),
+          ChangeNotifierProvider<ChangeThemeModel>(
+            create: (context) => changeThemeModel,
+          ),
+        ],
+        child: MyApp(),
+      ),
+    );
+    await tester.pumpAndSettle(Duration(seconds: 10));
+
+    final now = DateTime.now();
+    final firstDate = CalendarService().generateMonthCalendar(
+      now.year,
+      now.month,
+    )[0];
+    final targetDate = DateTime(
+      now.year,
+      firstDate > 7 ? now.month - 1 : now.month,
+      firstDate,
+    );
+    final expectedTitle =
+        '${targetDate.year}年${targetDate.month.toString().padLeft(2, '0')}月${targetDate.day.toString().padLeft(2, '0')}日';
+    final firstDayCell = find.byKey(Key('calendar-day-0-0'));
+
+    expect(firstDayCell, findsOneWidget);
+    expect(
+      find.descendant(of: firstDayCell, matching: find.text("燃えるゴミ")),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: firstDayCell, matching: find.text("燃えないゴミ")),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: firstDayCell, matching: find.text("資源ゴミ")),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: firstDayCell, matching: find.text("粗大ゴミ")),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: firstDayCell, matching: find.text("古紙")),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: firstDayCell, matching: find.text("...+2")),
+      findsOneWidget,
+    );
+
+    await tester.tap(firstDayCell);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('calendar-day-dialog')), findsOneWidget);
+    expect(find.text(expectedTitle), findsOneWidget);
+    expect(find.text("燃えるゴミ"), findsWidgets);
+    expect(find.text("燃えないゴミ"), findsWidgets);
+    expect(find.text("資源ゴミ"), findsWidgets);
+    expect(find.text("粗大ゴミ"), findsOneWidget);
+    expect(find.text("古紙"), findsOneWidget);
+
+    await tester.tap(find.byKey(Key('calendar-day-dialog-close')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('calendar-day-dialog')), findsNothing);
+  });
+
+  testWidgets('カレンダーの空の日付セルをタップすると出せるゴミなしのダイアログを表示する', (
+    WidgetTester tester,
+  ) async {
+    final result = List<List<TrashData>>.generate(
+      35,
+      (index) => [],
+      growable: false,
+    );
+    when(
+      trashDataService.getEnableTrashList(
+        year: anyNamed("year"),
+        month: anyNamed("month"),
+        targetDateList: anyNamed("targetDateList"),
+      ),
+    ).thenAnswer((_) => result);
+
+    final accountLinkService = MockAccountLinkServiceInterface();
+    final changeThemeModel = MockChangeThemeModel();
+    final appConfigProvider = MockAppConfigProviderInterface();
+    when(appConfigProvider.version).thenReturn("1.0.0");
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<TrashDataServiceInterface>(
+            create: (context) => trashDataService,
+          ),
+          Provider<AccountLinkServiceInterface>(
+            create: (context) => accountLinkService,
+          ),
+          Provider<AppConfigProviderInterface>(
+            create: (context) => appConfigProvider,
+          ),
+          ChangeNotifierProvider<ChangeThemeModel>(
+            create: (context) => changeThemeModel,
+          ),
+        ],
+        child: MyApp(),
+      ),
+    );
+    await tester.pumpAndSettle(Duration(seconds: 10));
+
+    final now = DateTime.now();
+    final firstDate = CalendarService().generateMonthCalendar(
+      now.year,
+      now.month,
+    )[0];
+    final targetDate = DateTime(
+      now.year,
+      firstDate > 7 ? now.month - 1 : now.month,
+      firstDate,
+    );
+    final expectedTitle =
+        '${targetDate.year}年${targetDate.month.toString().padLeft(2, '0')}月${targetDate.day.toString().padLeft(2, '0')}日';
+    final firstDayCell = find.byKey(Key('calendar-day-0-0'));
+
+    await tester.tap(firstDayCell);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(Key('calendar-day-dialog')), findsOneWidget);
+    expect(find.text(expectedTitle), findsOneWidget);
+    expect(find.text('出せるゴミはありません'), findsOneWidget);
   });
 
   testWidgets('共通例外日画面で説明文が表示される', (WidgetTester tester) async {
