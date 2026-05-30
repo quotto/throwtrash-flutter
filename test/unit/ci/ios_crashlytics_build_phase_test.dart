@@ -14,6 +14,7 @@ void main() {
         workflowContent,
         contains('dart pub global activate flutterfire_cli'),
       );
+      expect(workflowContent, contains(r'mkdir -p "$TMPDIR"'));
       expect(
         workflowContent,
         contains(r'echo "$PUB_CACHE/bin" >> "$GITHUB_PATH"'),
