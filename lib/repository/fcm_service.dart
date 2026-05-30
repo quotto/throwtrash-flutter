@@ -111,36 +111,6 @@ class FcmService implements FcmInterface {
   }
 
   @override
-  Future<void> showLocalNotification(String title, String body) async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings();
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: AndroidInitializationSettings('app_icon'),
-          iOS: initializationSettingsDarwin,
-        );
-
-    await flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-    );
-    const DarwinNotificationDetails notificationDetailsDarwin =
-        DarwinNotificationDetails();
-    const NotificationDetails notificationDetails = NotificationDetails(
-      iOS: notificationDetailsDarwin,
-    );
-    await flutterLocalNotificationsPlugin.show(
-      id: 1,
-      title: title,
-      body: body,
-      notificationDetails: notificationDetails,
-      payload: 'trash_search_import',
-    );
-  }
-
-  @override
   Future<String> refreshDeviceToken() async {
     final currentToken = await _firebaseMessaging.getToken();
     if (currentToken == null) {
@@ -152,8 +122,15 @@ class FcmService implements FcmInterface {
     final savedToken = await _configRepository.getDeviceToken();
     if (savedToken == null || savedToken != currentToken) {
       await _configRepository.saveDeviceToken(currentToken);
-      _logger.i('デバイストークンを更新しました: $currentToken');
+      _logger.i('デバイストークンを更新しました: ${_maskToken(currentToken)}');
     }
     return currentToken;
+  }
+
+  String _maskToken(String token) {
+    if (token.length <= 8) {
+      return '********';
+    }
+    return '${token.substring(0, 4)}...${token.substring(token.length - 4)}';
   }
 }

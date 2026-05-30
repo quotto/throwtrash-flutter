@@ -139,13 +139,13 @@ class _AutoImportDialogState extends State<AutoImportDialog> {
             onPressed: _controller.text.trim().isEmpty
                 ? null
                 : () async {
-                    await _markInitialDialogShown(service);
                     final input = _controller.text.trim();
                     unawaited(
                       service.importTrashSchedule(input).catchError((_) {
                         return TrashImportResult.failure('AI取り込みに失敗しました。');
                       }),
                     );
+                    unawaited(_markInitialDialogShown(service));
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

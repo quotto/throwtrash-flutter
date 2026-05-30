@@ -40,6 +40,7 @@ void main() {
         appConfigProvider,
         httpClient,
         FakeTrashSearchEnvironment(),
+        platform: 'ios',
       );
     });
 
@@ -79,6 +80,7 @@ void main() {
       final result = await trashApi.searchTrashSchedule(
         '160-0023',
         TrashSearchInputType.postalCode,
+        fcmToken: 'fcm-token',
       );
 
       expect(result.success, isTrue);
@@ -99,7 +101,13 @@ void main() {
         ),
       ).captured;
       expect(captured[0], Uri.parse('https://search.example.com/search'));
-      expect(captured[1], jsonEncode({'postal_code': '160-0023'}));
+      expect(
+        captured[1],
+        jsonEncode({
+          'postal_code': '160-0023',
+          'client': {'platform': 'ios', 'fcm_token': 'fcm-token'},
+        }),
+      );
       expect(captured[2], {
         'content-type': 'application/json;charset=utf-8',
         'Accept': 'application/json',
@@ -143,12 +151,28 @@ void main() {
       final result = await trashApi.searchTrashSchedule(
         '東京都新宿区西新宿2丁目',
         TrashSearchInputType.address,
+        fcmToken: 'fcm-token',
       );
 
       expect(result.success, isTrue);
       expect(result.message, '一部のゴミ出し予定を取り込めませんでした。取り込めなかった内容は手動で確認してください。');
       expect(result.trashes, hasLength(1));
       expect(result.trashes.single.type, 'resource');
+
+      final captured = verify(
+        httpClient.post(
+          captureAny,
+          body: captureAnyNamed('body'),
+          headers: captureAnyNamed('headers'),
+        ),
+      ).captured;
+      expect(
+        captured[1],
+        jsonEncode({
+          'address': '東京都新宿区西新宿2丁目',
+          'client': {'platform': 'ios', 'fcm_token': 'fcm-token'},
+        }),
+      );
     });
 
     test('エラーレスポンスは失敗結果に変換する', () async {

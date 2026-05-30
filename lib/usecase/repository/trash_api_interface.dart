@@ -19,6 +19,7 @@ abstract class TrashApiInterface {
   Future<TrashSyncResult> syncTrashData(String userId);
   Future<TrashSearchResult> searchTrashSchedule(
     String input,
-    TrashSearchInputType inputType,
-  );
+    TrashSearchInputType inputType, {
+    String? fcmToken,
+  });
 }

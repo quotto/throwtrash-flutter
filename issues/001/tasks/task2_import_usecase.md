@@ -39,7 +39,7 @@ developer
 - 初回ダイアログ表示済み状態と、一度きり取り込みメッセージを `TrashRepository` に追加した。
 - 取り込み完了・失敗のローカル通知呼び出しを追加した。
 - 成功時メッセージを `ゴミ出し予定を取り込みました` に更新した。
-- `invalid_address` / `invalid_postal_code` / `unsupported_schedule` / `unknown` の固定メッセージを扱うようにした。
+- `invalid_address` / `invalid_postalcode` / `unsupported_schedule` / `unknown` の固定メッセージを扱うようにした。
 - ローカル通知本文をアプリ内表示メッセージと同じ内容に統一した。
 - 対象テスト: `test/unit/usecase/trash_search_import_test.dart`
 

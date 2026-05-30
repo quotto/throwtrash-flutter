@@ -6,7 +6,6 @@ import 'package:throwtrash/models/trash_data.dart';
 import 'package:throwtrash/models/trash_search_result.dart';
 import 'package:throwtrash/models/trash_sync_result.dart';
 import 'package:throwtrash/models/trash_update_result.dart';
-import 'package:throwtrash/usecase/repository/background_task_interface.dart';
 import 'package:throwtrash/usecase/repository/fcm_interface.dart';
 import 'package:throwtrash/usecase/sync_result.dart';
 import 'package:throwtrash/usecase/repository/trash_api_interface.dart';
@@ -26,7 +25,6 @@ class TrashDataService implements TrashDataServiceInterface {
   final TrashRepositoryInterface _trashRepository;
   final TrashApiInterface _trashApiInterface;
   final FcmInterface? _fcmService;
-  final BackgroundTaskInterface? _backgroundTaskService;
   final _logger = Logger();
   final CrashReportInterface _crashReport;
 
@@ -36,7 +34,6 @@ class TrashDataService implements TrashDataServiceInterface {
     this._trashApiInterface,
     this._crashReport, [
     this._fcmService,
-    this._backgroundTaskService,
   ]) {
     refreshTrashData();
   }
@@ -174,26 +171,33 @@ class TrashDataService implements TrashDataServiceInterface {
 
   @override
   Future<TrashImportResult> importTrashSchedule(String input) async {
-    if (_backgroundTaskService != null) {
-      return _backgroundTaskService.runTask(
-        'trash_search_import',
-        () => _importTrashSchedule(input),
-      );
-    }
+    _logger.d('Start import trash schedule with input: $input');
     return _importTrashSchedule(input);
   }
 
   Future<TrashImportResult> _importTrashSchedule(String input) async {
     final trimmedInput = input.trim();
+    final fcmToken = await _refreshFcmToken();
+    if (fcmToken == null) {
+      const message = '通知用トークンの取得に失敗しました。時間をおいて再度お試しください。';
+      await _trashRepository.saveImportMessage(
+        TrashImportMessage.error(message),
+      );
+      return TrashImportResult.failure(message);
+    }
+
     final searchResult = await _trashApiInterface.searchTrashSchedule(
       trimmedInput,
       classifySearchInput(trimmedInput),
+      fcmToken: fcmToken,
+    );
+    _logger.d(
+      'Search result: success=${searchResult.success}, message=${searchResult.message}',
     );
     if (!searchResult.success) {
       await _trashRepository.saveImportMessage(
         TrashImportMessage.error(searchResult.message),
       );
-      await _fcmService?.showLocalNotification('AI取り込み', searchResult.message);
       return TrashImportResult.failure(searchResult.message);
     }
 
@@ -205,7 +209,6 @@ class TrashDataService implements TrashDataServiceInterface {
       await _trashRepository.saveImportMessage(
         TrashImportMessage.error(message),
       );
-      await _fcmService?.showLocalNotification('AI取り込み', message);
       return TrashImportResult.failure(message);
     }
     await _changeSyncStatusToSyncing();
@@ -214,8 +217,19 @@ class TrashDataService implements TrashDataServiceInterface {
     await _trashRepository.saveImportMessage(
       TrashImportMessage.success(importResult.message),
     );
-    await _fcmService?.showLocalNotification('AI取り込み', importResult.message);
     return importResult;
+  }
+
+  Future<String?> _refreshFcmToken() async {
+    try {
+      if (_fcmService == null) {
+        throw Exception('FCMサービスが利用できません');
+      }
+      return await _fcmService.refreshDeviceToken();
+    } catch (e) {
+      _logger.e('Failed refresh FCM token: $e');
+      return null;
+    }
   }
 
   @override
