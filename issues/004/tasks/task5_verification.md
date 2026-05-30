@@ -48,6 +48,9 @@ Done
 - ユーザー側でシミュレーター起動後に再確認し、`xcrun simctl list devices booted` は一度成功したが、その後の `simctl -j` / `maestro test --udid` は CoreSimulatorService 接続エラーまたは `0 devices connected` で実行できなかった。
 - 過去のローカル検証では、`tool/maestro/run_ios_e2e.sh` が `xcodebuild -derivedDataPath` を使う構成に切り替えたことで iOS Simulator 向け build / install まで到達した。
 - iOS Simulator build では不要な Crashlytics symbol upload build phase を skip するよう `ios/Runner.xcodeproj/project.pbxproj` を調整した。
+- GitHub Actions `iOS Maestro E2E` の release merge run `26678455871` は `FlutterFire: "flutterfire upload-crashlytics-symbols"` build phase が simulator build でも実行され、CI 環境に存在しない `flutterfire` コマンドを呼び出したため失敗した。
+- `.github/workflows/ios-maestro-e2e.yml` で `flutterfire_cli` をインストールし、GitHub Actions 上の iOS build phase から `flutterfire` コマンドを実行できるようにした。
+- 再発検知のため、`test/unit/ci/ios_crashlytics_build_phase_test.dart` で workflow が FlutterFire CLI をセットアップし、Xcode project が FlutterFire Crashlytics build phase を保持していることを検証する。
 - 過去のローカル検証では、iOS 18.6 simulator（`iPhone 16 Pro`）で `tool/maestro/run_ios_e2e.sh` を実行し、`01_basic_registration`、`02_edit_registered_data`、`03_delete_registered_data`、`04_copy_registered_data` の 4 flow がすべて成功した。
 - GitHub Actions `iOS Maestro E2E` の run `25959379109` は workflow 自体は成功終了したが、artifact 内の JUnit では `01_basic_registration`、`02_edit_registered_data`、`03_delete_registered_data`、`04_copy_registered_data` がすべて `Assertion is false: "もえるゴミ" is visible` で失敗していた。
 - `tool/maestro/run_ios_e2e.sh` では `wait "$maestro_pid"` の直後に `notice` を呼んでおり、Maestro の失敗終了コードが関数の返り値に反映されず、CI が偽陽性になっていた。
