@@ -170,56 +170,164 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     );
   }
 
+  DateTime _calendarCellDate(int year, int month, int week, int date) {
+    if (week == 1 && date > 7) {
+      return DateTime(year, month - 1, date);
+    }
+    if (week == 5 && date <= 7) {
+      return DateTime(year, month + 1, date);
+    }
+    return DateTime(year, month, date);
+  }
+
+  String _formatDialogDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}年$month月$day日';
+  }
+
+  void _showTrashDialog(DateTime date, List<DisplayTrashData> trashList) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          key: Key('calendar-day-dialog'),
+          title: Text(_formatDialogDate(date)),
+          content: trashList.isEmpty
+              ? Text('出せるゴミはありません')
+              : SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final trash in trashList)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(trash.trashName),
+                        ),
+                    ],
+                  ),
+                ),
+          actions: [
+            TextButton(
+              key: Key('calendar-day-dialog-close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('閉じる'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _trashLabel(DisplayTrashData trash) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: trashColor(trash.trashType, Theme.of(context).brightness),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      alignment: Alignment.topCenter,
+      child: Text(
+        trash.trashName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Colors.white, fontSize: 8),
+      ),
+    );
+  }
+
+  Widget _overflowLabel(int hiddenCount) {
+    return Align(
+      alignment: Alignment.center,
+      child: Text(
+        '...+$hiddenCount',
+        style: TextStyle(
+          color: Theme.of(context).textTheme.bodySmall?.color,
+          fontSize: 9,
+        ),
+      ),
+    );
+  }
+
+  Widget _calendarDayCell({
+    required int pageIndex,
+    required int cellIndex,
+    required int year,
+    required int month,
+    required int week,
+    required int weekdayIndex,
+    required int date,
+    required List<DisplayTrashData> trashList,
+  }) {
+    final opacity = week == 1 && date > 7 || week == 5 && date <= 7 ? 0.5 : 1.0;
+    final displayTrashList = trashList.take(3).toList();
+    final hiddenCount = trashList.length - displayTrashList.length;
+    final cellDate = _calendarCellDate(year, month, week, date);
+    final textColor = weekdayIndex == 0
+        ? Colors.red.shade600.withValues(alpha: opacity)
+        : (weekdayIndex == 6
+              ? Colors.blue.shade600.withValues(alpha: opacity)
+              : Theme.of(
+                  context,
+                ).textTheme.bodyLarge!.color?.withValues(alpha: opacity));
+
+    return Expanded(
+      child: InkWell(
+        key: Key('calendar-day-$pageIndex-$cellIndex'),
+        onTap: () {
+          _showTrashDialog(cellDate, trashList);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Column(
+            children: [
+              Text(
+                date.toString(),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: textColor),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final trash in displayTrashList)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: _trashLabel(trash),
+                    ),
+                  if (hiddenCount > 0) _overflowLabel(hiddenCount),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Flexible _flexibleRowWeek(
+    int year,
+    int month,
+    int pageIndex,
     int week,
     List<int> dateList,
     List<List<DisplayTrashData>> trashList,
   ) {
     List<Widget> calendarCellColumn = [];
     dateList.asMap().forEach((index, date) {
-      double opacity = week == 1 && date > 7 || week == 5 && date <= 7
-          ? 0.5
-          : 1.0;
       calendarCellColumn.add(
-        Expanded(
-          child: Column(
-            children: [
-              Text(
-                date.toString(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: index == 0
-                      ? Colors.red.shade600.withValues(alpha: opacity)
-                      : (index == 6
-                            ? Colors.blue.shade600.withValues(alpha: opacity)
-                            : Theme.of(context).textTheme.bodyLarge!.color
-                                  ?.withValues(alpha: opacity)),
-                ),
-              ),
-              Wrap(
-                runSpacing: 6.0,
-                children: [
-                  for (int i = 0; i < trashList[index].length; i++)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: trashColor(
-                          trashList[index][i].trashType,
-                          Theme.of(context).brightness,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        trashList[index][i].trashName,
-                        style: TextStyle(color: Colors.white, fontSize: 8),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
+        _calendarDayCell(
+          pageIndex: pageIndex,
+          cellIndex: ((week - 1) * 7) + index,
+          year: year,
+          month: month,
+          week: week,
+          weekdayIndex: index,
+          date: date,
+          trashList: trashList[index],
         ),
-        // )
       );
     });
     return Flexible(
@@ -246,31 +354,48 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   }
 
   Column _calendarColumn(
+    int year,
+    int month,
     List<int> allDateList,
     List<List<DisplayTrashData>> allTrashList,
     int pageIndex,
   ) {
     Flexible week1 = _flexibleRowWeek(
+      year,
+      month,
+      pageIndex,
       1,
       allDateList.sublist(0, 7),
       allTrashList.sublist(0, 7),
     );
     Flexible week2 = _flexibleRowWeek(
+      year,
+      month,
+      pageIndex,
       2,
       allDateList.sublist(7, 14),
       allTrashList.sublist(7, 14),
     );
     Flexible week3 = _flexibleRowWeek(
+      year,
+      month,
+      pageIndex,
       3,
       allDateList.sublist(14, 21),
       allTrashList.sublist(14, 21),
     );
     Flexible week4 = _flexibleRowWeek(
+      year,
+      month,
+      pageIndex,
       4,
       allDateList.sublist(21, 28),
       allTrashList.sublist(21, 28),
     );
     Flexible week5 = _flexibleRowWeek(
+      year,
+      month,
+      pageIndex,
       5,
       allDateList.sublist(28, 35),
       allTrashList.sublist(28, 35),
@@ -641,7 +766,13 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         children: List<Column>.generate(
                           calendar.calendarsDateList.length,
                           (index) {
+                            final pageDate = DateTime(
+                              calendar.year,
+                              calendar.month + index - calendar.currentPage,
+                            );
                             return _calendarColumn(
+                              pageDate.year,
+                              pageDate.month,
                               calendar.calendarsDateList[index],
                               calendar.calendarsTrashList[index],
                               index,
