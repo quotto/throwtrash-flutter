@@ -96,7 +96,17 @@ class TrashApi implements TrashApiInterface {
           ? TrashUpdateResult(body["timestamp"] as int, UpdateResult.SUCCESS)
           : TrashUpdateResult(-1, UpdateResult.ERROR);
     } else if (response.statusCode == 400) {
-      return TrashUpdateResult(-1, UpdateResult.NO_MATCH);
+      // 競合時だけAPIが現在のタイムスタンプを返すため、入力不正などの400と区別する。
+      try {
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        if (body is Map<String, dynamic> && body["timestamp"] is int) {
+          return TrashUpdateResult(-1, UpdateResult.NO_MATCH);
+        }
+      } catch (e) {
+        _logger.e("Failed decode update error response: $e");
+      }
+      _logger.d("Invalid update request: ${response.body}");
+      return TrashUpdateResult(-1, UpdateResult.ERROR);
     } else {
       _logger.d("Error update: " + response.body);
       return TrashUpdateResult(-1, UpdateResult.ERROR);

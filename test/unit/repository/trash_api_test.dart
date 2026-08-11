@@ -200,12 +200,12 @@ void main() {
     });
 
     test(
-        "updateTrashDataでレスポンスのステータスコードが400の場合TrashUpdateResultのタイムスタンプが-1,UpdateResultがNO_MATCHであること",
+        "updateTrashDataで競合を示すtimestamp付き400の場合はNO_MATCHであること",
         () async {
       when(httpClient.post(any,
               body: anyNamed("body"), headers: anyNamed("headers")))
           .thenAnswer((request) async {
-        return Response('{"error": "error"}', 400);
+        return Response('{"timestamp": 12345679}', 400);
       });
 
       TrashUpdateResult result =
@@ -213,6 +213,20 @@ void main() {
       expect(result, isNotNull);
       expect(result.timestamp, -1);
       expect(result.updateResult, UpdateResult.NO_MATCH);
+    });
+    test(
+        "updateTrashDataでtimestampのない400の場合は不測のエラーとしてERRORであること",
+        () async {
+      when(httpClient.post(any,
+              body: anyNamed("body"), headers: anyNamed("headers")))
+          .thenAnswer((request) async {
+        return Response('{"error": "invalid description"}', 400);
+      });
+
+      TrashUpdateResult result =
+          await trashApi.updateTrashData("test_user_id", [], [], 12345678);
+      expect(result.timestamp, -1);
+      expect(result.updateResult, UpdateResult.ERROR);
     });
     test(
         "updateTrashDataでレスポンスのステータスコードが200,400以外の場合TrashUpdateResultのタイムスタンプが-1,UpdateResultがERRORであること",

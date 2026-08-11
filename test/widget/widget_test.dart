@@ -173,6 +173,50 @@ void main() {
         "その他");
   });
 
+  testWidgets('同期競合時は他の端末で更新されたメッセージを表示する',
+      (WidgetTester tester) async {
+    when(trashDataService.syncTrashData())
+        .thenAnswer((_) async => SyncResult.rollback);
+    final accountLinkService = MockAccountLinkServiceInterface();
+    final changeThemeModel = MockChangeThemeModel();
+    final appConfigProvider = MockAppConfigProviderInterface();
+    when(appConfigProvider.version).thenReturn('1.0.0');
+
+    await tester.pumpWidget(MultiProvider(providers: [
+      Provider<TrashDataServiceInterface>(create: (_) => trashDataService),
+      Provider<AccountLinkServiceInterface>(create: (_) => accountLinkService),
+      Provider<AppConfigProviderInterface>(create: (_) => appConfigProvider),
+      ChangeNotifierProvider<ChangeThemeModel>(create: (_) => changeThemeModel),
+    ], child: MyApp()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('他の端末でスケジュールが更新されました。'), findsOneWidget);
+  });
+
+  testWidgets('不測の同期エラー時は更新失敗メッセージを表示する',
+      (WidgetTester tester) async {
+    when(trashDataService.syncTrashData())
+        .thenAnswer((_) async => SyncResult.failed);
+    final accountLinkService = MockAccountLinkServiceInterface();
+    final changeThemeModel = MockChangeThemeModel();
+    final appConfigProvider = MockAppConfigProviderInterface();
+    when(appConfigProvider.version).thenReturn('1.0.0');
+
+    await tester.pumpWidget(MultiProvider(providers: [
+      Provider<TrashDataServiceInterface>(create: (_) => trashDataService),
+      Provider<AccountLinkServiceInterface>(create: (_) => accountLinkService),
+      Provider<AppConfigProviderInterface>(create: (_) => appConfigProvider),
+      ChangeNotifierProvider<ChangeThemeModel>(create: (_) => changeThemeModel),
+    ], child: MyApp()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('データの更新に失敗しました。'), findsOneWidget);
+  });
+
   testWidgets('ドロワーメニューの例外日が編集の直下に表示される', (WidgetTester tester) async {
     final result =
         List<List<TrashData>>.generate(35, (index) => [], growable: false);

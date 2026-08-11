@@ -39,6 +39,41 @@ void main() {
     expect(textField.controller?.text, '家電');
   });
 
+  testWidgets('その他ゴミの名称は20文字まで入力でき21文字目は入力されない',
+      (WidgetTester tester) async {
+    final trashDataService = MockTrashDataServiceInterface();
+    final trashData = TrashData(
+      id: '001',
+      type: 'other',
+      trashVal: '',
+      schedules: [TrashSchedule('weekday', '0')],
+      excludes: [],
+    );
+    when(trashDataService.getTrashDataById('001')).thenReturn(trashData);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChangeNotifierProvider<EditModel>(
+          create: (context) => EditModel(trashDataService),
+          child: EditItemMain.update('001'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final textFieldFinder = find.byType(TextFormField);
+    const inputName = 'あいうえおかきくけこさしすせそたちつてとな';
+    const truncatedName = 'あいうえおかきくけこさしすせそたちつてと';
+    expect(inputName.length, 21);
+    await tester.enterText(textFieldFinder, inputName);
+    await tester.pump();
+
+    final textField = tester.widget<TextFormField>(textFieldFinder);
+    expect(textField.controller?.text.length, 20);
+    expect(textField.controller?.text, truncatedName);
+    expect(textField.controller?.text, isNot(contains('な')));
+  });
+
   testWidgets('編集対象の読み込みに失敗した場合はエラーが表示される', (WidgetTester tester) async {
     final trashDataService = MockTrashDataServiceInterface();
     when(trashDataService.getTrashDataById('404')).thenReturn(null);
