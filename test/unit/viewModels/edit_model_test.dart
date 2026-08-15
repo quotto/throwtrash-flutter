@@ -250,4 +250,29 @@ void main() {
       verifyNever(_trashDataService.updateTrashData(any));
     });
   });
+
+  test('20文字のその他ゴミ名が更新経路へ渡り更新成功になる', () async {
+    final trashData = TrashData(
+      id: '001',
+      type: 'other',
+      trashVal: 'あいうえおかきくけこさしすせそたちつてと',
+      schedules: [TrashSchedule('weekday', '0')],
+      excludes: [],
+    );
+    when(_trashDataService.getTrashDataById('001')).thenReturn(trashData);
+    when(_trashDataService.updateTrashData(any)).thenAnswer((_) async => true);
+
+    final model = EditModel(_trashDataService);
+    expect(model.loadModel('001'), isTrue);
+
+    final result = await model.submitTrashData();
+    final updatedData =
+        verify(_trashDataService.updateTrashData(captureAny)).captured.single
+            as TrashData;
+
+    expect(result, isTrue);
+    expect(updatedData.type, 'other');
+    expect(updatedData.trashVal.length, 20);
+    expect(updatedData.trashVal, trashData.trashVal);
+  });
 }

@@ -10,9 +10,7 @@ class CrashlyticsReport implements CrashReportInterface {
   static CrashlyticsReport? _instance;
 
   factory CrashlyticsReport() {
-    if(_instance==null) {
-      _instance = new CrashlyticsReport._();
-    }
+    _instance ??= CrashlyticsReport._();
     return _instance!;
   }
 
@@ -24,6 +22,10 @@ class CrashlyticsReport implements CrashReportInterface {
 
   @override
   void reportCrash(dynamic exception, {StackTrace? stackTrace, bool? fatal}) {
-    FirebaseCrashlytics.instance.recordError(exception, stackTrace, fatal: fatal != null ? fatal : true);
+    FirebaseCrashlytics.instance.recordError(
+      exception,
+      stackTrace,
+      fatal: fatal ?? true,
+    );
   }
 }

@@ -1,9 +1,12 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 import 'package:throwtrash/models/trash_data.dart';
+import 'package:throwtrash/models/trash_import_message.dart';
 import 'package:throwtrash/models/trash_schedule.dart';
 import 'package:throwtrash/usecase/trash_data_service_interface.dart';
 
@@ -67,6 +70,10 @@ class EditModel extends ChangeNotifier {
   List<ExcludeDate> get excludes => _trashData.excludes;
   EditState get editState => _editState;
   EditType get editType => _editType;
+
+  Future<TrashImportMessage?> consumeImportMessage() {
+    return _trashDataService.consumeImportMessage();
+  }
 
   void changeTrashType(String changedTrashType) {
     _trashData.type = changedTrashType;
@@ -204,8 +211,8 @@ class EditModel extends ChangeNotifier {
 
   void setExcludeDate(List<List<int>> excludeDate) {
     _trashData.excludes.clear();
-    excludeDate.forEach((element) {
+    for (var element in excludeDate) {
       _trashData.excludes.add(ExcludeDate(element[0], element[1]));
-    });
+    }
   }
 }

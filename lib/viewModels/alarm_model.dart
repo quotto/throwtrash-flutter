@@ -1,13 +1,11 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/cupertino.dart';
 import 'package:logger/logger.dart';
 import 'package:throwtrash/usecase/alarm_service_interface.dart';
 
-enum AlarmSubmitState {
-  INIT,
-  SUBMITTING,
-  COMPLETE,
-  ERROR
-}
+enum AlarmSubmitState { INIT, SUBMITTING, COMPLETE, ERROR }
+
 class AlarmModel extends ChangeNotifier {
   bool _lastAlarmState = false;
   bool _isAlarmEnabled = false;
@@ -36,7 +34,7 @@ class AlarmModel extends ChangeNotifier {
   bool get nextDayNotificationEnabled => _nextDayNotificationEnabled;
   int get hour => _hour;
   int get minute => _minute;
-  String get hourString =>  _hour.toString().padLeft(2, '0');
+  String get hourString => _hour.toString().padLeft(2, '0');
   String get minuteString => _minute.toString().padLeft(2, '0');
   AlarmSubmitState get submitState => _submitState;
 
@@ -60,25 +58,27 @@ class AlarmModel extends ChangeNotifier {
   }
 
   Future<void> submitAlarmTime() async {
-    _logger.d("submit alarm time-> $_hour:$_minute, nextDayNotificationEnabled:$_nextDayNotificationEnabled");
-    if(_submitState == AlarmSubmitState.SUBMITTING) {
+    _logger.d(
+      "submit alarm time-> $_hour:$_minute, nextDayNotificationEnabled:$_nextDayNotificationEnabled",
+    );
+    if (_submitState == AlarmSubmitState.SUBMITTING) {
       return;
     }
     _submitState = AlarmSubmitState.SUBMITTING;
     notifyListeners();
 
     bool result = false;
-    if(isAlarmEnabled && ! _lastAlarmState) {
+    if (isAlarmEnabled && !_lastAlarmState) {
       result = await _alarmService.enableAlarm(
         hour: _hour,
         minute: _minute,
         nextDayNotificationEnabled: _nextDayNotificationEnabled,
       );
-    } else if(!isAlarmEnabled) {
+    } else if (!isAlarmEnabled) {
       result = await _alarmService.cancelAlarm(
         nextDayNotificationEnabled: _nextDayNotificationEnabled,
       );
-    } else if(isAlarmEnabled && _lastAlarmState){
+    } else if (isAlarmEnabled && _lastAlarmState) {
       result = await _alarmService.changeAlarmTime(
         hour: _hour,
         minute: _minute,
@@ -89,7 +89,7 @@ class AlarmModel extends ChangeNotifier {
     notifyListeners();
 
     // 保存に成功したら最後の状態を更新
-    if(result) {
+    if (result) {
       _lastAlarmState = isAlarmEnabled;
     }
     _submitState = AlarmSubmitState.INIT;

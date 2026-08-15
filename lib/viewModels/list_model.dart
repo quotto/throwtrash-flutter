@@ -7,19 +7,16 @@ class TrashListData {
   final String name;
   final List<String> schedules;
 
-  TrashListData({required this.id, required this.type, required this.name, required this.schedules});
+  TrashListData({
+    required this.id,
+    required this.type,
+    required this.name,
+    required this.schedules,
+  });
 }
 
 class ListModel extends ChangeNotifier {
-  final List<String> _weekdayLabel = [
-    '日',
-    '月',
-    '火',
-    '水',
-    '木',
-    '金',
-    '土'
-  ];
+  final List<String> _weekdayLabel = ['日', '月', '火', '水', '木', '金', '土'];
   final TrashDataServiceInterface _trashDataService;
   final List<TrashListData> _trashList = [];
 
@@ -29,10 +26,10 @@ class ListModel extends ChangeNotifier {
 
   void _reload() {
     _trashList.clear();
-    _trashDataService.allTrashList.forEach((element) {
+    for (var element in _trashDataService.allTrashList) {
       List<String> schedules = [];
-      element.schedules.forEach((schedule) {
-        switch(schedule.type) {
+      for (var schedule in element.schedules) {
+        switch (schedule.type) {
           case 'weekday':
             schedules.add('毎週${_weekdayLabel[int.parse(schedule.value)]}曜日');
             break;
@@ -41,30 +38,38 @@ class ListModel extends ChangeNotifier {
             break;
           case 'biweek':
             List<String> value = (schedule.value as String).split('-');
-            schedules.add('第${value[1]}${_weekdayLabel[int.parse(value[0])]}曜日');
+            schedules.add(
+              '第${value[1]}${_weekdayLabel[int.parse(value[0])]}曜日',
+            );
             break;
           case 'evweek':
             schedules.add(
-                '${schedule.value['interval']}週に1度の${_weekdayLabel[int.parse(schedule.value['weekday'])]}'
+              '${schedule.value['interval']}週に1度の${_weekdayLabel[int.parse(schedule.value['weekday'])]}',
             );
             break;
         }
-      });
-      _trashList.add(TrashListData(
+      }
+      _trashList.add(
+        TrashListData(
           id: element.id,
           type: element.type,
-          name: _trashDataService.getTrashName(type: element.type, trashVal: element.trashVal),
-          schedules: schedules
-      ));
-    });
+          name: _trashDataService.getTrashName(
+            type: element.type,
+            trashVal: element.trashVal,
+          ),
+          schedules: schedules,
+        ),
+      );
+    }
   }
-
 
   List<TrashListData> get trashList => _trashList;
 
   Future<bool> deleteTrashData(int index) {
-    return _trashDataService.deleteTrashData(_trashList[index].id).then((result) {
-      if(result) {
+    return _trashDataService.deleteTrashData(_trashList[index].id).then((
+      result,
+    ) {
+      if (result) {
         _trashList.removeAt(index);
         notifyListeners();
       }

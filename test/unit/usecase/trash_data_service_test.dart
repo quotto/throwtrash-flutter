@@ -53,14 +53,14 @@ List<int> dataSet = [
   29,
   30,
   31,
-  1
+  1,
 ];
 
 @GenerateNiceMocks([
   MockSpec<CrashReportInterface>(),
   MockSpec<TrashRepositoryInterface>(),
   MockSpec<TrashApiInterface>(),
-  MockSpec<UserServiceInterface>()
+  MockSpec<UserServiceInterface>(),
 ])
 void main() async {
   final MockCrashReportInterface crashReport = MockCrashReportInterface();
@@ -70,66 +70,76 @@ void main() async {
   final MockUserServiceInterface userService = MockUserServiceInterface();
 
   TrashDataService instance = TrashDataService(
-      userService, trashRepository, trashApiInterface, crashReport);
+    userService,
+    trashRepository,
+    trashApiInterface,
+    crashReport,
+  );
   setUp(() {
     when(trashRepository.readGlobalExcludeDates()).thenAnswer((_) async => []);
   });
   group('getEnableTrashListByWeekday', () {
     test('毎週（weekday）', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'burn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('weekday', '1'),
-            TrashSchedule('weekday', '2')
-          ],
-          excludes: []);
+        id: '1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('weekday', '1'),
+          TrashSchedule('weekday', '2'),
+        ],
+        excludes: [],
+      );
       TrashData trash2 = TrashData(
-          id: '2',
-          type: 'bin',
-          trashVal: '',
-          schedules: [TrashSchedule('weekday', '1')],
-          excludes: []);
+        id: '2',
+        type: 'bin',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '1')],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[8].length, 2);
       expect(result[8][0].type, 'burn');
       expect(result[8][1].type, 'bin');
       expect(result[9].length, 1);
-      expect(
-        result[10].length,
-        0,
-      );
+      expect(result[10].length, 0);
     });
     test('毎月〇日（month）', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'unburn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('month', '3'),
-            TrashSchedule('month', '29')
-          ],
-          excludes: []);
+        id: '1',
+        type: 'unburn',
+        trashVal: '',
+        schedules: [TrashSchedule('month', '3'), TrashSchedule('month', '29')],
+        excludes: [],
+      );
       TrashData trash2 = TrashData(
-          id: '2',
-          type: 'other',
-          trashVal: '家電',
-          schedules: [TrashSchedule('month', '3')],
-          excludes: []);
+        id: '2',
+        type: 'other',
+        trashVal: '家電',
+        schedules: [TrashSchedule('month', '3')],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[5].length, 2);
       expect(result[5][0].type, 'unburn');
       expect(result[5][1].type, 'other');
@@ -140,27 +150,33 @@ void main() async {
     });
     test('第〇△曜日（biweek）', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'plastic',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('biweek', '0-3'),
-            TrashSchedule('biweek', '6-1')
-          ],
-          excludes: []);
+        id: '1',
+        type: 'plastic',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('biweek', '0-3'),
+          TrashSchedule('biweek', '6-1'),
+        ],
+        excludes: [],
+      );
       TrashData trash2 = TrashData(
-          id: '2',
-          type: 'petbottle',
-          trashVal: '',
-          schedules: [TrashSchedule('biweek', '0-3')],
-          excludes: []);
+        id: '2',
+        type: 'petbottle',
+        trashVal: '',
+        schedules: [TrashSchedule('biweek', '0-3')],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[21].length, 2);
       expect(result[21][0].type, 'plastic');
       expect(result[21][1].type, 'petbottle');
@@ -169,31 +185,59 @@ void main() async {
       expect(result[34][0].type, 'plastic');
     });
     test('隔週(evweek)でinterval=2', () async {
-      TrashData trash1 =
-          TrashData(id: '1', type: 'can', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'weekday': '0', 'start': '2019-12-29', 'interval': 2})
-      ], excludes: []);
-      TrashData trash2 =
-          TrashData(id: '2', type: 'paper', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 2})
-      ], excludes: []);
+      TrashData trash1 = TrashData(
+        id: '1',
+        type: 'can',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'weekday': '3',
+            'start': '2020-01-05',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'weekday': '0',
+            'start': '2019-12-29',
+            'interval': 2,
+          }),
+        ],
+        excludes: [],
+      );
+      TrashData trash2 = TrashData(
+        id: '2',
+        type: 'paper',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'weekday': '3',
+            'start': '2020-01-05',
+            'interval': 2,
+          }),
+        ],
+        excludes: [],
+      );
 
       // intervalの無いevweekはinterval=2として処理される
-      TrashData trash3 =
-          TrashData(id: '3', type: 'burn', trashVal: '', schedules: [
-        TrashSchedule('evweek', {'weekday': '4', 'start': '2020-01-05'})
-      ], excludes: []);
+      TrashData trash3 = TrashData(
+        id: '3',
+        type: 'burn',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {'weekday': '4', 'start': '2020-01-05'}),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2, trash3]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2, trash3]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
 
       expect(result[10].length, 2);
       expect(result[10][0].type, 'can');
@@ -207,25 +251,48 @@ void main() async {
       expect(result[0][0].type, 'can');
     });
     test('隔週(evweek)でinterval=3', () async {
-      TrashData trash1 =
-          TrashData(id: '1', type: 'resource', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3}),
-        TrashSchedule(
-            'evweek', {'weekday': '0', 'start': '2019-12-22', 'interval': 3})
-      ], excludes: []);
-      TrashData trash2 =
-          TrashData(id: '2', type: 'coarse', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'weekday': '3', 'start': '2020-01-05', 'interval': 3})
-      ], excludes: []);
+      TrashData trash1 = TrashData(
+        id: '1',
+        type: 'resource',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'weekday': '3',
+            'start': '2020-01-05',
+            'interval': 3,
+          }),
+          TrashSchedule('evweek', {
+            'weekday': '0',
+            'start': '2019-12-22',
+            'interval': 3,
+          }),
+        ],
+        excludes: [],
+      );
+      TrashData trash2 = TrashData(
+        id: '2',
+        type: 'coarse',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'weekday': '3',
+            'start': '2020-01-05',
+            'interval': 3,
+          }),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
 
       expect(result[10].length, 2);
       expect(result[31].length, 2);
@@ -238,25 +305,48 @@ void main() async {
       expect(result[28].length, 0);
     });
     test('隔週(evweek)でinterval=4', () async {
-      TrashData trash1 =
-          TrashData(id: '1', type: 'resource', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4}),
-        TrashSchedule(
-            'evweek', {'weekday': '0', 'start': '2019-12-01', 'interval': 4})
-      ], excludes: []);
-      TrashData trash2 =
-          TrashData(id: '2', type: 'coarse', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'weekday': '3', 'start': '2019-12-29', 'interval': 4})
-      ], excludes: []);
+      TrashData trash1 = TrashData(
+        id: '1',
+        type: 'resource',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'weekday': '3',
+            'start': '2019-12-29',
+            'interval': 4,
+          }),
+          TrashSchedule('evweek', {
+            'weekday': '0',
+            'start': '2019-12-01',
+            'interval': 4,
+          }),
+        ],
+        excludes: [],
+      );
+      TrashData trash2 = TrashData(
+        id: '2',
+        type: 'coarse',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'weekday': '3',
+            'start': '2019-12-29',
+            'interval': 4,
+          }),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
 
       expect(result[3].length, 2);
       expect(result[31].length, 2);
@@ -270,135 +360,175 @@ void main() async {
     });
     test('weekdayに対するExcludeDate設定', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'unburn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('weekday', '2'),
-            TrashSchedule('weekday', '6')
-          ],
-          excludes: [
-            ExcludeDate(12, 31),
-            ExcludeDate(1, 7),
-            ExcludeDate(2, 1)
-          ]);
+        id: '1',
+        type: 'unburn',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('weekday', '2'),
+          TrashSchedule('weekday', '6'),
+        ],
+        excludes: [ExcludeDate(12, 31), ExcludeDate(1, 7), ExcludeDate(2, 1)],
+      );
 
       //trash3の比較用でExcludeDate以外同じスケジュール
       TrashData trash2 = TrashData(
-          id: '2',
-          type: 'plastic',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('weekday', '2'),
-            TrashSchedule('weekday', '6')
-          ],
-          excludes: []);
+        id: '2',
+        type: 'plastic',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('weekday', '2'),
+          TrashSchedule('weekday', '6'),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[2].length, 1);
       expect(result[9].length, 1);
       expect(result[34].length, 1);
     });
     test('monthに対するExcludeDate', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'burn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('month', '29'),
-            TrashSchedule('month', '1')
-          ],
-          excludes: [
-            ExcludeDate(12, 29),
-            ExcludeDate(1, 1),
-            ExcludeDate(1, 1),
-            ExcludeDate(2, 1)
-          ]);
+        id: '1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('month', '29'), TrashSchedule('month', '1')],
+        excludes: [
+          ExcludeDate(12, 29),
+          ExcludeDate(1, 1),
+          ExcludeDate(1, 1),
+          ExcludeDate(2, 1),
+        ],
+      );
       TrashData trash2 = TrashData(
-          id: '',
-          type: 'burn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('month', '29'),
-            TrashSchedule('month', '1')
-          ],
-          excludes: []);
+        id: '',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('month', '29'), TrashSchedule('month', '1')],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[0].length, 1);
       expect(result[3].length, 1);
       expect(result[34].length, 1);
     });
     test('biweekに対するExcludeDate設定', () async {
-      TrashData trash1 =
-          TrashData(id: '1', type: 'burn', trashVal: '', schedules: [
-        TrashSchedule('biweek', '1-1'),
-        TrashSchedule('biweek', '0-5'),
-        TrashSchedule('biweek', '6-1')
-      ], excludes: [
-        ExcludeDate(12, 29),
-        ExcludeDate(1, 6),
-        ExcludeDate(2, 1)
-      ]);
+      TrashData trash1 = TrashData(
+        id: '1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('biweek', '1-1'),
+          TrashSchedule('biweek', '0-5'),
+          TrashSchedule('biweek', '6-1'),
+        ],
+        excludes: [ExcludeDate(12, 29), ExcludeDate(1, 6), ExcludeDate(2, 1)],
+      );
       // ExcludeDate以外はtrash1と同じデータ
-      TrashData trash2 =
-          TrashData(id: '2', type: 'burn', trashVal: '', schedules: [
-        TrashSchedule('biweek', '1-1'),
-        TrashSchedule('biweek', '0-5'),
-        TrashSchedule('biweek', '6-1')
-      ], excludes: []);
+      TrashData trash2 = TrashData(
+        id: '2',
+        type: 'burn',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('biweek', '1-1'),
+          TrashSchedule('biweek', '0-5'),
+          TrashSchedule('biweek', '6-1'),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[8].length, 1);
       expect(result[0].length, 1);
       expect(result[34].length, 1);
     });
     test('evweekに対する除外設定', () async {
-      TrashData trash1 =
-          TrashData(id: '1', type: 'paper', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'start': '2019-12-29', 'weekday': '6', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2020-01-19', 'weekday': '6', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
-      ], excludes: [
-        ExcludeDate(12, 29),
-        ExcludeDate(1, 4),
-        ExcludeDate(2, 1)
-      ]);
+      TrashData trash1 = TrashData(
+        id: '1',
+        type: 'paper',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'start': '2019-12-29',
+            'weekday': '6',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2020-01-19',
+            'weekday': '6',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2019-01-15',
+            'weekday': '0',
+            'interval': 2,
+          }),
+        ],
+        excludes: [ExcludeDate(12, 29), ExcludeDate(1, 4), ExcludeDate(2, 1)],
+      );
       // ExcludeDate以外はtrash1と同じデータ
-      TrashData trash2 =
-          TrashData(id: '2', type: 'paper', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'start': '2019-12-29', 'weekday': '6', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2020-01-19', 'weekday': '6', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2019-01-15', 'weekday': '0', 'interval': 2}),
-      ], excludes: []);
+      TrashData trash2 = TrashData(
+        id: '2',
+        type: 'paper',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'start': '2019-12-29',
+            'weekday': '6',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2020-01-19',
+            'weekday': '6',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2019-01-15',
+            'weekday': '0',
+            'interval': 2,
+          }),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       List<List<TrashData>> result = instance.getEnableTrashList(
-          year: 2020, month: 1, targetDateList: dataSet);
+        year: 2020,
+        month: 1,
+        targetDateList: dataSet,
+      );
       expect(result[0].length, 1);
       expect(result[6].length, 1);
       expect(result[34].length, 1);
@@ -407,148 +537,223 @@ void main() async {
   group('getTodaysTrash', () {
     test('weekday/month', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'burn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('weekday', '3'),
-            TrashSchedule('month', '5')
-          ],
-          excludes: []);
+        id: '1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '3'), TrashSchedule('month', '5')],
+        excludes: [],
+      );
       TrashData trash2 = TrashData(
-          id: '2',
-          type: 'other',
-          trashVal: '家電',
-          schedules: [TrashSchedule('biweek', '3-1')],
-          excludes: []);
-      TrashData trash3 =
-          TrashData(id: '3', type: 'bin', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
-      ], excludes: []);
-      TrashData trash4 =
-          TrashData(id: '4', type: 'paper', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'start': '2020-03-08', 'weekday': '0', 'interval': 3})
-      ], excludes: []);
-      TrashData trash5 =
-          TrashData(id: '5', type: 'petbottle', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4})
-      ], excludes: []);
+        id: '2',
+        type: 'other',
+        trashVal: '家電',
+        schedules: [TrashSchedule('biweek', '3-1')],
+        excludes: [],
+      );
+      TrashData trash3 = TrashData(
+        id: '3',
+        type: 'bin',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'start': '2020-03-08',
+            'weekday': '4',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2020-03-01',
+            'weekday': '4',
+            'interval': 4,
+          }),
+        ],
+        excludes: [],
+      );
+      TrashData trash4 = TrashData(
+        id: '4',
+        type: 'paper',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'start': '2020-03-08',
+            'weekday': '0',
+            'interval': 3,
+          }),
+        ],
+        excludes: [],
+      );
+      TrashData trash5 = TrashData(
+        id: '5',
+        type: 'petbottle',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'start': '2020-03-08',
+            'weekday': '4',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2020-03-01',
+            'weekday': '4',
+            'interval': 4,
+          }),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2, trash3, trash4, trash5]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2, trash3, trash4, trash5]);
       await instance.refreshTrashData();
 
-      List<TrashData> result1 =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 4);
+      List<TrashData> result1 = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 4,
+      );
       expect(result1.length, 2);
       expect(result1[0].type, 'burn');
       expect(result1[1].type, 'other');
 
-      List<TrashData> result2 =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 5);
+      List<TrashData> result2 = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 5,
+      );
       expect(result2.length, 3);
       expect(result2[0].type, 'burn');
       expect(result2[1].type, 'bin');
       expect(result2[2].type, 'petbottle');
 
-      List<TrashData> result3 =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 12);
+      List<TrashData> result3 = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 12,
+      );
       expect(result3.length, 2);
       expect(result3[0].type, 'bin');
       expect(result3[1].type, 'petbottle');
 
-      List<TrashData> result4 =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 29);
+      List<TrashData> result4 = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 29,
+      );
       expect(result4.length, 1);
       expect(result4[0].type, 'paper');
     });
     test('biweek', () async {
       TrashData trash1 = TrashData(
-          id: '1',
-          type: 'burn',
-          trashVal: '',
-          schedules: [TrashSchedule('biweek', '1-1')],
-          excludes: []);
+        id: '1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('biweek', '1-1')],
+        excludes: [],
+      );
       TrashData trash2 = TrashData(
-          id: '2',
-          type: 'bottle',
-          trashVal: '',
-          schedules: [TrashSchedule('biweek', '2-2')],
-          excludes: []);
+        id: '2',
+        type: 'bottle',
+        trashVal: '',
+        schedules: [TrashSchedule('biweek', '2-2')],
+        excludes: [],
+      );
       TrashData trash3 = TrashData(
-          id: '3',
-          type: 'paper',
-          trashVal: '',
-          schedules: [TrashSchedule('biweek', '3-5')],
-          excludes: []);
+        id: '3',
+        type: 'paper',
+        trashVal: '',
+        schedules: [TrashSchedule('biweek', '3-5')],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2, trash3]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2, trash3]);
       await instance.refreshTrashData();
 
-      List<TrashData> result1 =
-          instance.getTrashOfToday(year: 2020, month: 9, date: 7);
+      List<TrashData> result1 = instance.getTrashOfToday(
+        year: 2020,
+        month: 9,
+        date: 7,
+      );
       expect(result1.length, 1);
       expect(result1[0].type, 'burn');
 
-      List<TrashData> result2 =
-          instance.getTrashOfToday(year: 2020, month: 9, date: 8);
+      List<TrashData> result2 = instance.getTrashOfToday(
+        year: 2020,
+        month: 9,
+        date: 8,
+      );
       expect(result2.length, 1);
       expect(result2[0].type, 'bottle');
 
-      List<TrashData> result3 =
-          instance.getTrashOfToday(year: 2020, month: 9, date: 1);
+      List<TrashData> result3 = instance.getTrashOfToday(
+        year: 2020,
+        month: 9,
+        date: 1,
+      );
       expect(result3.length, 0);
 
-      List<TrashData> result4 =
-          instance.getTrashOfToday(year: 2020, month: 9, date: 30);
+      List<TrashData> result4 = instance.getTrashOfToday(
+        year: 2020,
+        month: 9,
+        date: 30,
+      );
       expect(result4.length, 1);
       expect(result4[0].type, 'paper');
     });
     test('exclude', () async {
       TrashData trash1 = TrashData(
-          id: 'id',
-          type: 'burn',
-          trashVal: '',
-          schedules: [
-            TrashSchedule('weekday', '3'),
-            TrashSchedule('month', '5')
-          ],
-          excludes: [
-            ExcludeDate(3, 4)
-          ]);
-      TrashData trash2 =
-          TrashData(id: 'id', type: 'bin', trashVal: '', schedules: [
-        TrashSchedule(
-            'evweek', {'start': '2020-03-08', 'weekday': '4', 'interval': 2}),
-        TrashSchedule(
-            'evweek', {'start': '2020-03-01', 'weekday': '4', 'interval': 4}),
-      ], excludes: []);
+        id: 'id',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '3'), TrashSchedule('month', '5')],
+        excludes: [ExcludeDate(3, 4)],
+      );
+      TrashData trash2 = TrashData(
+        id: 'id',
+        type: 'bin',
+        trashVal: '',
+        schedules: [
+          TrashSchedule('evweek', {
+            'start': '2020-03-08',
+            'weekday': '4',
+            'interval': 2,
+          }),
+          TrashSchedule('evweek', {
+            'start': '2020-03-01',
+            'weekday': '4',
+            'interval': 4,
+          }),
+        ],
+        excludes: [],
+      );
 
-      when(trashRepository.readAllTrashData())
-          .thenAnswer((_) async => [trash1, trash2]);
+      when(
+        trashRepository.readAllTrashData(),
+      ).thenAnswer((_) async => [trash1, trash2]);
       await instance.refreshTrashData();
 
       // 3月4日は除外設定されているためburnは設定されない
-      List<TrashData> result =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 4);
+      List<TrashData> result = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 4,
+      );
       expect(result.length, 0);
 
-      List<TrashData> result2 =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 5);
+      List<TrashData> result2 = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 5,
+      );
       expect(result2.length, 2);
       expect(result2[0].type, 'burn');
       expect(result2[1].type, 'bin');
 
-      List<TrashData> result3 =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 12);
+      List<TrashData> result3 = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 12,
+      );
       expect(result3.length, 1);
       expect(result3[0].type, 'bin');
     });
@@ -592,8 +797,11 @@ void main() async {
       ).thenAnswer((_) async => [ExcludeDate(3, 5)]);
       await instance.refreshTrashData();
 
-      List<TrashData> result =
-          instance.getTrashOfToday(year: 2020, month: 3, date: 5);
+      List<TrashData> result = instance.getTrashOfToday(
+        year: 2020,
+        month: 3,
+        date: 5,
+      );
       expect(result, isEmpty);
     });
 
@@ -601,8 +809,11 @@ void main() async {
       when(
         trashRepository.writeGlobalExcludeDates(
           argThat(
-            isA<List<ExcludeDate>>()
-                .having((value) => value.length, 'length', 1),
+            isA<List<ExcludeDate>>().having(
+              (value) => value.length,
+              'length',
+              1,
+            ),
           ),
         ),
       ).thenAnswer((_) async => true);
@@ -610,19 +821,114 @@ void main() async {
         trashRepository.setSyncStatus(SyncStatus.SYNCING),
       ).thenAnswer((_) async => true);
 
-      final result =
-          await instance.updateGlobalExcludeDates([ExcludeDate(4, 1)]);
+      final result = await instance.updateGlobalExcludeDates([
+        ExcludeDate(4, 1),
+      ]);
 
       expect(result, isTrue);
       verify(
         trashRepository.writeGlobalExcludeDates(
           argThat(
-            isA<List<ExcludeDate>>()
-                .having((value) => value.length, 'length', 1),
+            isA<List<ExcludeDate>>().having(
+              (value) => value.length,
+              'length',
+              1,
+            ),
           ),
         ),
       ).called(1);
       verify(trashRepository.setSyncStatus(SyncStatus.SYNCING)).called(1);
+    });
+  });
+
+  group('schedule mutation', () {
+    test('追加成功時はメモリ上の一覧にも反映する', () async {
+      final trash = TrashData(
+        id: 'add-1',
+        type: 'unburn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [],
+      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => []);
+      when(
+        trashRepository.readGlobalExcludeDates(),
+      ).thenAnswer((_) async => []);
+      when(
+        trashRepository.insertTrashData(trash),
+      ).thenAnswer((_) async => true);
+      when(
+        trashRepository.setSyncStatus(SyncStatus.SYNCING),
+      ).thenAnswer((_) async => true);
+      await instance.refreshTrashData();
+
+      final result = await instance.addTrashData(trash);
+
+      expect(result, isTrue);
+      expect(instance.allTrashList, hasLength(1));
+      expect(instance.allTrashList.single.id, 'add-1');
+      expect(instance.allTrashList.single.type, 'unburn');
+    });
+
+    test('更新成功時はメモリ上の一覧も差し替える', () async {
+      final trash = TrashData(
+        id: 'update-1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [],
+      );
+      final updatedTrash = TrashData(
+        id: 'update-1',
+        type: 'unburn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [],
+      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash]);
+      when(
+        trashRepository.readGlobalExcludeDates(),
+      ).thenAnswer((_) async => []);
+      when(
+        trashRepository.updateTrashData(updatedTrash),
+      ).thenAnswer((_) async => true);
+      when(
+        trashRepository.setSyncStatus(SyncStatus.SYNCING),
+      ).thenAnswer((_) async => true);
+      await instance.refreshTrashData();
+
+      final result = await instance.updateTrashData(updatedTrash);
+
+      expect(result, isTrue);
+      expect(instance.allTrashList, hasLength(1));
+      expect(instance.allTrashList.single.id, 'update-1');
+      expect(instance.allTrashList.single.type, 'unburn');
+    });
+
+    test('削除成功時はメモリ上の一覧からも削除する', () async {
+      final trash = TrashData(
+        id: 'delete-1',
+        type: 'burn',
+        trashVal: '',
+        schedules: [TrashSchedule('weekday', '0')],
+        excludes: [],
+      );
+      when(trashRepository.readAllTrashData()).thenAnswer((_) async => [trash]);
+      when(
+        trashRepository.readGlobalExcludeDates(),
+      ).thenAnswer((_) async => []);
+      when(
+        trashRepository.deleteTrashData('delete-1'),
+      ).thenAnswer((_) async => true);
+      when(
+        trashRepository.setSyncStatus(SyncStatus.SYNCING),
+      ).thenAnswer((_) async => true);
+      await instance.refreshTrashData();
+
+      final result = await instance.deleteTrashData('delete-1');
+
+      expect(result, isTrue);
+      expect(instance.allTrashList, isEmpty);
     });
   });
 }

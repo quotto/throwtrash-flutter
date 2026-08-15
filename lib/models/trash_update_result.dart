@@ -1,8 +1,6 @@
-enum UpdateResult {
-  SUCCESS,
-  NO_MATCH,
-  ERROR
-}
+// ignore_for_file: constant_identifier_names
+
+enum UpdateResult { SUCCESS, NO_MATCH, ERROR }
 
 class TrashUpdateResult {
   final int timestamp;

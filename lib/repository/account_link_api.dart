@@ -13,36 +13,43 @@ class AccountLinkApi implements AccountLinkApiInterface {
   final http.Client _httpClient;
   static AccountLinkApi? _instance;
 
-
   AccountLinkApi._(this._configProvider, this._httpClient);
 
-  static initialize(AppConfigProviderInterface configProvider, http.Client httpClient) {
-    if(_instance != null) {
+  static void initialize(
+    AppConfigProviderInterface configProvider,
+    http.Client httpClient,
+  ) {
+    if (_instance != null) {
       throw StateError("AccountLinkApi is already initialized");
     }
     _instance = AccountLinkApi._(configProvider, httpClient);
   }
 
   factory AccountLinkApi() {
-    if(_instance == null) {
+    if (_instance == null) {
       throw StateError("AccountLinkApi is not initialized");
     }
     return _instance!;
   }
 
   @override
-  Future<AccountLinkInfo?> startAccountLink(String userId, AccountLinkType accountLinkType) async {
-    Uri endpointUri = Uri.parse("${this._configProvider.mobileApiUrl}/start_link?user_id=$userId&platform=${accountLinkType.toStringValue()}");
-    http.Response response = await this._httpClient.get(
-      endpointUri
+  Future<AccountLinkInfo?> startAccountLink(
+    String userId,
+    AccountLinkType accountLinkType,
+  ) async {
+    Uri endpointUri = Uri.parse(
+      "${_configProvider.mobileApiUrl}/start_link?user_id=$userId&platform=${accountLinkType.toStringValue()}",
     );
-    if(response.statusCode == 200) {
+    http.Response response = await _httpClient.get(endpointUri);
+    if (response.statusCode == 200) {
       Map<String, dynamic> body = jsonDecode(response.body);
-      if(body.containsKey("url") && body.containsKey("token")) {
-        AccountLinkInfo accountLinkInfo = AccountLinkInfo(body["url"], body["token"]);
+      if (body.containsKey("url") && body.containsKey("token")) {
+        AccountLinkInfo accountLinkInfo = AccountLinkInfo(
+          body["url"],
+          body["token"],
+        );
         _logger.d("response start link: ${body.toString()}");
         return accountLinkInfo;
-
       } else {
         _logger.e("start account link invalid response body");
         _logger.e(body.toString());

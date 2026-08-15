@@ -172,6 +172,17 @@ class MockAppConfigProviderInterface extends _i1.Mock
             ),
           )
           as String);
+
+  @override
+  String get trashSearchApiEndpoint =>
+      (super.noSuchMethod(
+            Invocation.getter(#trashSearchApiEndpoint),
+            returnValue: _i10.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiEndpoint),
+            ),
+          )
+          as String);
 }
 
 /// A class which mocks [CrashReportInterface].

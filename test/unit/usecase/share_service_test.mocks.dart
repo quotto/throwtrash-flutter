@@ -11,11 +11,12 @@ import 'package:throwtrash/models/activate_response.dart' as _i6;
 import 'package:throwtrash/models/calendar_model.dart' as _i10;
 import 'package:throwtrash/models/exclude_date.dart' as _i11;
 import 'package:throwtrash/models/trash_data.dart' as _i9;
+import 'package:throwtrash/models/trash_import_message.dart' as _i12;
 import 'package:throwtrash/models/user.dart' as _i2;
 import 'package:throwtrash/usecase/repository/activation_api_interface.dart'
     as _i3;
 import 'package:throwtrash/usecase/repository/crash_report_interface.dart'
-    as _i12;
+    as _i13;
 import 'package:throwtrash/usecase/repository/trash_repository_interface.dart'
     as _i8;
 import 'package:throwtrash/usecase/user_service_interface.dart' as _i7;
@@ -138,6 +139,14 @@ class MockTrashRepositoryInterface extends _i1.Mock
           as _i4.Future<bool>);
 
   @override
+  _i4.Future<bool> replaceAllTrashData(List<_i9.TrashData>? allTrashData) =>
+      (super.noSuchMethod(
+            Invocation.method(#replaceAllTrashData, [allTrashData]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
   _i4.Future<List<_i9.TrashData>> readAllTrashData() =>
       (super.noSuchMethod(
             Invocation.method(#readAllTrashData, []),
@@ -216,13 +225,45 @@ class MockTrashRepositoryInterface extends _i1.Mock
             returnValue: _i4.Future<bool>.value(false),
           )
           as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> shouldShowInitialSearchDialog() =>
+      (super.noSuchMethod(
+            Invocation.method(#shouldShowInitialSearchDialog, []),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> markInitialSearchDialogShown() =>
+      (super.noSuchMethod(
+            Invocation.method(#markInitialSearchDialogShown, []),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<bool> saveImportMessage(_i12.TrashImportMessage? message) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveImportMessage, [message]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
+  _i4.Future<_i12.TrashImportMessage?> consumeImportMessage() =>
+      (super.noSuchMethod(
+            Invocation.method(#consumeImportMessage, []),
+            returnValue: _i4.Future<_i12.TrashImportMessage?>.value(),
+          )
+          as _i4.Future<_i12.TrashImportMessage?>);
 }
 
 /// A class which mocks [CrashReportInterface].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCrashReportInterface extends _i1.Mock
-    implements _i12.CrashReportInterface {
+    implements _i13.CrashReportInterface {
   MockCrashReportInterface() {
     _i1.throwOnMissingStub(this);
   }

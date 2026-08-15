@@ -20,13 +20,16 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.1'
+          channel: stable
+          flutter-version-file: .fvmrc
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Run unit tests with coverage
-        run: flutter test test/unit --coverage
+        run: |
+          flutter test test/unit --coverage \
+            --dart-define=trashSearchApiKey="${{ secrets.TRASH_SEARCH_API_KEY }}"
 
       - name: Calculate coverage
         id: coverage

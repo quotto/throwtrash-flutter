@@ -1,5 +1,3 @@
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +6,8 @@ import 'package:throwtrash/viewModels/account_link_model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class AccountLink extends StatefulWidget {
+  const AccountLink({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _AccountLink();
@@ -46,18 +46,29 @@ class _AccountLink extends State<AccountLink> {
             _logger.d("webview@${request.url}");
             // LWAでログインを行った場合、ユニバーサルリンクでリダイレクトされる。
             // Alexaアプリが存在しない場合はモバイルAPIの/enable_skillでスキルを有効化するため、リダイレクト先を変更する。
-            var redirectUriPattern = RegExp("^(https://mobileapp.mythrowaway.net/accountlink)\\?(.+)");
+            var redirectUriPattern = RegExp(
+              "^(https://mobileapp.mythrowaway.net/accountlink)\\?(.+)",
+            );
             var matchUri = redirectUriPattern.allMatches(request.url).toList();
-            if(matchUri.toList().isNotEmpty && !request.url.contains("redirect_uri")) {
+            if (matchUri.toList().isNotEmpty &&
+                !request.url.contains("redirect_uri")) {
               _logger.d("webview@${matchUri.toList()[0].group(1)}");
-              controller.loadRequest(Uri.parse("${_appConfigProvider.mobileApiUrl}/enable_skill?${matchUri.toList()[0].group(2)}&token=${_accountLinkModel.accountLinkInfo.token}&redirect_uri=${matchUri.toList()[0].group(1)}"));
+              controller.loadRequest(
+                Uri.parse(
+                  "${_appConfigProvider.mobileApiUrl}/enable_skill?${matchUri.toList()[0].group(2)}&token=${_accountLinkModel.accountLinkInfo.token}&redirect_uri=${matchUri.toList()[0].group(1)}",
+                ),
+              );
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;
           },
         ),
       )
-    ..loadRequest(Uri.parse("${_accountLinkModel.accountLinkInfo.linkUrl}&token=${_accountLinkModel.accountLinkInfo.token}"));
+      ..loadRequest(
+        Uri.parse(
+          "${_accountLinkModel.accountLinkInfo.linkUrl}&token=${_accountLinkModel.accountLinkInfo.token}",
+        ),
+      );
 
     Widget body = WebViewWidget(controller: controller);
     return Scaffold(
@@ -65,5 +76,4 @@ class _AccountLink extends State<AccountLink> {
       body: body,
     );
   }
-
 }

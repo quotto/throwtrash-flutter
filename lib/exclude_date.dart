@@ -7,163 +7,196 @@ import 'package:throwtrash/viewModels/exclude_date_model.dart';
 class ExcludeDateView extends StatefulWidget {
   final bool showGlobalDescription;
 
-  ExcludeDateView({this.showGlobalDescription = false});
+  const ExcludeDateView({super.key, this.showGlobalDescription = false});
 
   @override
-  _ExcludeDateState createState() => _ExcludeDateState();
+  State<ExcludeDateView> createState() => _ExcludeDateState();
 }
 
 class _ExcludeDateState extends State<ExcludeDateView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('例外日の設定')),
-        body: Consumer<ExcludeViewModel>(
-          builder: (context, excludeViewModel, child) {
-            List<Widget> columnChildren = [];
-            List<Widget> listViewChildren = [];
-            if (widget.showGlobalDescription) {
-              columnChildren.add(
-                Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Theme.of(context).dialogBackgroundColor,
-                  ),
-                  child: Text(
-                    'この画面で設定した例外日は登録される全てのゴミの種類に適用されます。\n'
-                    '個別の例外日を設定する場合は各ゴミの登録画面から設定してください。',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).hintColor,
-                    ),
+      appBar: AppBar(title: Text('例外日の設定')),
+      body: Consumer<ExcludeViewModel>(
+        builder: (context, excludeViewModel, child) {
+          List<Widget> columnChildren = [];
+          List<Widget> listViewChildren = [];
+          if (widget.showGlobalDescription) {
+            columnChildren.add(
+              Container(
+                width: double.infinity,
+                margin: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                  borderRadius: BorderRadius.circular(10),
+                  color:
+                      Theme.of(context).dialogTheme.backgroundColor ??
+                      Theme.of(context).colorScheme.surface,
+                ),
+                child: Text(
+                  'この画面で設定した例外日は登録される全てのゴミの種類に適用されます。\n'
+                  '個別の例外日を設定する場合は各ゴミの登録画面から設定してください。',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).hintColor,
                   ),
                 ),
-              );
-            }
-            excludeViewModel.excludeDates.asMap().forEach((index, pair) {
-              listViewChildren.add(Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        showBottomSheet(
-                            context: context,
-                            builder: (context) {
-                              FixedExtentScrollController _ctrl =
-                                  FixedExtentScrollController(
-                                      initialItem: pair[1] - 1);
-                              // 月が変わった場合に日付の列を動的に変更するためStatefulBuilderのsetStateが必要
-                              return StatefulBuilder(
-                                  builder: (context, setState) {
-                                return Container(
-                                    height:
-                                        MediaQuery.of(context).size.height / 4,
-                                    child: Column(children: [
-                                      Expanded(
-                                          child: Row(
+              ),
+            );
+          }
+          excludeViewModel.excludeDates.asMap().forEach((index, pair) {
+            listViewChildren.add(
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          FixedExtentScrollController ctrl =
+                              FixedExtentScrollController(
+                                initialItem: pair[1] - 1,
+                              );
+                          // 月が変わった場合に日付の列を動的に変更するためStatefulBuilderのsetStateが必要
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                              return SizedBox(
+                                height: MediaQuery.of(context).size.height / 4,
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
                                           Expanded(
-                                              child: CupertinoPicker(
-                                            itemExtent: 32,
-                                            onSelectedItemChanged:
-                                                (changedMonthIndex) {
-                                              excludeViewModel.changeMonth(
-                                                  index, changedMonthIndex + 1);
-                                              _ctrl.animateToItem(
-                                                  excludeViewModel.excludeDates[
-                                                          index][1] -
-                                                      1,
-                                                  duration: Duration(
-                                                      milliseconds: 250),
-                                                  curve: Curves.easeInOut);
-                                              setState(() {});
-                                            },
-                                            children:
-                                                List.generate(12, (month) {
-                                              return Text('${month + 1}月');
-                                            }),
-                                            looping: true,
-                                            scrollController:
-                                                FixedExtentScrollController(
-                                                    initialItem: pair[0] - 1),
-                                          )),
+                                            child: CupertinoPicker(
+                                              itemExtent: 32,
+                                              onSelectedItemChanged:
+                                                  (changedMonthIndex) {
+                                                    excludeViewModel
+                                                        .changeMonth(
+                                                          index,
+                                                          changedMonthIndex + 1,
+                                                        );
+                                                    ctrl.animateToItem(
+                                                      excludeViewModel
+                                                              .excludeDates[index][1] -
+                                                          1,
+                                                      duration: Duration(
+                                                        milliseconds: 250,
+                                                      ),
+                                                      curve: Curves.easeInOut,
+                                                    );
+                                                    setState(() {});
+                                                  },
+                                              looping: true,
+                                              scrollController:
+                                                  FixedExtentScrollController(
+                                                    initialItem: pair[0] - 1,
+                                                  ),
+                                              children: List.generate(12, (
+                                                month,
+                                              ) {
+                                                return Text('${month + 1}月');
+                                              }),
+                                            ),
+                                          ),
                                           Expanded(
-                                              child: CupertinoPicker(
-                                            itemExtent: 32,
-                                            onSelectedItemChanged:
-                                                (changedDateIndex) {
-                                              excludeViewModel.changeDate(
-                                                  index, changedDateIndex + 1);
-                                            },
-                                            children: List.generate(
+                                            child: CupertinoPicker(
+                                              itemExtent: 32,
+                                              onSelectedItemChanged:
+                                                  (changedDateIndex) {
+                                                    excludeViewModel.changeDate(
+                                                      index,
+                                                      changedDateIndex + 1,
+                                                    );
+                                                  },
+                                              scrollController: ctrl,
+                                              looping: true,
+                                              children: List.generate(
                                                 excludeViewModel.maxDate,
                                                 ((index) {
-                                              return Text('${index + 1}日');
-                                            })),
-                                            scrollController: _ctrl,
-                                            looping: true,
-                                          ))
+                                                  return Text('${index + 1}日');
+                                                }),
+                                              ),
+                                            ),
+                                          ),
                                         ],
-                                      )),
-                                      FilledButton.tonal(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('選択'))
-                                    ]));
-                              });
-                            });
-                      },
-                      child: Text('${pair[0]}月${pair[1]}日',
-                          style: TextStyle(
-                              fontSize: 32,
-                              color: Theme.of(context).primaryColor)),
+                                      ),
+                                    ),
+                                    FilledButton.tonal(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('選択'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                    child: Text(
+                      '${pair[0]}月${pair[1]}日',
+                      style: TextStyle(
+                        fontSize: 32,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
-                    Padding(
-                        padding: EdgeInsets.only(right: 16.0),
-                        child: IconButton(
-                          icon: Icon(Icons.delete_forever),
-                          iconSize: 32,
-                          color: Theme.of(context).colorScheme.error,
-                          onPressed: () =>
-                              excludeViewModel.removeExcludeDate(index),
-                        ))
-                  ]));
-            });
-            columnChildren.add(Expanded(
-                child: ListView(
-              children: listViewChildren,
-            )));
-            if (excludeViewModel.excludeDates.length < 10) {
-              columnChildren.add(Container(
-                  padding: EdgeInsets.only(bottom: 32.0),
-                  child: IconButton(
-                      icon: Icon(Icons.add_circle_outline),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: 16.0),
+                    child: IconButton(
+                      icon: Icon(Icons.delete_forever),
                       iconSize: 32,
-                      color: Theme.of(context).colorScheme.primary,
-                      onPressed: () {
-                        excludeViewModel.addExcludeDate(ExcludeDate(1, 1));
-                      })));
-            }
-            columnChildren.add(Container(
-                padding: EdgeInsets.only(bottom: 32.0),
-                child: FilledButton.tonal(
-                  child: Text('設定'),
-                  onPressed: () {
-                    Navigator.pop(context, excludeViewModel);
-                  },
-                )));
-            return Column(
-              children: columnChildren,
+                      color: Theme.of(context).colorScheme.error,
+                      onPressed: () =>
+                          excludeViewModel.removeExcludeDate(index),
+                    ),
+                  ),
+                ],
+              ),
             );
-          },
-        ));
+          });
+          columnChildren.add(
+            Expanded(child: ListView(children: listViewChildren)),
+          );
+          if (excludeViewModel.excludeDates.length < 10) {
+            columnChildren.add(
+              Container(
+                padding: EdgeInsets.only(bottom: 32.0),
+                child: IconButton(
+                  icon: Icon(Icons.add_circle_outline),
+                  iconSize: 32,
+                  color: Theme.of(context).colorScheme.primary,
+                  onPressed: () {
+                    excludeViewModel.addExcludeDate(ExcludeDate(1, 1));
+                  },
+                ),
+              ),
+            );
+          }
+          columnChildren.add(
+            Container(
+              padding: EdgeInsets.only(bottom: 32.0),
+              child: FilledButton.tonal(
+                child: Text('設定'),
+                onPressed: () {
+                  Navigator.pop(context, excludeViewModel);
+                },
+              ),
+            ),
+          );
+          return Column(children: columnChildren);
+        },
+      ),
+    );
   }
 }

@@ -1,21 +1,20 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/cupertino.dart';
 import 'package:throwtrash/models/exclude_date.dart';
 
-enum ExcludeState {
-  EDIT,
-  COMPLETE
-}
+enum ExcludeState { EDIT, COMPLETE }
 
 class ExcludeViewModel extends ChangeNotifier {
   // index0を月,index1を日とする配列
   final List<List<int>> _excludeDates = [];
-  ExcludeState _excludeState = ExcludeState.EDIT;
+  final ExcludeState _excludeState = ExcludeState.EDIT;
   int _maxDate = 31;
 
-  ExcludeViewModel.load(List<ExcludeDate> loadedExcludeDates)  {
-    loadedExcludeDates.forEach((value){
+  ExcludeViewModel.load(List<ExcludeDate> loadedExcludeDates) {
+    for (var value in loadedExcludeDates) {
       _excludeDates.add([value.month, value.date]);
-    });
+    }
   }
 
   List<List<int>> get excludeDates => _excludeDates;
@@ -29,13 +28,13 @@ class ExcludeViewModel extends ChangeNotifier {
 
   void changeMonth(int index, int month) {
     _excludeDates[index][0] = month;
-    if(month == 2) {
-      if(_excludeDates[index][1] > 29) {
+    if (month == 2) {
+      if (_excludeDates[index][1] > 29) {
         _excludeDates[index][1] = 29;
       }
       _maxDate = 29;
-    } else if([4,6,9,11].contains(month)) {
-      if(_excludeDates[index][1] > 30) {
+    } else if ([4, 6, 9, 11].contains(month)) {
+      if (_excludeDates[index][1] > 30) {
         _excludeDates[index][1] = 30;
       }
       _maxDate = 30;
@@ -54,5 +53,4 @@ class ExcludeViewModel extends ChangeNotifier {
     _excludeDates.removeAt(index);
     notifyListeners();
   }
-
 }

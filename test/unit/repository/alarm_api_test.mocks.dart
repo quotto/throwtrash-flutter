@@ -365,6 +365,21 @@ class MockAppConfigProviderInterface extends _i1.Mock
             ),
           )
           as String);
+
+  @override
+  String get trashSearchApiEndpoint =>
+      (super.noSuchMethod(
+            Invocation.getter(#trashSearchApiEndpoint),
+            returnValue: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiEndpoint),
+            ),
+            returnValueForMissingStub: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiEndpoint),
+            ),
+          )
+          as String);
 }
 
 /// A class which mocks [EnvironmentProviderInterface].
@@ -398,6 +413,21 @@ class MockEnvironmentProviderInterface extends _i1.Mock
             returnValueForMissingStub: _i5.dummyValue<String>(
               this,
               Invocation.getter(#alarmApiKey),
+            ),
+          )
+          as String);
+
+  @override
+  String get trashSearchApiKey =>
+      (super.noSuchMethod(
+            Invocation.getter(#trashSearchApiKey),
+            returnValue: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiKey),
+            ),
+            returnValueForMissingStub: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#trashSearchApiKey),
             ),
           )
           as String);
